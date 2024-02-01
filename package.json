@@ -1,0 +1,16 @@
+{
+  "name": "tst",
+  "version": "0.0.1",
+  "description": "A lightweight all-powerful TypeScript test library.",
+  "main": "index.js",
+  "scripts": {
+    "test": "tsc"
+  },
+  "author": "Steven Lu",
+  "license": "MIT",
+  "type": "module",
+  "devDependencies": {
+    "@types/node": "^20.11.16",
+    "typescript": "^5.3.3"
+  }
+}
