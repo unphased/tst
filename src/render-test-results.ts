@@ -3,11 +3,11 @@ import * as fsp from "fs/promises";
 import * as path from "path";
 import { TestOptions, pp, red, test, AssertionName } from './index.js';
 import { getConfig } from './config.js';
-import { convertAnsiHtml } from './terminal/ansihtml.js';
 import { colors } from './terminal/colors.js';
 import { spawnAsync } from './process.js';
 import { fileURLToPath } from 'url';
 import { execSync } from "child_process";
+import { lexAnsi } from "./terminal/ansi-parse.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -245,11 +245,11 @@ export const splitStringBasic = test('splitString', ({a: {eqO}}) => {
   const split = splitString(str, 5, [], []);
   eqO(split, ["12345", "67890", "abc"]);
   const str2 = "foo\x1b[31mbar\x1b[mbaz abc def ghi jkl mno pqr";
-  const ansi2 = convertAnsiHtml(str2);
+  const ansi2 = lexAnsi(str2);
   const split2 = splitString(str2, 8, ansi2.idxs[0], ansi2.lens[0]);
   eqO(split2, ["foo\x1b[31mbar\x1b[mba", "z abc de", "f ghi jk", "l mno pq", "r"]);
   const str3 = "foobarba\x1b[31mz abc def gh\x1b[mi jkl mno pq\x1b[m\x1b[m\x1b[m\x1b[m\x1b[m\x1b[m\x1b[m\x1b[m\x1b[m\x1b[m\x1b[m\x1b[m\x1b[m\x1b[m\x1b[mr";
-  const ansi3 = convertAnsiHtml(str3);
+  const ansi3 = lexAnsi(str3);
   const split3 = splitString(str3, 5, ansi3.idxs[0], ansi3.lens[0]);
   eqO(split3, ['fooba',
   'rba\x1B[31mz ',
@@ -276,11 +276,11 @@ export const splitStringHardcoreBoundsCheck = test('splitString', ({l, a: {eq, i
       combined += str.slice(lastJ, j) + '\x1b[' + ansi_code_rand + 'm';
       lastJ = j;
     }
-    const a = convertAnsiHtml(combined);
+    const a = lexAnsi(combined);
     for (let j = 3; j < 80; j += Math.ceil(Math.random() * Math.random() * (10 + j/4))) {
       const split = splitString(combined, j, a.idxs[0], a.lens[0]);
       eq(split.join(''), combined);
-      is(split.every((s, i) => convertAnsiHtml(s).cleaned[0].length === j || (i === split.length - 1 && convertAnsiHtml(s).cleaned[0].length === a.cleaned[0].length % j)));
+      is(split.every((s, i) => lexAnsi(s).cleaned[0].length === j || (i === split.length - 1 && lexAnsi(s).cleaned[0].length === a.cleaned[0].length % j)));
       count_checks+= split.length + 1;
     }
     // console.log(util.inspect(split.map((s, i) => { const a = convertAnsiHtml(s); return {s, a, l: a.cleaned[0].length }; }), { colors: true, depth: Infinity, compact: true }));
@@ -298,7 +298,7 @@ function fancySplitString(str: string, horizLimit: number) {
 }
 
 const drawBorder = (content: string, heading_summary: string) => {
-  const ansi = convertAnsiHtml(content);
+  const ansi = lexAnsi(content);
   const maxContentWidth = Math.max(...ansi.cleaned.map(line => line.length));
 
   const left_margin = '┃';
