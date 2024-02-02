@@ -2,16 +2,18 @@ import * as fs from "fs";
 import * as fsp from "fs/promises";
 import * as path from "path";
 import { TestOptions, pp, red, test, AssertionName } from './index.js';
-import { getConfig } from '../config.js';
-import { convertAnsiHtml } from '../terminal/ansihtml.js';
-import { colors } from '../terminal/colors.js';
-import { hrTimeMs, spawnAsync, sum } from '../utils.js';
+import { getConfig } from './config.js';
+import { convertAnsiHtml } from './terminal/ansihtml.js';
+import { colors } from './terminal/colors.js';
+import { spawnAsync } from './process.js';
 import { fileURLToPath } from 'url';
 import { execSync } from "child_process";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+export const sum = (arr: number[]) => arr.reduce((a, b) => a + b, 0);
+export const hrTimeMs = (hrTimeDelta: [number, number]) => hrTimeDelta[0] * 1000 + hrTimeDelta[1] / 1000000;
 
 export const renderHrTimeMs = (hrTimeDelta: [number, number]) => hrTimeMs(hrTimeDelta).toFixed(5) + "ms";
 const renderTruncFromMs = (ms: number) => {

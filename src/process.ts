@@ -6,7 +6,6 @@ import { colors } from './terminal/colors.js';
 
 import { mkdirSync, readFileSync, rmdirSync, unlinkSync } from 'fs';
 import { Transform } from 'stream';
-import { assert } from './log.js';
 
 // Truncate a string to a given length, show start and end, shorten the middle.
 const separator = `${colors.magenta + colors.bold}\u2026 \u2026${colors.bold_reset + colors.fg_reset}`;
@@ -57,31 +56,6 @@ const colorizeStream = (color_256_bg: number, bgColorWholeLine: boolean) => {
 
 export const stdoutColorizer = (fill = true) => colorizeStream(19, fill);
 export const stderrColorizer = (fill = true) => colorizeStream(52, fill);
-export const simple_transform = test('transform stream', async ({ a: { eqO } }) => {
-  // Readable stream
-  const readStream = Readable.from(['hello world\nfoo bar baz\n']);
-
-  // Writable stream
-  const output: string[] = [];
-  const writeStream = new Writable({
-    write(chunk, encoding, callback) {
-      output.push(chunk.toString());
-      callback();
-    }
-  });
-
-  // Pipe them together
-  readStream.pipe(stdoutColorizer()).pipe(writeStream);
-
-  // Verify output
-  const x = await new Promise((resolve, _reject) => {
-    writeStream.on('finish', () => {
-      resolve(output);
-    });
-  });
-  eqO(x, ['\x1b[48;5;19mhello world\x1b[0K\n\x1b[48;5;19mfoo bar baz\x1b[0K\n\x1b[m']);
-});
-
 // a sugaring helper to allow for more concise transform stream assembly. Note this is a HOF, since streams arent
 // reusable
 const transform_maker = (transform: ((chunk: Buffer) => string)) =>
@@ -128,7 +102,6 @@ export type SpawnAsyncOpts = {
   attemptJSONLParse?: boolean; // attempt to parse and pretty print any stdout (we'll also add it to stderr later if we ever need)
   // JSONL while logging it. note there is no support here for parsing of multiline actual json content, as that won't benefit at all from streaming...
   env?: NodeJS.ProcessEnv;
-  debugAsSync?: boolean; // set to true to debug as a sync process. This might be useful someday.
   ignoreStdinout?: boolean; // set to true to discard stdin and stdout, intended to be equivalent to piping to /dev/null
 };
 
@@ -177,7 +150,7 @@ export function spawnAsync(command: string, args: string[], logger = console.err
 
   const spawnOptions = {};
   if (opts?.env) {
-    assert(typeof opts.env === 'object' && Object.keys(opts.env).length, "spawnAsync: give env option an object with items, or don't specify env");
+    if (!(typeof opts.env === 'object') || !Object.keys(opts.env).length) throw new Error("spawnAsync: give env option an object with items, or don't specify env");
     spawnOptions['env'] = { ...process.env, ...opts.env }; // not combining with process env is likely to lead to lots of suffering TODO add option to not include process env. That will probably never get used...
   }
   if (opts?.ignoreStdinout) {
@@ -189,16 +162,6 @@ export function spawnAsync(command: string, args: string[], logger = console.err
     const realSpawnCmd = process.platform === 'darwin' ? 'gtime' : 'time';
     const realSpawnArgs = ['-f', '{"maxrss":%M,"wall":%e,"sys":%S,"user":%U}', '-o', time_output_file, '--quiet', '--', command, ...args ];
     const renderedFullCmd = [cyan(underline(realSpawnCmd)), ...(realSpawnArgs).map(cyan).map(underline)].join(arg_sep);
-    if (opts?.debugAsSync) {
-      // we will not receive nice output stream colorization and stuff, as those are part of the asynchronousJ
-      // implementation.
-      const ret = spawnSync(realSpawnCmd, realSpawnArgs, spawnOptions);
-      logger(`Debugging synchronously launch of ${renderedFullCmd}:\n` + util.inspect(ret, {colors: true}), false);
-      // const time_output = readFileSync(time_output_file);
-      // cmdDisplayingLogger('resource report: ' + time_output.toString('utf8'), false);
-      resolve({ code: ret.status, signal: ret.signal, pid, resources: {}});
-      return;
-    }
     const proc = spawn(realSpawnCmd, realSpawnArgs, spawnOptions);
     pid = proc.pid;
     opts?.hideLaunchAndClose || pidOnlyLogger(`launched as ${renderedFullCmd}`, false);

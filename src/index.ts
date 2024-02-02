@@ -7,12 +7,12 @@ import { SpawnSyncReturns, execSync } from 'child_process';
 import { TestAssertionMetrics, TestLogs } from './render-test-results.js';
 import { getConfig } from './config.js';
 import { fileURLToPath } from 'url';
-import { SpawnResourceReport, spawnAsync, SpawnAsyncOpts } from '../utils.js';
+import { SpawnResourceReport, spawnAsync, SpawnAsyncOpts } from './process.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// note carefully this specific code cannot be factored to a different file, it changes its semantics.
+// note carefully this specific code cannot be factored to a different file, as that would change its semantics.
 const isProgramLaunchContext = () => {
   // this cjs launch detection impl will need to change if we change compilation to target modules
   return fileURLToPath(import.meta.url) === process.argv[1];
@@ -223,8 +223,7 @@ const augmentedAssertions = (assertionMetrics: TestAssertionMetrics, options: Te
   const ret = {} as any; // returning same shape as our collection of assertions.
   for (const [name, fn] of Object.entries(assertions)) {
     const asyn = fn instanceof AsyncFunction;
-    const amln = assertionMetrics.logs.obj(name);
-    amln.arr('buffer');
+    const amln = assertionMetrics.logs[name] || (assertionMetrics.logs[name] = { buffer: [] });
     const loggerbody = (args: any[]) => {
       if (options.ringBufferLimitAssertionLogs !== undefined && (amln.ringBufferOffset === undefined || amln.buffer.length !== options.ringBufferLimitAssertionLogs)) {
         console.error('ring buffer limit changed to', options.ringBufferLimitAssertionLogs, 'from', amln.buffer.length)
