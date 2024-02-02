@@ -2,9 +2,9 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { getConfig } from '../config.js';
+import { getConfig } from './config.js';
 import { e, l } from "../log.js";
-import { colors } from '../terminal/colors.js';
+import { colors } from './terminal/colors.js';
 import { processTestResults } from './analyze-test-results.js';
 import { AsyncFunction, TFun, TestMetadata, TestOptions, compatibleFailure, italic, red, testAsyncFnRegistry, testFnRegistry, testParamMaker, ResourceMetricsPerTest } from './index.js';
 import { TestAssertionMetrics, TestLogs, clearResults, establishTestResultsDir, getResults, renderHrTimeMs, renderResults, submitResult } from './render-test-results.js';
