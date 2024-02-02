@@ -2,10 +2,10 @@ import * as fs from 'fs';
 import * as util from 'util';
 import { resolve, join, dirname } from 'path';
 import { tmpdir } from 'os';
-import { colors } from '../terminal/colors.js';
+import { colors } from './terminal/colors.js';
 import { SpawnSyncReturns, execSync } from 'child_process';
 import { TestAssertionMetrics, TestLogs } from './render-test-results.js';
-import { getConfig } from '../config.js';
+import { getConfig } from './config.js';
 import { fileURLToPath } from 'url';
 import { SpawnResourceReport, spawnAsync, SpawnAsyncOpts } from '../utils.js';
 
