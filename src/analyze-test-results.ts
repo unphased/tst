@@ -1,5 +1,4 @@
 import { existsSync, readFileSync, writeFileSync } from 'fs';
-import "../context/index.js";
 import { getResults, getTestReportingPath } from './render-test-results.js';
 
 // test results upon submission (completion) is being written immediately to filesystem under a launch session dir. That's a backup semi user friendly source of truth, but we will duplicate all that information (and possibly more analysis geared information) in a single test context file that is persistent across launches.
