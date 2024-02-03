@@ -1,9 +1,10 @@
 import * as path from 'path';
 import * as fs from 'fs';
 
-class Config {
-  constructor(defaults: Record<string, any>) {
-    this.filepath = path.join(process.env['HOME'], '.nucleus-instrument-config.json');
+export class Config {
+  constructor(name: string, defaults: Record<string, any>) {
+    this.name = name;
+    this.filepath = path.join(process.env['HOME'] ?? '.', `.${name}-config.json`);
     // l('config', this.filepath, fs.readFileSync(this.filepath, 'utf8'));
     if (!fs.existsSync(this.filepath)) {
       console.error(`config file not found at ${this.filepath}, creating it.`);
@@ -11,6 +12,7 @@ class Config {
     }
     this.config = JSON.parse(fs.readFileSync(this.filepath, 'utf8'));
   }
+  name: string;
   config: Record<string, any>;
   filepath: string;
 
@@ -23,15 +25,4 @@ class Config {
     return this.config[field];
   }
 }
-
-const configDefaults = {
-  run_instrumentation: true,
-  enable_websocket_server: true,
-  echo_test_logging: false,
-};
-
-const config = new Config(configDefaults);
-
-export const getConfig = () => config;
-
 

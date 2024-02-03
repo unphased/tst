@@ -4,7 +4,7 @@ import * as util from 'util';
 import * as os from 'os';
 import { colors } from './terminal/colors.js';
 
-import { mkdirSync, readFileSync, rmdirSync, unlinkSync } from 'fs';
+import { mkdirSync, readFileSync, unlinkSync } from 'fs';
 import { Transform } from 'stream';
 
 // Truncate a string to a given length, show start and end, shorten the middle.
