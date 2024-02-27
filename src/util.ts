@@ -1,5 +1,5 @@
 import { renderBarRatioComparisonLowerIsBetter } from '../terminal/precision-bars.js';
-import { hrTimeMs } from '../utils.js';
+import { hrTimeMs } from 'ts-utils';
 
 export const renderHrTimeMs = (hrTimeDelta: [number, number]) => hrTimeMs(hrTimeDelta).toFixed(5) + "ms";
 export const renderTruncFromMs = (ms: number) => {

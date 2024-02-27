@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import { colors } from '../terminal/colors.js';
-import { bold, format, italic, pp, red } from '../utils.js';
+import { bold, format, italic, pp, red } from 'ts-utils';
 
 export const diffOfStrings = (a: string, b: string) => {
   // load the strings into unique tmpfiles

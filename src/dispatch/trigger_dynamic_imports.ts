@@ -3,7 +3,7 @@
 import * as path from 'path';
 import { fileURLToPath } from 'url';
 import { e, ln } from "../../log.js";
-import { hrTimeMs } from '../../utils.js';
+import { hrTimeMs } from 'ts-utils';
 import { TFun, TestMetadata, testFnRegistry } from '../index.js';
 
 const __filename = fileURLToPath(import.meta.url);

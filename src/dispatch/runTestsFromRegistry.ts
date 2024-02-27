@@ -1,7 +1,7 @@
 import { getConfig } from '../../config/instrumenterRuntimeConfig.js';
 import { l } from "../../log.js";
 import { colors } from '../../terminal/colors.js';
-import { hrTimeMs, italic, pp, red } from "../../utils.js";
+import { hrTimeMs, italic, pp, red } from "ts-utils";
 import { AsyncFunction, TFun, TestMetadata, testParamMaker } from '../index.js';
 import { Embeds, ErrorSpec, ResourceMetrics, TestAssertionMetrics, TestLogs, TestOptions, TestResult } from '../types.js';
 import { tf, topt } from './util.js';

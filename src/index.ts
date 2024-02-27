@@ -2,7 +2,7 @@ import { dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { getConfig } from '../config/instrumenterRuntimeConfig.js';
 import { SpawnAsyncOpts, SpawnAsyncTestLogTraced, isBypassResourceMetrics, spawnAsync } from '../process.js';
-import { format } from '../utils.js';
+import { format } from 'ts-utils';
 import { assertions } from './assertions.js';
 import { PlotData } from './plotting/index.js';
 import { plotters } from "./plotting/plotters_index.js";

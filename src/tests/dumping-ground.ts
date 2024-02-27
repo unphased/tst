@@ -1,6 +1,6 @@
 import { exec, execSync } from 'child_process';
 import { test } from '../index.js';
-import { hrTimeMs, red } from '../../utils.js';
+import { hrTimeMs, red } from 'ts-utils';
 import { fileURLToPath } from 'url';
 import { Writable } from 'stream';
 import { stdoutColorizer } from '../../process.js';
