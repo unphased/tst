@@ -1,7 +1,7 @@
 import * as os from 'os';
 import { MinHeap } from '../../data-structures/min-heap.js';
 import { l, ln } from "../../log.js";
-import { SpawnResourceReport, spawnAsync } from '../../process.js';
+import { SpawnResourceReport, spawnAsync } from '../process.js';
 import { format, hrTimeMs, weightedAverageFromBackByLUT } from "ts-utils";
 import { loadTestContext } from '../analyze-test-results.js';
 import { TFun, TestMetadata } from '../index.js';

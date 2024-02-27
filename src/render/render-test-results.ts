@@ -2,7 +2,7 @@ import * as fs from "fs";
 import * as fsp from "fs/promises";
 import * as path from "path";
 import { getConfig } from '../../config/instrumenterRuntimeConfig.js';
-import { spawnAsync } from '../../process.js';
+import { spawnAsync } from '../process.js';
 import { colors } from '../../terminal/colors.js';
 import { groupBy, pp, red, sum, underline } from 'ts-utils';
 import { build_html_page } from "../plotting/index.js";
