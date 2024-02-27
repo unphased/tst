@@ -2,7 +2,7 @@ import { SpawnSyncReturns, execSync } from 'child_process';
 import * as fs from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
-import { colors } from '../terminal/colors.js';
+import { colors } from 'ts-utils/terminal';
 import { bold, format, italic, pp, red } from 'ts-utils';
 
 export const diffOfStrings = (a: string, b: string) => {

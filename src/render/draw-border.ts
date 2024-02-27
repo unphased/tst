@@ -1,5 +1,4 @@
-import { lexAnsi } from "../../terminal/ansi-parse.js";
-import { colors } from '../../terminal/colors.js';
+import { lexAnsi, colors } from "ts-utils/terminal";
 
 export const drawBorder = (content: string, heading_summary: string) => {
   const ansi = lexAnsi(content);

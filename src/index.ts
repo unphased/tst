@@ -1,7 +1,7 @@
 import { dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { getConfig } from '../config/instrumenterRuntimeConfig.js';
-import { SpawnAsyncOpts, SpawnAsyncTestLogTraced, isBypassResourceMetrics, spawnAsync } from '../process.js';
+import { SpawnAsyncOpts, SpawnAsyncTestLogTraced, isBypassResourceMetrics, spawnAsync } from './process.js';
 import { format } from 'ts-utils';
 import { assertions } from './assertions.js';
 import { PlotData } from './plotting/index.js';
@@ -184,3 +184,5 @@ export function test(fn_or_suite_name: (TFunOrAsync) | string, fn_or_opts?: (TFu
   return func;
 }
 
+export { spawnAsync, execAsync, stdoutColorizer, ProcessError } from './process.js';
+export { diffOfStrings } from './assertions.js';

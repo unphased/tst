@@ -1,4 +1,4 @@
-import { lexAnsi } from '../../terminal/ansi-parse.js';
+import { lexAnsi } from 'ts-utils/terminal';
 import { test } from '../index.js';
 import { splitString } from "../render/draw-border.js";
 import { renderHrTimeMs, renderPercentage, renderTruncFromMs, renderTruncHrTime } from "../util.js";

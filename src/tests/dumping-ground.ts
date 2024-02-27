@@ -3,7 +3,8 @@ import { test } from '../index.js';
 import { hrTimeMs, red } from 'ts-utils';
 import { fileURLToPath } from 'url';
 import { Writable } from 'stream';
-import { stdoutColorizer } from '../../process.js';
+import { stdoutColorizer } from '../process.js';
+import { findContiguousSubsequenceSlidingWindow } from '../assertions.js';
 
 // note carefully this specific code cannot be factored to a different file, it changea its semantics.
 const isProgramLaunchContext = () => {
@@ -118,28 +119,138 @@ export const assertion_with_ringbuffer_microbench = test('perf', ({ l, t, a: { e
     }
   })) / ITER, 'ms per call');
 });
-export const stdout_transform_spawn = test('transform stream', async ({ a: { eqO } }) => {
-        const output: string[] = [];
-        const writeStream = new Writable({
-                write(chunk, encoding, callback) {
-                        output.push(chunk.toString());
-                        callback();
-                }
-        });
 
-        const child = exec('echo "hello world"');
-        child.stdout?.pipe(stdoutColorizer()).pipe(writeStream);
-        child.on('error', (err) => {
-                throw err;
-        });
-        child.stdout?.on('error', (err) => {
-                throw err;
-        });
-        const x = await new Promise((resolve, _reject) => {
-                writeStream.on('finish', () => {
-                        resolve(output);
-                });
-        });
-        eqO(x, ['\x1b[48;5;19mhello world\x1b[0K\n\x1b[m']);
+export const simple_transform = test('transform stream', async ({ a: { eqO } }) => {
+  // Readable stream
+  const readStream = Readable.from(['hello world\nfoo bar baz\n']);
+
+  // Writable stream
+  const output: string[] = [];
+  const writeStream = new Writable({
+    write(chunk, encoding, callback) {
+      output.push(chunk.toString());
+      callback();
+    }
+  });
+
+  // Pipe them together
+  readStream.pipe(stdoutColorizer()).pipe(writeStream);
+
+  // Verify output
+  const x = await new Promise((resolve, _reject) => {
+    writeStream.on('finish', () => {
+      resolve(output);
+    });
+  });
+  eqO(x, ['\x1b[48;5;19mhello world\x1b[0K\n\x1b[48;5;19mfoo bar baz\x1b[0K\n\x1b[m']);
+});
+export const pathShortNameTest = test('utils', ({ a: { eq } }) => {
+  eq(pathShortName('foo/bar/baz', 1), 'baz');
+  eq(pathShortName('foo/bar/baz', 2), 'bar/baz');
+  eq(pathShortName('foo/bar/baz', 3), 'foo/bar/baz');
+  eq(pathShortName('foo/bar/baz', 4), 'foo/bar/baz');
+  eq(pathShortName('foo/bar/baz/index.ts', 1), 'baz/index.ts');
+  eq(pathShortName('foo/bar/baz/index.ts', 2), 'bar/baz/index.ts');
+  eq(pathShortName('foo/bar/baz/index.ts', 3), 'foo/bar/baz/index.ts');
+  eq(pathShortName('foo/bar/baz/index.ts', 4), 'foo/bar/baz/index.ts');
 });
 
+
+export const stdout_transform_spawn = test('transform stream', async ({ a: { eqO } }) => {
+  const output: string[] = [];
+  const writeStream = new Writable({
+    write(chunk, encoding, callback) {
+      output.push(chunk.toString());
+      callback();
+    }
+  });
+
+  const child = exec('echo "hello world"');
+  child.stdout?.pipe(stdoutColorizer()).pipe(writeStream);
+  child.on('error', (err) => {
+    throw err;
+  });
+  child.stdout?.on('error', (err) => {
+    throw err;
+  });
+  const x = await new Promise((resolve, _reject) => {
+    writeStream.on('finish', () => {
+      resolve(output);
+    });
+  });
+  eqO(x, ['\x1b[48;5;19mhello world\x1b[0K\n\x1b[m']);
+});
+
+function findContiguousSubsequenceBacktrack<T>(needle: T[], haystack: T[]): false | number {
+  if (needle.length === 0) return false;
+  if (haystack.length < needle.length) return false;
+
+  let startIndex = 0;
+  let needleIndex = 0;
+
+  for (let i = 0; i < haystack.length; i++) {
+    if (haystack[i] === needle[needleIndex]) {
+      if (needleIndex === 0) {
+        startIndex = i; // Mark the start of a potential match
+      }
+      needleIndex++;
+      if (needleIndex === needle.length) {
+        return startIndex; // Found a complete match
+      }
+    } else if (needleIndex > 0) {
+      // Reset and retry from the next element after the initial start of the potential match
+      i = startIndex;
+      needleIndex = 0;
+    }
+  }
+  return false;
+}
+
+function findContiguousSubsequenceFunctional<T>(needle: T[], haystack: T[]): false | number {
+  if (needle.length === 0) return false;
+  if (haystack.length < needle.length) return false;
+
+  const window_range = haystack.length - needle.length + 1
+  for (let i = 0; i < window_range; i++) {
+    if (haystack.slice(i, i + needle.length).every((elem, j) => elem === needle[j])) {
+      return i;
+    }
+  }
+  return false;
+}
+
+export const basic = test('contiguous subsequence', ({l, a: { is, eq }}) => {
+  const methods = [
+    findContiguousSubsequenceBacktrack,
+    findContiguousSubsequenceSlidingWindow,
+    findContiguousSubsequenceFunctional,
+  ]
+  const needle = [1, 2, 3];
+  const haystack = [0, 1, 2, 3, 4, 5];
+  methods.forEach((method) => {
+    is(method(needle, haystack));
+  });
+  
+  const n = [ 'abcd', 'efgh', 'ij' ];
+  const h = [ 'abcd', 'efgh', 'ij', '', '' ];
+  methods.forEach((method) => {
+    eq(0, method(n, h));
+  });
+
+  const haystack2 = ['a', 'b', 0, 1, 2, 1, 2, 0, 2, 3, 4, 1, 2, 1, 2, 2, 3, 2, 1, 2, 3, 1, 2, 3, 1, 'z'];
+  methods.forEach((method) => {
+    is(method(needle, haystack2));
+  });
+  const needle2 = [1, 2, 1, 2, 0, 2, 3, 4, 1, 2, 1, 2, 2, 3, 2, 1, 2, 3, 1, 2, 3, 2];
+  methods.forEach((method) => {
+    is(!method(needle2, haystack2));
+  });
+
+  const large_haystack = [...Array(1000000).keys()];
+  const large_needle = [...Array(1000).keys()].map(e => e + 234923);
+  methods.forEach((method) => {
+    const start = process.hrtime();
+    is(method(large_needle, large_haystack));
+    l(hrTimeMs(process.hrtime(start)), method);
+  });
+});
