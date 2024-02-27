@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
 import * as util from 'util';
-import { hrTimeMs } from 'ts-utils/utils.js';
+import { hrTimeMs } from 'ts-utils';
 import { processTestResults } from '../analyze-test-results.js';
 import { establishTestResultsDir, recordResults, renderResults } from '../render/render-test-results.js';
 import { TestDispatchResult } from '../types.js';
