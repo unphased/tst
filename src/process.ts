@@ -2,10 +2,10 @@ import { ChildProcess, spawn, execSync } from 'child_process';
 import * as path from 'path';
 import * as util from 'util';
 import * as os from 'os';
-import { colors } from 'ts-utils/colors.js';
+import { colors } from 'ts-utils/terminal';
 import { mkdirSync, readFileSync, unlinkSync } from 'fs';
 import { Transform } from 'stream';
-import { renderTruncHrTime } from "./test/util.js";
+import { renderTruncHrTime } from "./util.js";
 
 export class ProcessError extends Error {
   code: number | null;
