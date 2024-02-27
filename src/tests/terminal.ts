@@ -1,4 +1,4 @@
-import { lexAnsi } from '../../terminal/ansi-parse.js';
+import { lexAnsi } from 'ts-utils/terminal';
 import { test } from '../index.js';
 
 export const simple_ansi_strip = test('ansi', ({ a: { includesO } }) => {
