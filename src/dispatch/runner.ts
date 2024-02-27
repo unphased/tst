@@ -3,7 +3,6 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
 import * as util from 'util';
-import { e, l } from "../../log.js";
 import { hrTimeMs } from '../../utils.js';
 import { processTestResults } from '../analyze-test-results.js';
 import { establishTestResultsDir, recordResults, renderResults } from '../render/render-test-results.js';
@@ -38,11 +37,11 @@ export const discoverTests = async (testFiles: ReturnType<typeof parseTestLaunch
     .filter(f => testFiles.length === 0 || testFiles.includes(f)); // apply specified file import filter
 
   if (!files_filtered.length) {
-    e('Please confirm... Prior to filtering, the file list was:', files);
+    console.error('Please confirm... Prior to filtering, the file list was:', files);
     throw new Error('Zero files remain after filtering');
   }
 
-  l(`discoverTests: ${files_filtered.length} files to import: ${files_filtered.join(', ')}`);
+  console.error(`discoverTests: ${files_filtered.length} files to import: ${files_filtered.join(', ')}`);
 
   const fileFilteringDuration = hrTimeMs(process.hrtime(start));
   const { registry, stats } = await trigger_dynamic_imports(files_filtered);
@@ -102,7 +101,7 @@ const isProgramLaunchContext = () => {
 
 isProgramLaunchContext() && void (async () => {
   const testSpecification = parseTestLaunchingArgs(process.argv.slice(2));
-  l("test launch spec:", testSpecification.files, testSpecification.testPredicate.toString());
+  console.error("test launch spec:", testSpecification.files, testSpecification.testPredicate.toString());
   let metricsForEcho: { [k: string]: any } = {};
   let metricsEasyRead = '';
 
