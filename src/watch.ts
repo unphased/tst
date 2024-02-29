@@ -6,7 +6,7 @@ import { stopWatching } from '../watch/util.js';
 import { fileURLToPath } from "url";
 import { startServer, stopServer } from './web-server.js';
 import { processTestResults } from './analyze-test-results.js';
-import { parseTestLaunchingArgs } from './dispatch/util.js';
+import { parseTestLaunchingArgs, tf, topt } from './dispatch/util.js';
 import { l } from '../log.js';
 
 // note carefully this specific code cannot be factored to a different file, it changes its semantics.

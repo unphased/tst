@@ -109,7 +109,7 @@ export const testParamMaker = (config: LaunchOptions, logs: TestLogs, assertionM
   const logger = (...x: any[]) => {
     const formatted = format(...x);
     logs.push([process.hrtime(), formatted]);
-    config.echo_test_logging) && console.error(process.hrtime(), formatted);
+    config.echo_test_logging && console.error(process.hrtime(), formatted);
   };
 
   return {

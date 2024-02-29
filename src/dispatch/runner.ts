@@ -12,6 +12,7 @@ import { launchAutomatedProcessTestsFromRegistryInParallel, processDistributedTe
 import { runTestsFromRegistry } from './runTestsFromRegistry.js';
 import { trigger_dynamic_imports } from './trigger_dynamic_imports.js';
 import { parseTestLaunchingArgs, tf, topt } from './util.js';
+import { LaunchOptions } from 'src/config/launchOptions.js';
 
 // import { ResourceMonitoringWorkerLaunch } from './resource-monitoring.js';
 
@@ -50,7 +51,8 @@ export const discoverTests = async (testFiles: ReturnType<typeof parseTestLaunch
 
 export const runTests = async (
   registry: Awaited<ReturnType<typeof trigger_dynamic_imports>>['registry'],
-  predicate: ReturnType<typeof parseTestLaunchingArgs>['testPredicate']
+  predicate: ReturnType<typeof parseTestLaunchingArgs>['testPredicate'],
+  launch_opts?: LaunchOptions
 ) => {
   // putting worker thread self-resource monitoring on the backburner, since it should be equally reliable to launch tests
   // one at a time using my own asyncSpawn /usr/bin/time container and obtain metrics: Will come back and implement
@@ -64,7 +66,7 @@ export const runTests = async (
 
   establishTestResultsDir().catch(e => { throw new Error(`Error establishing test results dir: ${e}`); });
   const start = process.hrtime();
-  const testResults = await runTestsFromRegistry(registry, predicate, topt(tf.AsyncParallelTestLaunch));
+  const testResults = await runTestsFromRegistry(registry, launch_opts, predicate, topt(tf.AsyncParallelTestLaunch));
   const testExecutionDuration = hrTimeMs(process.hrtime(start));
 
   return { testResults, testExecutionDuration };
@@ -77,11 +79,11 @@ const runParallelTests = async (registry: Awaited<ReturnType<typeof trigger_dyna
   return { structuredResults, parallelExecutionDuration: process.hrtime(start) };
 };
 
-const runTestsDirectly = async (testSpecification: ReturnType<typeof parseTestLaunchingArgs>) => {
+const runTestsDirectly = async (testSpecification: ReturnType<typeof parseTestLaunchingArgs>, launch_opts?: LaunchOptions) => {
   // 'core' of discoverTests
   const { registry, stats } = await trigger_dynamic_imports(testSpecification.files);
   const start = process.hrtime();
-  const testResults = await runTestsFromRegistry(registry, testSpecification.testPredicate, topt(tf.AsyncParallelTestLaunch));
+  const testResults = await runTestsFromRegistry(registry, launch_opts, testSpecification.testPredicate, topt(tf.AsyncParallelTestLaunch));
   return { testResults, testExecutionDuration: process.hrtime(start), ...stats };
 };
 
@@ -105,6 +107,9 @@ isProgramLaunchContext() && void (async () => {
   let metricsEasyRead = '';
 
   let testCount: number = 0;
+  let launch_opts = { echo_test_logging: false };
+  if (topt(tf.ForceEnableLogging)) { launch_opts.echo_test_logging = true; }
+  if (topt(tf.ForceDisableLogging)) { console.assert(!topt(tf.ForceEnableLogging)); launch_opts.echo_test_logging = false; }
   if (topt(tf.Parallel) && !topt(tf.Automated)) {
     // === root parallel launch
     // - discover tests as specified by easy test spec protocol
@@ -114,7 +119,7 @@ isProgramLaunchContext() && void (async () => {
     // - collate and record test results and recursive output metrics
     // - render test report
     const { registry, ...discoveryMetrics } = await discoverTests(testSpecification.files);
-    const { structuredResults, ...parallelLaunchMetrics } = await runParallelTests(registry, testSpecification.testPredicate);
+    const { structuredResults, ...parallelLaunchMetrics } = await runParallelTests(registry, testSpecification.testPredicate, launch_opts);
     const { outputResults, distributed_metrics } = processDistributedTestResults(/* (complex types lining up here) */ structuredResults)
     testCount = outputResults.length;
     recordResults(outputResults);
@@ -130,7 +135,7 @@ isProgramLaunchContext() && void (async () => {
     // - record results and metrics
     // - render test report
     const { registry, ...metrics } = await discoverTests(testSpecification.files);
-    const { testResults, ...metrics2 } = await runTests(registry, testSpecification.testPredicate);
+    const { testResults, ...metrics2 } = await runTests(registry, testSpecification.testPredicate, launch_opts);
     // there is a slight change in behavior now that I have test output writing to files broken out, which is if tests
     // fail outside of the runner (e.g. exception in I/O handler) then now we may never write any of the results to
     // disk instead of the ones that already completed.
@@ -150,7 +155,7 @@ isProgramLaunchContext() && void (async () => {
     // - launch tests via direct test spec protocol (in practice for now, at first, this is identical to above easy
     // test spec protocol, but in future when that gets fleshed out to be easier it will diverge)
     // - simple collation takes place to send to stdout.
-    const { testResults, ...metrics } = await runTestsDirectly(testSpecification);
+    const { testResults, ...metrics } = await runTestsDirectly(testSpecification, launch_opts);
     metricsForEcho = metrics;
     testCount = testResults.length;
     const dispatchResult: TestDispatchResult = { testResults, ...metrics };
