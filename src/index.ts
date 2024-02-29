@@ -1,11 +1,12 @@
 import { dirname } from 'path';
-import { fileURLToPath } from 'url';
-import { getConfig } from '../config/instrumenterRuntimeConfig.js';
-import { SpawnAsyncOpts, SpawnAsyncTestLogTraced, isBypassResourceMetrics, spawnAsync } from './process.js';
 import { format } from 'ts-utils';
+import { fileURLToPath } from 'url';
 import { assertions } from './assertions.js';
+import { Config } from './config/index.js';
+import { LaunchOptions } from './config/launchOptions.js';
 import { PlotData } from './plotting/index.js';
 import { plotters } from "./plotting/plotters_index.js";
+import { SpawnAsyncOpts, SpawnAsyncTestLogTraced, isBypassResourceMetrics, spawnAsync } from './process.js';
 import { Embeds, ResourceMetrics, TestAssertionMetrics, TestLogs, TestOptions } from "./types.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -104,11 +105,11 @@ const htmlPlotBuilderEmbedder = (embeds: Embeds) => (plotType: keyof typeof plot
 };
 
 // produces interface with which to define a test accessed through param of test function
-export const testParamMaker = (config: ReturnType<typeof getConfig>, logs: TestLogs, assertionMetrics: TestAssertionMetrics, options: TestOptions, resourceMetrics: ResourceMetrics, embeds: Embeds) => {
+export const testParamMaker = (config: LaunchOptions, logs: TestLogs, assertionMetrics: TestAssertionMetrics, options: TestOptions, resourceMetrics: ResourceMetrics, embeds: Embeds) => {
   const logger = (...x: any[]) => {
     const formatted = format(...x);
     logs.push([process.hrtime(), formatted]);
-    config.get('echo_test_logging') && console.error(process.hrtime(), formatted);
+    config.echo_test_logging) && console.error(process.hrtime(), formatted);
   };
 
   return {
@@ -184,5 +185,5 @@ export function test(fn_or_suite_name: (TFunOrAsync) | string, fn_or_opts?: (TFu
   return func;
 }
 
-export { spawnAsync, execAsync, stdoutColorizer, ProcessError } from './process.js';
 export { diffOfStrings } from './assertions.js';
+export { ProcessError, execAsync, spawnAsync, stdoutColorizer } from './process.js';

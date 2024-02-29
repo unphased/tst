@@ -1,26 +1,18 @@
-import { getConfig } from '../../config/instrumenterRuntimeConfig.js';
-import { colors } from 'ts-utils/terminal';
+import { LaunchOptions } from 'src/config/launchOptions.js';
 import { hrTimeMs, italic, pp, red } from "ts-utils";
+import { colors } from 'ts-utils/terminal';
 import { AsyncFunction, TFun, TestMetadata, testParamMaker } from '../index.js';
 import { Embeds, ErrorSpec, ResourceMetrics, TestAssertionMetrics, TestLogs, TestOptions, TestResult } from '../types.js';
 import { tf, topt } from './util.js';
+
+const magenta = (str: string) => colors.magenta + str + colors.fg_reset;
+const ul = (str: string) => colors.underline + str + colors.underline_reset;
 
 // note carefully that the parallel async flag will cause only async tests to launch in parallel (queued for after sync
 // cb's run), and it's liable to wreak havoc on measured test runtimes. So, when those metrics matter at all, this is
 // the wrong feature to use. It's in here because it's interesting as a quirky way to launch the tests to glean
 // information about performance (albeit hard to interpret), and possibly very mildly help catch really weird bugs.
-export async function runTestsFromRegistry(testRegistry: Map<TFun | ((...args: Parameters<TFun>) => Promise<void>), TestMetadata>, predicate: (t: TestMetadata) => boolean, parallel_async?: boolean) {
-  const globalConfig = getConfig();
-  if (topt(tf.ForceDisableLogging)) {
-    if (globalConfig.get('echo_test_logging')) {
-      console.error('Automated runTestsFromRegistry: test logger echo was true from config, and configured to force it to false! (config setting not changed)');
-    }
-    globalConfig.config.echo_test_logging = false;
-  }
-  if (topt(tf.ForceEnableLogging) && !globalConfig.get('echo_test_logging')) {
-    console.error('runTestsFromRegistry: test logger echo was false from config, and configured to force it to true! (config setting not changed)');
-    globalConfig.config.echo_test_logging = true;
-  }
+export async function runTestsFromRegistry(testRegistry: Map<TFun | ((...args: Parameters<TFun>) => Promise<void>), TestMetadata>, config: LaunchOptions, predicate: (t: TestMetadata) => boolean, parallel_async?: boolean) {
 
   const promList: Promise<TestResult>[] = [];
 
@@ -44,7 +36,7 @@ export async function runTestsFromRegistry(testRegistry: Map<TFun | ((...args: P
     };
     const resourceMetrics: ResourceMetrics = [];
     const embeds: Embeds = [];
-    const testParam = testParamMaker(globalConfig, logs, assertionMetrics, options, resourceMetrics, embeds);
+    const testParam = testParamMaker(config, logs, assertionMetrics, options, resourceMetrics, embeds);
 
     console[topt(tf.Automated) ? 'error' : 'log'](`${colors.blue}Running ${asyn ? 'async ' : ''}test ${magenta(asyn ? ul(name) : name)}${suite ? ` from suite '${suite}'` : ''} ${colors.dim + stack + colors.bold_reset}`);
     const testFailureHeader = `${colors.red}Failure${colors.fg_reset} in test ${colors.red}${suite ? italic(suite + ':') : ''}${ul(name)}${colors.fg_reset}`;
@@ -144,6 +136,4 @@ const renderErrorSpec = (fails: ErrorSpec) => Array.isArray(fails) ? `one of [${
 export function isAsyncVoidTFun(func: any): func is (...args: Parameters<TFun>) => Promise<void> {
   return func instanceof AsyncFunction;
 }
-export const ul = (str: string) => colors.underline + str + colors.underline_reset;
-export const magenta = (str: string) => colors.magenta + str + colors.fg_reset;
 
