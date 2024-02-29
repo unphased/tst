@@ -1,18 +1,17 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+import { hrTimeMs } from 'ts-utils';
 import { fileURLToPath } from 'url';
 import * as util from 'util';
-import { hrTimeMs } from 'ts-utils';
 import { processTestResults } from '../analyze-test-results.js';
 import { establishTestResultsDir, recordResults, renderResults } from '../render/render-test-results.js';
 import { TestDispatchResult } from '../types.js';
+import { renderVisualPercentageLowerIsBetter } from '../util.js';
 import { launchAutomatedProcessTestsFromRegistryInParallel, processDistributedTestResults } from './automated.js';
 import { runTestsFromRegistry } from './runTestsFromRegistry.js';
 import { trigger_dynamic_imports } from './trigger_dynamic_imports.js';
 import { parseTestLaunchingArgs, tf, topt } from './util.js';
-import { renderBarRatioComparisonLowerIsBetter, renderHorizBar } from '../../terminal/precision-bars.js';
-import { renderVisualPercentageLowerIsBetter } from '../util.js';
 
 // import { ResourceMonitoringWorkerLaunch } from './resource-monitoring.js';
 
@@ -65,7 +64,7 @@ export const runTests = async (
 
   establishTestResultsDir().catch(e => { throw new Error(`Error establishing test results dir: ${e}`); });
   const start = process.hrtime();
-  const testResults = await runTestsFromRegistry(registry, predicate);
+  const testResults = await runTestsFromRegistry(registry, predicate, topt(tf.AsyncParallelTestLaunch));
   const testExecutionDuration = hrTimeMs(process.hrtime(start));
 
   return { testResults, testExecutionDuration };
@@ -82,7 +81,7 @@ const runTestsDirectly = async (testSpecification: ReturnType<typeof parseTestLa
   // 'core' of discoverTests
   const { registry, stats } = await trigger_dynamic_imports(testSpecification.files);
   const start = process.hrtime();
-  const testResults = await runTestsFromRegistry(registry, testSpecification.testPredicate);
+  const testResults = await runTestsFromRegistry(registry, testSpecification.testPredicate, topt(tf.AsyncParallelTestLaunch));
   return { testResults, testExecutionDuration: process.hrtime(start), ...stats };
 };
 

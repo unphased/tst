@@ -127,7 +127,7 @@ export const renderResults = (results: TestResult[], output_receiver = console.l
   // We also render out at the end the outputs of the first of the failed tests. This is almost always what is desired
   // in practice. only showing one helps us to focus on it and putting it at the end gives the best chance of keeping it all visible.
   if (first_failed_test) {
-    output_receiver(`${colors.red + colors.bold}Reporting on failed test ${colors.magenta + (first_failed_test.suite ? `${colors.italic + first_failed_test.suite + colors.italic_reset}:` : '') + underline(first_failed_test.name)} ${colors.fg_reset + colors.bold_reset + colors.dim + first_failed_test.stack + ' in ' + getTestReportingPath() + colors.bold_reset}`); 
+    output_receiver(`${colors.red + colors.bold}Reporting on failed test ${colors.magenta + (first_failed_test.suite ? `${colors.italic + first_failed_test.suite + colors.italic_reset}:` : '') + underline(first_failed_test.name)} ${colors.fg_reset + colors.bold_reset + colors.dim + first_failed_test.stack + ' in ' + getTestReportingPath().slice(-1)[0] + colors.bold_reset}`); 
     for (const [time, log] of first_failed_test.logs) { output_receiver(time, log); }
     // report the assertions leading up to the failed one
     if (first_failed_test.assertionMetrics.assertionFailure) {

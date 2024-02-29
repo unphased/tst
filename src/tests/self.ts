@@ -170,11 +170,12 @@ export const resource_metrics_overlapping_spawns = test('spawnAsync', async ({ l
 export const resource_metrics_overlapping_spawns_inception = test('test', async ({l, t, spawn}) => {
   // aim to confirm relevant data of 6 procs in above test are reflected in test report.
   const projDir = getBuildProjDir();
-  const ret = await spawn('node', [path.join(projDir, 'test', 'dispatch', 'runner.js'), TestLaunchFlags.ExactTestNameMatching, TestLaunchFlags.Automated, 'test/tests/self.js', TestLaunchSeparator, 'resource_metrics_overlapping_spawns'], {
+  const ret = await spawn('node', [path.join(projDir, 'tst', 'dispatch', 'runner.js'), TestLaunchFlags.ExactTestNameMatching, TestLaunchFlags.Automated, 'tst/tests/self.js', TestLaunchSeparator, 'resource_metrics_overlapping_spawns'], {
     bufferStdout: true
   });
   t('exemptFromAsserting', true);
   // if the output isnt good it won't parse, which would throw, so this constitutes a test.
+  // TODO actually confirm something useful can be read out of this
   try {
     JSON.parse(ret.stdout);
   } catch (e) {

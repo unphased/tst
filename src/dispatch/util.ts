@@ -1,4 +1,3 @@
-import { l, ln } from '../../log.js';
 import { TestMetadata } from '../index.js';
 import { TestLaunchFlags, TestLaunchFlagsTakingOneArg, TestLaunchSeparator } from "./flags.js";
 
@@ -45,12 +44,12 @@ export const parseTestLaunchingArgs = (args?: string[]) => {
   if (args?.length) {
     while (args.length) {
       const arg = args[0];
-      l('parsing arg', arg);
+      console.error('parsing arg', arg);
       const flagTakingOneArg = Object.values(TestLaunchFlagsTakingOneArg).find(v => v === arg as TestLaunchFlagsTakingOneArg);
       if (flagTakingOneArg) {
         args.shift();
         const value = args.shift();
-        ln('test dispatch', "test launch flag taking arg was parsed!", flagTakingOneArg, "VALUE IS", value);
+        console.error('test dispatch', "test launch flag taking arg was parsed!", flagTakingOneArg, "VALUE IS", value);
         testLaunchConfig.push({ [flagTakingOneArg]: value } as {
           [flag in TestLaunchFlagsTakingOneArg]: string;
         }); // TODO gosh this is ugly
@@ -59,10 +58,10 @@ export const parseTestLaunchingArgs = (args?: string[]) => {
       const flag = Object.values(TestLaunchFlags).find(value => value === arg as TestLaunchFlags);
       if (flag) {
         testLaunchConfig.push(flag);
-        l("test launch flag was parsed!", flag);
+        console.error("test launch flag was parsed!", flag);
         args.shift();
       } else {
-        l(`arg "${arg}" failed to parse for launch flags, bailing at this point on launch flag parsing`);
+        console.error(`arg "${arg}" failed to parse for launch flags, bailing at this point on launch flag parsing`);
         break;
       }
     }

@@ -1,5 +1,4 @@
 import { getConfig } from '../../config/instrumenterRuntimeConfig.js';
-import { l } from "../../log.js";
 import { colors } from 'ts-utils/terminal';
 import { hrTimeMs, italic, pp, red } from "ts-utils";
 import { AsyncFunction, TFun, TestMetadata, testParamMaker } from '../index.js';
@@ -14,12 +13,12 @@ export async function runTestsFromRegistry(testRegistry: Map<TFun | ((...args: P
   const globalConfig = getConfig();
   if (topt(tf.ForceDisableLogging)) {
     if (globalConfig.get('echo_test_logging')) {
-      l('Automated runTestsFromRegistry: test logger echo was true from config, and configured to force it to false! (config setting not changed)');
+      console.error('Automated runTestsFromRegistry: test logger echo was true from config, and configured to force it to false! (config setting not changed)');
     }
     globalConfig.config.echo_test_logging = false;
   }
   if (topt(tf.ForceEnableLogging) && !globalConfig.get('echo_test_logging')) {
-    l('runTestsFromRegistry: test logger echo was false from config, and configured to force it to true! (config setting not changed)');
+    console.error('runTestsFromRegistry: test logger echo was false from config, and configured to force it to true! (config setting not changed)');
     globalConfig.config.echo_test_logging = true;
   }
 
@@ -84,18 +83,41 @@ export async function runTestsFromRegistry(testRegistry: Map<TFun | ((...args: P
   }
 
   const resultCollection: TestResult[] = [];
-  for (const [testFn, meta] of testRegistry) {
-    const { name, filename, suite, stack } = meta;
-    if (!predicate(meta)) {
-      l(`Skipping test ${suite ? `${suite}:` : ""}${name} due to filter.`);
-      continue;
+  if (parallel_async) {
+    // not most ideal code layout, but... when parallel async is enabled we want to group their dispatch rather than
+    // randomly launch them. Launch all sync tests first then do the async ones. I used to keep separate test
+    // registries for this reason but that was not needed.
+    for (const [testFn, meta] of testRegistry) {
+      if (!isAsyncVoidTFun(testFn)) {
+        if (!predicate(meta)) {
+          console.error(`Skipping test ${meta.suite ? `${meta.suite}:` : ""}${meta.name} due to filter.`);
+          continue;
+        }
+        // again this await is not needed here since we know its a sync test but i decided against having launchTest be
+        // a dual signature function so this is blanket awaited
+        resultCollection.push(await launchTest(testFn, meta.suite, meta.name, meta.filename, meta.stack));
+      }
     }
-    if (parallel_async && isAsyncVoidTFun(testFn)) {
-      promList.push(launchTest(testFn, suite, name, filename, stack));
-    } else {
+    for (const [testFn, meta] of testRegistry) {
+      if (isAsyncVoidTFun(testFn)) {
+        if (!predicate(meta)) {
+          console.error(`Skipping async test ${meta.suite ? `${meta.suite}:` : ""}${meta.name} due to filter.`);
+          continue;
+        }
+        promList.push(launchTest(testFn, meta.suite, meta.name, meta.filename, meta.stack));
+      }
+    }
+  } else {
+    for (const [testFn, meta] of testRegistry) {
+      const { name, filename, suite, stack } = meta;
+      if (!predicate(meta)) {
+        console.error(`Skipping test ${suite ? `${suite}:` : ""}${name} due to filter.`);
+        continue;
+      }
       resultCollection.push(await launchTest(testFn, suite, name, filename, stack));
     }
   }
+
   if (promList.length) {
     const res = await Promise.all(promList);
     resultCollection.push(...(res));
