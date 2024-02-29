@@ -8,10 +8,9 @@
   "plugins": ["import"],
   "extends": [
     "plugin:@typescript-eslint/recommended",
+    "plugin:@typescript-eslint/recommended-type-checked",
     "eslint:recommended",
-    "plugin:import/typescript",
-    "plugin:import/errors",
-    "plugin:import/warnings"
+    "plugin:import/typescript"
   ],
   "settings": {
     "import/resolver": {
@@ -24,7 +23,9 @@
     "sourceType": "module",
     "ecmaFeatures": {
       "jsx": true
-    }
+    },
+    "project": true,
+    "tsconfigRootDir": "."
   },
   "rules": {
     "import/no-cycle": "error"

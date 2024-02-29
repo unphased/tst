@@ -6,9 +6,10 @@
     "lib": [ "ES2021" ],                                        /* Specify a set of bundled library declaration files that describe the target runtime environment. */
     "outDir": "./dist",
     "moduleResolution": "nodenext",
+    "baseUrl": "./",                                  /* Specify the base directory to resolve non-relative module names. */
     "paths": {
-      "ts-utils": ["../instrumenter/src/utils/utils.js"],
       "ts-utils/terminal": ["../instrumenter/src/utils/terminal.js"],
+      "ts-utils": ["../instrumenter/src/utils/utils.js"],
     },
   },
 }
