@@ -1,7 +1,6 @@
 import * as fs from "fs";
 import * as fsp from "fs/promises";
 import * as path from "path";
-import { getConfig } from '../../config/instrumenterRuntimeConfig.js';
 import { spawnAsync } from '../process.js';
 import { colors } from 'ts-utils/terminal';
 import { groupBy, pp, red, sum, underline } from 'ts-utils';
@@ -10,6 +9,7 @@ import { ResourceMetrics, TestResult } from "../types.js";
 import { renderPercentage, renderTruncFromMs } from "../util.js";
 import { clearTestResultPages, pushTestResultPage } from "../web-server.js";
 import { drawBorder } from "./draw-border.js";
+import { LaunchOptions } from "src/config/launchOptions.js";
 
 // const results: TestResult[] = [];
 
@@ -48,9 +48,8 @@ const cpuUtil = (durationMs: number, userUs: number, systemUs: number) => {
 type MakeRequired<T, K extends keyof T> = T extends unknown ? Omit<T, K> & Required<Pick<T, K>> : never;
 type ResourceMetricsWithResources = MakeRequired<ResourceMetrics[0], 'resources'>[];
 
-export const renderResults = (results: TestResult[], output_receiver = console.log) => {
-  const config = getConfig();
-  const expand = config.get('test_reporting_expand_suites');
+export const renderResults = (results: TestResult[], launch_options: LaunchOptions, output_receiver = console.log) => {
+  const expand = launch_options.expand_test_suites_reporting;
   const output: string[] = [];
   const groupBySuite = new Map<string, TestResult[]>();
   for (const result of results) {
