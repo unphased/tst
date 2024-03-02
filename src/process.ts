@@ -1,10 +1,11 @@
-import { ChildProcess, spawn, execSync } from 'child_process';
-import * as path from 'path';
-import * as util from 'util';
+import { ChildProcess, execSync, spawn } from 'child_process';
+import { readFileSync, unlinkSync } from 'fs';
 import * as os from 'os';
-import { colors } from 'ts-utils/terminal';
-import { mkdirSync, readFileSync, unlinkSync } from 'fs';
+import * as path from 'path';
 import { Transform } from 'stream';
+import { colors } from 'ts-utils/terminal';
+import * as util from 'util';
+import { SpawnAsyncReturnBase, SpawnResourceReport } from './types.js';
 import { renderTruncHrTime } from "./util.js";
 
 export class ProcessError extends Error {
@@ -71,18 +72,6 @@ type OptStateWithoutMetrics = { bypassResourceMetrics: true; time_output_file: u
 
 type OptStateWithStdin = { bufferStdout: true, stdoutBuf: string };
 
-export type SpawnResourceReport = {
-  maxrss: number; // kilobytes
-  user: number; // seconds
-  sys: number; // seconds
-  wall: number; // seconds
-};
-export type SpawnAsyncReturnBase = {
-  duration: [number, number];
-  code: number | null;
-  signal: NodeJS.Signals | null;
-  pid?: number;
-};
 type SpawnAsyncReturnWResources = SpawnAsyncReturnBase & {
   resources: SpawnResourceReport;
 };

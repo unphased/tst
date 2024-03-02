@@ -1,6 +1,7 @@
 import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { getTestReportingPath } from './render/render-test-results.js';
 import { TestLaunchMetrics, TestResult } from './types.js';
+import { Chainable } from './util.js';
 
 type TestContextStructure = {
   timing: {
@@ -40,7 +41,7 @@ export const processTestResults = (results: TestResult[], metrics: { [key: strin
     // write results with a different structure chosen for making analysis more convenient
     for (const res of results) {
       const testName = (res.suite ? `${res.suite}:` : '') + res.name;
-      const testrecord = testContext.obj('timing').obj('test_execution').obj(testName).obj(testRunDateId);
+      const testrecord = new Chainable(testContext).obj('timing').obj('test_execution').obj(testName).objR(testRunDateId);
       testrecord.durationMs = res.durationMs;
       const spawnCpuSec = res.resourceMetrics.reduce((a, b) => b.resources ? b.resources?.sys + b.resources?.user + a: a, 0);
       const selfCpuSec = (res.cpu.user + res.cpu.system) / 1e6;

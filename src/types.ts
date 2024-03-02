@@ -11,7 +11,6 @@
 // problem (e.g. priority)
 
 import { HtmlEmbedding } from "./plotting/index.js";
-import { SpawnAsyncReturnBase, SpawnResourceReport } from "../process.js";
 import { AssertionName } from "./assertions.js";
 import { Simplify } from "type-fest";
 
@@ -48,6 +47,20 @@ export type TestAssertionMetrics = {
   };
   assertionFailure: boolean;
 };
+
+export type SpawnResourceReport = {
+  maxrss: number; // kilobytes
+  user: number; // seconds
+  sys: number; // seconds
+  wall: number; // seconds
+};
+export type SpawnAsyncReturnBase = {
+  duration: [number, number];
+  code: number | null;
+  signal: NodeJS.Signals | null;
+  pid?: number;
+};
+
 export type ResourceMetrics = {
   resources?: SpawnResourceReport;
   return: SpawnAsyncReturnBase;
@@ -97,3 +110,4 @@ export type TestLaunchMetrics = {
   importedTime: number;
   runTime: number;
 };
+
