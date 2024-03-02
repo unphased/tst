@@ -20,7 +20,7 @@ export async function trigger_dynamic_imports(files_filtered: string[])
     dynamic_import_duration: 0
   };
   const start = process.hrtime();
-  await Promise.all(files_filtered.map(file => import(path.join(__dirname, "..", "..", file)).then(exports => {
+  await Promise.all(files_filtered.map(file => import(path.join(__dirname, "..", file)).then(exports => {
     // l("imported", exports, 'from', file);
     stats.files += 1;
     for (const [name, fn] of Object.entries(exports as { [key: string]: any; })) {

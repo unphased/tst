@@ -1,6 +1,5 @@
 import * as os from 'os';
 import { MinHeap } from '../min-heap.js';
-import { l, ln } from "../../log.js";
 import { SpawnResourceReport, spawnAsync } from '../process.js';
 import { format, hrTimeMs, weightedAverageFromBackByLUT } from "ts-utils";
 import { loadTestContext } from '../analyze-test-results.js';
@@ -47,7 +46,7 @@ export async function launchAutomatedProcessTestsFromRegistryInParallel(
   for (const [_testFn, meta] of testRegistry) {
     const { name, filename: file, suite } = meta;
     if (!predicate(meta)) {
-      l(`Skipping dispatch of test ${suite ? `${suite}:` : ""}${name} due to filter.`);
+      console.error(`Skipping dispatch of test ${suite ? `${suite}:` : ""}${name} due to filter.`);
       continue;
     }
 
@@ -92,7 +91,7 @@ export async function launchAutomatedProcessTestsFromRegistryInParallel(
   }
 
   // ln('parallel test launch', 'parallel test launch schedule', schedule_min_heap.dump());
-  ln('parallel test launch', 'process expected runtimes', schedule_min_heap.dump().map(e => e.totalExpectedRuntimeMs));
+  console.error('parallel test launch', 'process expected runtimes', schedule_min_heap.dump().map(e => e.totalExpectedRuntimeMs));
 
   // final pre launch checks
   let testReportingPath: string[] | undefined;
@@ -164,7 +163,7 @@ export const processDistributedTestResults = (results: /* DistributedResultSigna
     }
     const { testResults, ...rest } = result.dispatchResults;
     const { duration, schedule, resources } = result;
-    l('processDistributedTestResults', duration, schedule, resources, rest);
+    console.error('processDistributedTestResults debug metrics dump', duration, schedule, resources, rest);
     distributed_metrics.push({
       duration, schedule, resources,
       ...rest

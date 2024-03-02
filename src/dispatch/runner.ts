@@ -22,9 +22,9 @@ const __dirname = path.dirname(__filename);
 export const discoverTests = async (testFiles: ReturnType<typeof parseTestLaunchingArgs>['files']) => {
   const startf = process.hrtime();
   const files = fs.readdirSync(
-    path.join(__dirname, '..', '..'),
+    path.join(__dirname, '..'), // to reach src/ TODO make more robust, maybe use projectDir helper?
     { recursive: true, encoding: 'utf8' }
-  ).filter(f => path.resolve(__dirname, "..", f) !== __filename); // filter out self, importing that will break us
+  ).filter(f => { console.log("debug", f); return path.resolve(__dirname, "..", f) !== __filename; }); // filter out self, importing that will break us
   const fileDiscoveryDuration = hrTimeMs(process.hrtime(startf));
   const start = process.hrtime();
   const files_filtered = files

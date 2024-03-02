@@ -1,5 +1,4 @@
 import { existsSync, readFileSync, writeFileSync } from 'fs';
-import "../objectPropertyExtension.js";
 import { getTestReportingPath } from './render/render-test-results.js';
 import { TestLaunchMetrics, TestResult } from './types.js';
 
