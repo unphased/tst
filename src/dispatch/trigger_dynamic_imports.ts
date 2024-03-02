@@ -2,8 +2,7 @@
 
 import * as path from 'path';
 import { fileURLToPath } from 'url';
-import { e, ln } from "../../log.js";
-import { hrTimeMs } from 'ts-utils';
+import { hrTimeMs, red } from 'ts-utils';
 import { TFun, TestMetadata, testFnRegistry } from '../index.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -32,7 +31,7 @@ export async function trigger_dynamic_imports(files_filtered: string[])
         stats.exported_test_fns += 1;
         got.name = name || fn.name;
         if (!got.name) {
-          e(`Warning: Test function ${fn} from ${file} has no name.`);
+          console.error(`${red('Warning')}: Test function ${fn} from ${file} has no name.`);
         }
         got.filename = file;
         // console.error('test tracing runTests():', got);
@@ -44,7 +43,7 @@ export async function trigger_dynamic_imports(files_filtered: string[])
     throw new Error(`dynamic import failed on ${file}: ${err}`);
   })));
   stats.dynamic_import_duration = hrTimeMs(process.hrtime(start));
-  ln('test dispatch', 'trigger_dynamic_import stats', stats);
+  console.error('test dispatch', 'trigger_dynamic_import stats', stats);
   return {
     registry: new Map<TFun | ((...args: Parameters<TFun>) => Promise<void>), TestMetadata>([...testFnRegistry.entries()]),
     stats

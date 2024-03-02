@@ -7,9 +7,9 @@
   "parser": "@typescript-eslint/parser",
   "plugins": ["import"],
   "extends": [
+    "eslint:recommended",
     "plugin:@typescript-eslint/recommended",
     "plugin:@typescript-eslint/recommended-type-checked",
-    "eslint:recommended",
     "plugin:import/typescript"
   ],
   "settings": {
@@ -28,6 +28,8 @@
     "tsconfigRootDir": "."
   },
   "rules": {
+    "no-unused-vars": "off",
+    "no-control-regex": "off",
     "import/no-cycle": "error"
   }
 }
