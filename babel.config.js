@@ -13,5 +13,12 @@ export default {
   "highlightCode": true,
   "sourceMaps": "inline",
   "plugins": [
+    ["module-resolver", {
+      "root": ["./"],
+      "alias": {
+        "ts-utils/terminal": "../instrumenter/build/utils/terminal.js",
+        "ts-utils": "../instrumenter/build/utils/utils.js"
+      }
+    }]
   ]
 };

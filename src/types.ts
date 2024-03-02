@@ -92,3 +92,8 @@ export type TestDispatchGlobalMetrics = Simplify<TestExecMetrics & TestDiscovery
 
 export type TestDispatchResult = TestExecMetrics & { testResults: TestResult[]; };
 
+// needs to be fleshed out.
+export type TestLaunchMetrics = {
+  importedTime: number;
+  runTime: number;
+};
