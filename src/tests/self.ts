@@ -9,17 +9,17 @@ export const __dirname = path.dirname(__filename);
 
 // a trivial test that is used as a guinea pig for the following test to easily control whether it fails or not
 export const simpleFileExists = test('test', ({ l, a: { eq } }) => {
-  const projDir = path.resolve(__dirname, '..', '..');
+  const projDir = path.resolve(__dirname, '..');
   l('projDir:', projDir);
   eq(false, fs.existsSync(path.resolve(projDir, 'some-file.fail')));
 });
 
 // useful helper for performing inception
 const getBuildProjDir = () => {
-  let projDir = path.resolve(__dirname, '..', '..');
+  let projDir = path.resolve(__dirname, '..');
   const dirname = projDir.split(path.sep).pop();
   if (dirname !== 'build') {
-    if ('src' !== dirname) throw new Error(`getBuildProjDir: unexpected dirname ${dirname}`);
+    if ('src' !== dirname) throw new Error(`getBuildProjDir: Saw unexpected dirname ${dirname}`);
     projDir = path.resolve(projDir, '..', 'build');
   }
   return projDir;
@@ -36,7 +36,7 @@ export const specialExitCodeSetOnFailureInception = test('test', async ({ l, spa
   // TODO change the test launch filename filter to be derived and not hardcoded
   try {
     eq((await spawn(
-      'node', [path.join(projDir, 'test', 'dispatch', 'runner.js'), TestLaunchFlags.ExactTestNameMatching, 'test/tests/self.js', TestLaunchSeparator, 'test:simpleFileExists'],
+      'node', [path.join(projDir, 'dispatch', 'runner.js'), TestLaunchFlags.ExactTestNameMatching, 'tests/self.js', TestLaunchSeparator, 'test:simpleFileExists'],
       { doNotRejectOnFail: true }
     )).code, 55);
   } finally {
@@ -170,7 +170,7 @@ export const resource_metrics_overlapping_spawns = test('spawnAsync', async ({ l
 export const resource_metrics_overlapping_spawns_inception = test('test', async ({l, t, spawn}) => {
   // aim to confirm relevant data of 6 procs in above test are reflected in test report.
   const projDir = getBuildProjDir();
-  const ret = await spawn('node', [path.join(projDir, 'tst', 'dispatch', 'runner.js'), TestLaunchFlags.ExactTestNameMatching, TestLaunchFlags.Automated, 'tst/tests/self.js', TestLaunchSeparator, 'resource_metrics_overlapping_spawns'], {
+  const ret = await spawn('node', [path.join(projDir, 'dispatch', 'runner.js'), TestLaunchFlags.ExactTestNameMatching, TestLaunchFlags.Automated, 'tests/self.js', TestLaunchSeparator, 'resource_metrics_overlapping_spawns'], {
     bufferStdout: true
   });
   t('exemptFromAsserting', true);

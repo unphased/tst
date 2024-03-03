@@ -107,7 +107,7 @@ isProgramLaunchContext() && void (async () => {
   let metricsEasyRead = '';
 
   let testCount: number = 0;
-  let launch_opts = {echo_test_logging: true, expand_test_suites_reporting: true};
+  let launch_opts = {echo_test_logging: false, expand_test_suites_reporting: true};
   if (topt(tf.ForceEnableLogging)) { launch_opts.echo_test_logging = true; }
   if (topt(tf.ForceDisableLogging)) { console.assert(!topt(tf.ForceEnableLogging)); launch_opts.echo_test_logging = false; }
   if (topt(tf.Parallel) && !topt(tf.Automated)) {
