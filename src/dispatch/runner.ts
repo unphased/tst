@@ -1,10 +1,10 @@
-
 import * as fs from 'fs';
 import * as path from 'path';
 import { hrTimeMs } from 'ts-utils';
 import { fileURLToPath } from 'url';
 import * as util from 'util';
 import { processTestResults } from '../analyze-test-results.js';
+import { LaunchOptions } from '../config/launchOptions.js';
 import { establishTestResultsDir, recordResults, renderResults } from '../render/render-test-results.js';
 import { TestDispatchResult } from '../types.js';
 import { renderVisualPercentageLowerIsBetter } from '../util.js';
@@ -12,7 +12,6 @@ import { launchAutomatedProcessTestsFromRegistryInParallel, processDistributedTe
 import { runTestsFromRegistry } from './runTestsFromRegistry.js';
 import { trigger_dynamic_imports } from './trigger_dynamic_imports.js';
 import { parseTestLaunchingArgs, tf, topt } from './util.js';
-import { LaunchOptions } from 'src/config/launchOptions.js';
 
 // import { ResourceMonitoringWorkerLaunch } from './resource-monitoring.js';
 

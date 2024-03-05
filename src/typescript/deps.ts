@@ -28,3 +28,4 @@ if (isProgramLaunchContext()) {
     await computeDependents(process.argv.slice(2));
   })();
 }
+

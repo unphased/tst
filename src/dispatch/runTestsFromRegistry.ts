@@ -1,8 +1,8 @@
-import { LaunchOptions } from 'src/config/launchOptions.js';
 import { hrTimeMs, italic, pp, red } from "ts-utils";
 import { colors } from 'ts-utils/terminal';
-import { AsyncFunction, TFun, TestMetadata, testParamMaker } from '../index.js';
-import { Embeds, ErrorSpec, ResourceMetrics, TestAssertionMetrics, TestLogs, TestOptions, TestResult } from '../types.js';
+import { LaunchOptions } from '../config/launchOptions.js';
+import { AsyncFunction, TFun, testParamMaker } from '../index.js';
+import { Embeds, ErrorSpec, ResourceMetrics, TestAssertionMetrics, TestLogs, TestMetadata, TestOptions, TestResult } from '../types.js';
 import { tf, topt } from './util.js';
 
 const magenta = (str: string) => colors.magenta + str + colors.fg_reset;

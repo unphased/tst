@@ -8,6 +8,7 @@ import { PlotData } from './plotting/index.js';
 import { plotters } from "./plotting/plotters_index.js";
 import { SpawnAsyncOpts, SpawnAsyncTestLogTraced, isBypassResourceMetrics, spawnAsync } from './process.js';
 import { Embeds, ResourceMetrics, TestAssertionMetrics, TestLogs, TestOptions } from "./types.js";
+import { TestMetadata } from './types.js';
 
 const __filename = fileURLToPath(import.meta.url);
 export const __dirname = dirname(__filename);
@@ -134,13 +135,6 @@ export const testParamMaker = (config: LaunchOptions, logs: TestLogs, assertionM
 }
 
 export type TFun = (params: ReturnType<typeof testParamMaker>) => void;
-export type TestMetadata = {
-  name: string,
-  filename: string,
-  suite?: string,
-  stack: string,
-} & TestOptions;
-
 export const testFnRegistry = new Map<TFun | ((...args: Parameters<TFun>) => Promise<void>), TestMetadata>();
 
 // Test registration interface. Handles argument sugaring with the following two degrees of freedom:

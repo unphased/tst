@@ -1,11 +1,11 @@
 import * as os from 'os';
-import { MinHeap } from '../min-heap.js';
-import { SpawnResourceReport, spawnAsync } from '../process.js';
 import { format, hrTimeMs, weightedAverageFromBackByLUT } from "ts-utils";
 import { loadTestContext } from '../analyze-test-results.js';
-import { TFun, TestMetadata } from '../index.js';
+import { TFun } from '../index.js';
+import { MinHeap } from '../min-heap.js';
+import { spawnAsync } from '../process.js';
 import { establishTestResultsDir, getTestReportingPath } from '../render/render-test-results.js';
-import { TestDispatchResult, TestResult } from '../types.js';
+import { SpawnResourceReport, TestDispatchResult, TestMetadata, TestResult } from '../types.js';
 import { TestLaunchSeparator } from './flags.js';
 import { tf, topt } from './util.js';
 

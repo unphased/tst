@@ -1,4 +1,4 @@
-import { TestMetadata } from '../index.js';
+import { TestMetadata } from '../types.js';
 import { TestLaunchFlags, TestLaunchFlagsTakingOneArg, TestLaunchSeparator } from "./flags.js";
 
 // this is a sugar for grabbing/checking the launch flag. abbreviates "test option".

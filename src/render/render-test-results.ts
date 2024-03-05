@@ -9,7 +9,7 @@ import { ResourceMetrics, TestResult } from "../types.js";
 import { renderPercentage, renderTruncFromMs } from "../util.js";
 import { clearTestResultPages, pushTestResultPage } from "../web-server.js";
 import { drawBorder } from "./draw-border.js";
-import { LaunchOptions } from "src/config/launchOptions.js";
+import { LaunchOptions } from "../config/launchOptions.js";
 
 // const results: TestResult[] = [];
 

@@ -1,9 +1,10 @@
 // BE AWARE of import related sequencing dangers. Mainly that we cannot define any tests (call the test() registrar) from ... not sure... this file specifically.
 
 import * as path from 'path';
-import { fileURLToPath } from 'url';
+import { TestMetadata } from '../types.js';
 import { hrTimeMs, red } from 'ts-utils';
-import { TFun, TestMetadata, testFnRegistry } from '../index.js';
+import { fileURLToPath } from 'url';
+import { TFun, testFnRegistry } from '../index.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
