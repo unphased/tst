@@ -18,10 +18,14 @@ import { parseTestLaunchingArgs, tf, topt } from './util.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-export const discoverTests = async (testFiles: ReturnType<typeof parseTestLaunchingArgs>['files']) => {
+export const discoverTests = async (specifiedTestFiles: ReturnType<typeof parseTestLaunchingArgs>['files']) => {
   const startf = process.hrtime();
+  const fileSearchDir = topt(tf.TargetDir);
+  if (fileSearchDir) {
+    console.error('discoverTests: searching under the fileSearchDir', fileSearchDir);
+  }
   const files = fs.readdirSync(
-    path.join(__dirname, '..'), // to reach src/ TODO make more robust, maybe use projectDir helper?
+    fileSearchDir || path.join(__dirname, '..'), // to reach src/ TODO make more robust, maybe use projectDir helper?
     { recursive: true, encoding: 'utf8' }
   ).filter(f => path.resolve(__dirname, "..", f) !== __filename); // filter out self, importing that will break us
   const fileDiscoveryDuration = hrTimeMs(process.hrtime(startf));
@@ -33,7 +37,7 @@ export const discoverTests = async (testFiles: ReturnType<typeof parseTestLaunch
     // 1. importing code under instrument/payload (not ever meant to be tested or run here) will break likely due to
     //    browser deps but also pollute global state
     // 2. workers should never be directly imported
-    .filter(f => testFiles.length === 0 || testFiles.includes(f)); // apply specified file import filter
+    .filter(f => specifiedTestFiles.length === 0 || specifiedTestFiles.includes(f)); // apply specified file import filter
 
   if (!files_filtered.length) {
     console.error('Please confirm... Prior to filtering, the file list was:', files);

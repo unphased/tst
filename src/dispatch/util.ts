@@ -25,7 +25,7 @@ export const testLaunchConfig: (TestLaunchFlags | ({
 export const parseTestLaunchingArgs = (args?: string[]) => {
   // - first, go from the beginning looking through args in the first group for flags.
   // any that are handled will be removed from further processing.
-  // - then, a series of file names implicitly under src/. We filter the modules we will import by this list
+  // - then comes a series of file names implicitly under src/. We filter the modules we will import by this list
   // - after that: a __ separator
   // - lastly, a series of either flags or test suite/name specifiers.
   // flags broadly control behavior, and specifiers are used to target tests.

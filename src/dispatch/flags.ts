@@ -20,5 +20,7 @@ export enum TestLaunchFlagsTakingOneArg {
   Concurrency = '_concurrency', // Override concurrency level (default being number of threads on machine)
   Parallel = 'PARALLEL', // Used in an orchestrator context, launching automated tests in separate parellel processes. Consume results from children over stdin for processing.
   // Parallel requires an arg which specifies either 'root' or JSON which encodes a complete hierarchical breakdown of job scheduling.
+
+  TargetDir = '--target-dir'
 }
 
