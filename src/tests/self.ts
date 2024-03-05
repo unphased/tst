@@ -17,11 +17,11 @@ export const simpleFileExists = test('test', ({ l, a: { eq } }) => {
 // useful helper for performing inception
 const getBuildProjDir = () => {
   let projDir = path.resolve(__dirname, '..');
-  const dirname = projDir.split(path.sep).pop();
-  if (dirname !== 'build') {
-    if ('src' !== dirname) throw new Error(`getBuildProjDir: Saw unexpected dirname ${dirname}`);
-    projDir = path.resolve(projDir, '..', 'build');
+  let x = '';
+  while (x = projDir.split(path.sep).pop(), x !== 'build' && x !== 'src') {
+    projDir = path.resolve(projDir, '..');
   }
+  console.error('debug projDir:', projDir);
   return projDir;
 };
 // by virtue of being an inception test (executes test runner), also tests the test specification file filter, test launching itself, etc.
