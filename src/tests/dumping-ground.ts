@@ -1,8 +1,8 @@
 import { exec, execSync } from 'child_process';
 import { test } from '../index.js';
-import { hrTimeMs, red } from 'ts-utils';
+import { hrTimeMs, pathShortName, red } from 'ts-utils';
 import { fileURLToPath } from 'url';
-import { Writable } from 'stream';
+import { Writable, Readable } from 'stream';
 import { stdoutColorizer } from '../process.js';
 import { findContiguousSubsequenceSlidingWindow } from '../assertions.js';
 import { Chainable } from '../util.js';
@@ -145,6 +145,7 @@ export const simple_transform = test('transform stream', async ({ a: { eqO } }) 
   });
   eqO(x, ['\x1b[48;5;19mhello world\x1b[0K\n\x1b[48;5;19mfoo bar baz\x1b[0K\n\x1b[m']);
 });
+
 export const pathShortNameTest = test('utils', ({ a: { eq } }) => {
   eq(pathShortName('foo/bar/baz', 1), 'baz');
   eq(pathShortName('foo/bar/baz', 2), 'bar/baz');
@@ -155,7 +156,6 @@ export const pathShortNameTest = test('utils', ({ a: { eq } }) => {
   eq(pathShortName('foo/bar/baz/index.ts', 3), 'foo/bar/baz/index.ts');
   eq(pathShortName('foo/bar/baz/index.ts', 4), 'foo/bar/baz/index.ts');
 });
-
 
 export const stdout_transform_spawn = test('transform stream', async ({ a: { eqO } }) => {
   const output: string[] = [];
