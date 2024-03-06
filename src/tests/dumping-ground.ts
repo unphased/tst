@@ -257,8 +257,7 @@ export const basic = test('contiguous subsequence', ({l, a: { is, eq }}) => {
 });
 
 export const bootstrap_array_experiment2_test = test('object chaining', ({ l, a: { eqO } }) => {
-  // confirm we can directly use the helpers to flexibly populate complex structures to a suitable degree of
-  // precision
+  // confirm we can directly use the helpers to flexibly populate complex structures to a suitable degree of precision
   type Type2 = {
     a?: {
       aa?: number;

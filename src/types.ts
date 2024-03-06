@@ -13,7 +13,6 @@
 import { HtmlEmbedding } from "./plotting/index.js";
 import { AssertionName } from "./assertions.js";
 import { Simplify } from "type-fest";
-import { TestOptions } from "./types.js";
 
 export type ErrorSpec = true | RegExp | string | (string | RegExp)[];
 

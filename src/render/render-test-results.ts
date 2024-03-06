@@ -44,7 +44,6 @@ const cpuUtil = (durationMs: number, userUs: number, systemUs: number) => {
   return { cpu, user, system };
 }
 
-
 type MakeRequired<T, K extends keyof T> = T extends unknown ? Omit<T, K> & Required<Pick<T, K>> : never;
 type ResourceMetricsWithResources = MakeRequired<ResourceMetrics[0], 'resources'>[];
 

@@ -148,12 +148,15 @@ export const testFnRegistry = new Map<TFun | ((...args: Parameters<TFun>) => Pro
 // - exoprt const name_of_test = test(async () => { ... })
 // - export const name_of_test = test(['name of test suite',] [async] () => { ... }, { timeout: 1000, priority: 1, etc. })
 
-// TODO Note i want this to do two replacements -- 
-// (1) when source-map-support is enabled, stacks map to true source path, so we cull up to proj_root/src/
-// (2) when running raw built js without source mapping, the stack will be under proj_root/build/ so we cull there.
-// Don't forget, __dirname will always be under build/!
-export function parseFileLineColFromStackLine (stack_line?: string) {
-  return stack_line?.match(/[^/]+\/[^/]+\.[tj]s:\d+:\d+/)?.[0] ?? ''
+// This currently just gives the containing dir and the file name, which is a good simple holding pattern here.
+// Not sure if we even need anything further refined, because this emits a terminal hyperlink that has the completely
+// full file in a url.
+export function parseFileLineColFromStackLineMakeHyperlink (stack_line?: string) {
+  const fileURL = stack_line;
+  console.error('parseFileLineColFromStackLineMakeHyperlink file url', fileURL);
+  const content = stack_line?.match(/[^/]+\/[^/]+\.[tj]s:\d+:\d+/)?.[0];
+  // return content ? `\u001b]8;;file://${content}\u0007${content}\u001b]8;;\u0007` : '';
+  return content;
 }
 
 type TFunOrAsync = TFun | ((...a: Parameters<TFun>) => Promise<void>);
@@ -163,7 +166,7 @@ export function test(fn: TFunOrAsync, opts?: TestOptions): TFun;
 export function test(fn_or_suite_name: (TFunOrAsync) | string, fn_or_opts?: (TFunOrAsync | TestOptions), opts?: TestOptions) {
   const suite = typeof fn_or_suite_name === 'string' && fn_or_suite_name;
   let func: TFunOrAsync | undefined;
-  let meta_assembly: Record<string, any> = { stack: parseFileLineColFromStackLine(new Error().stack?.split('\n')[2]) };
+  let meta_assembly: Record<string, any> = { stack: parseFileLineColFromStackLineMakeHyperlink(new Error().stack?.split('\n')[2]) };
   if (suite) {
     if (!fn_or_opts || typeof fn_or_opts !== 'function') {
       throw new Error(`A test suite name (${suite}) was provided without a test function. Got a second arg of type ${typeof fn_or_opts}.`);
