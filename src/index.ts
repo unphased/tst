@@ -151,7 +151,7 @@ export const testFnRegistry = new Map<TFun | ((...args: Parameters<TFun>) => Pro
 // This currently just gives the containing dir and the file name, which is a good simple holding pattern here.
 // Not sure if we even need anything further refined, because this emits a terminal hyperlink that has the completely
 // full file in a url.
-export function parseFileLineColFromStackLineMakeHyperlink (stack_line?: string) {
+export function parseFileLineColFromStackLineMakeHyperlink(stack_line?: string) {
   // stacks are already being rendered as file urls in ESM. We just need to inject a hostname into it.
   const fileURL = stack_line.match(/file:\/\/.*.[tj]s:\d+:\d+/)[0]; // strip the leading "   at "
   if (!fileURL) return 'Failure to resolve location assuming file url from stack!';

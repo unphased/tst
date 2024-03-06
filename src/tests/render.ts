@@ -181,3 +181,10 @@ export const splitStringHardcoreBoundsCheck = test('splitString', ({ l, a: { eq,
   l('checks performed:', count_checks);
 });
 
+export const confirmAnsiLexingOnHyperlinks = test('ansi lexing', ({ l, a: { eq, eqO } }) => {
+  const str = "abc\x1b]8;;https://example.com\x1b\\foo\x1b]8;;\x1b\\def";
+  const ansi = lexAnsi(str);
+  eq(ansi.cleaned[0], "abcfoodef");
+  l(ansi);
+  eq(false, true);
+});
