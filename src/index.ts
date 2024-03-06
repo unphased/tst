@@ -9,6 +9,7 @@ import { plotters } from "./plotting/plotters_index.js";
 import { SpawnAsyncOpts, SpawnAsyncTestLogTraced, isBypassResourceMetrics, spawnAsync } from './process.js';
 import { Embeds, ResourceMetrics, TestAssertionMetrics, TestLogs, TestOptions } from "./types.js";
 import { TestMetadata } from './types.js';
+import * as os from 'os';
 
 const __filename = fileURLToPath(import.meta.url);
 export const __dirname = dirname(__filename);
@@ -152,11 +153,13 @@ export const testFnRegistry = new Map<TFun | ((...args: Parameters<TFun>) => Pro
 // Not sure if we even need anything further refined, because this emits a terminal hyperlink that has the completely
 // full file in a url.
 export function parseFileLineColFromStackLineMakeHyperlink (stack_line?: string) {
-  const fileURL = stack_line;
-  console.error('parseFileLineColFromStackLineMakeHyperlink file url', fileURL);
+  // stacks are already being rendered as file urls in ESM. We just need to inject a hostname into it.
+  const fileURL = stack_line.match(/file:\/\/.*.[tj]s:\d+:\d+/)[0]; // strip the leading "   at "
+  if (!fileURL) return 'Failure to resolve location assuming file url from stack!';
+  const fileURLWithHostname = fileURL.replace('file://', 'file://' + os.hostname());
+  // console.error('parseFileLineColFromStackLineMakeHyperlink file url', fileURLWithHostname);
   const content = stack_line?.match(/[^/]+\/[^/]+\.[tj]s:\d+:\d+/)?.[0];
-  // return content ? `\u001b]8;;file://${content}\u0007${content}\u001b]8;;\u0007` : '';
-  return content;
+  return content ? `\u001b]8;;${fileURLWithHostname}\u0007${content}\u001b]8;;\u0007` : 'Failure to resolve code location content!';
 }
 
 type TFunOrAsync = TFun | ((...a: Parameters<TFun>) => Promise<void>);
