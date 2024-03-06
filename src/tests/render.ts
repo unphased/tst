@@ -186,5 +186,4 @@ export const confirmAnsiLexingOnHyperlinks = test('ansi lexing', ({ l, a: { eq, 
   const ansi = lexAnsi(str);
   eq(ansi.cleaned[0], "abcfoodef");
   l(ansi);
-  eq(false, true);
 });

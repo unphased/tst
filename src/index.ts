@@ -1,5 +1,5 @@
 import { dirname } from 'path';
-import { format } from 'ts-utils';
+import { pp } from 'ts-utils';
 import { fileURLToPath } from 'url';
 import { assertions } from './assertions.js';
 import { LaunchOptions } from './config/launchOptions.js';
@@ -108,7 +108,7 @@ const htmlPlotBuilderEmbedder = (embeds: Embeds) => (plotType: keyof typeof plot
 // produces interface with which to define a test accessed through param of test function
 export const testParamMaker = (config: LaunchOptions, logs: TestLogs, assertionMetrics: TestAssertionMetrics, options: TestOptions, resourceMetrics: ResourceMetrics, embeds: Embeds) => {
   const logger = (...x: any[]) => {
-    const formatted = format(...x);
+    const formatted = pp(...x);
     logs.push([process.hrtime(), formatted]);
     config.echo_test_logging && console.error(process.hrtime(), formatted);
   };
