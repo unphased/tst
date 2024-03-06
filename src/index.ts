@@ -2,7 +2,6 @@ import { dirname } from 'path';
 import { format } from 'ts-utils';
 import { fileURLToPath } from 'url';
 import { assertions } from './assertions.js';
-import { Config } from './config/index.js';
 import { LaunchOptions } from './config/launchOptions.js';
 import { PlotData } from './plotting/index.js';
 import { plotters } from "./plotting/plotters_index.js";
@@ -157,9 +156,10 @@ export function parseFileLineColFromStackLineMakeHyperlink (stack_line?: string)
   const fileURL = stack_line.match(/file:\/\/.*.[tj]s:\d+:\d+/)[0]; // strip the leading "   at "
   if (!fileURL) return 'Failure to resolve location assuming file url from stack!';
   const fileURLWithHostname = fileURL.replace('file://', 'file://' + os.hostname());
-  // console.error('parseFileLineColFromStackLineMakeHyperlink file url', fileURLWithHostname);
   const content = stack_line?.match(/[^/]+\/[^/]+\.[tj]s:\d+:\d+/)?.[0];
-  return content ? `\u001b]8;;${fileURLWithHostname}\u0007${content}\u001b]8;;\u0007` : 'Failure to resolve code location content!';
+  const final_hyperlink = `\u001b]8;;${fileURLWithHostname}\u001b\\${content}\u001b]8;;\u001b\\`;
+  console.error('final_hyperlink', final_hyperlink, JSON.stringify(final_hyperlink));
+  return content ? final_hyperlink : 'Failure to resolve code location content!';
 }
 
 type TFunOrAsync = TFun | ((...a: Parameters<TFun>) => Promise<void>);
