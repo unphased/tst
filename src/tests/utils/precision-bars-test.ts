@@ -1,5 +1,5 @@
 import { test } from "../../index.js";
-import { lexAnsi } from "ts-utils/terminal"
+import { lexAnsi, renderBarRatioComparisonLowerIsBetter, renderHorizBar } from "ts-utils/terminal"
 
 export const visual_check_comparison = test('terminal precision bar rendering', ({ t, l, a: { eq } }) => {
   t('exemptFromAsserting', true);
