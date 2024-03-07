@@ -182,8 +182,15 @@ export const splitStringHardcoreBoundsCheck = test('splitString', ({ l, a: { eq,
 });
 
 export const confirmAnsiLexingOnHyperlinks = test('ansi lexing', ({ l, a: { eq, eqO } }) => {
-  const str = "abc\x1b]8;;https://example.com\x1b\\foo\x1b]8;;\x1b\\def";
+  const href = 'https://example.com';
+  const content = 'foo'
+  const url = `\x1b]8;;${href}\x1b\\${content}\x1b]8;;\x1b\\`;
+  const str = `abc${url}def`;
   const ansi = lexAnsi(str);
-  eq(ansi.cleaned[0], "abcfoodef");
+  eq(ansi.cleaned[0], "abcfoodef", 'culling hyperlink escape seqs');
+  eq(ansi.idxs[0][0], 3, 'first escape starts after "abc"');
+  eq(ansi.lens[0][0], `\x1b]8;;${href}\x1b\\`.length, 'hyperlink content beginner section length');
+  eq(ansi.idxs[0][1], 32, 'start pos of second escape');
+  eq(ansi.lens[0][1], 7, 'length of hyperlink content ending section')
   l(ansi);
 });
