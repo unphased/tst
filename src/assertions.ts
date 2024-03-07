@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import { colors } from 'ts-utils/terminal';
-import { bold, format, italic, red } from 'ts-utils';
+import { bold, format, pp2, italic, red } from 'ts-utils';
 
 export const diffOfStrings = (a: string, b: string) => {
   // load the strings into unique tmpfiles
@@ -75,49 +75,49 @@ export function findContiguousSubsequenceSlidingWindow<T>(needle: T[], haystack:
 // export const once = (cb: () => void) => { Nce(1, cb); }
 export const assertions = {
   eq: <T>(a: T, b: T, ...message: any[]) => {
-    if (a !== b) throw new Error(red(bold(italic('eq')) + ' expected ') + format(a) + red(' to equal ') + format(b) + '. ' + format(...message));
+    if (a !== b) throw new Error(red(bold(italic('eq')) + ' expected ') + pp2(a) + red(' to equal ') + pp2(b) + '. ' + format(...message));
   },
   // eq with epsilon
   eqE: (a: number, b: number, epsilon: number) => {
-    if (Math.abs(a - b) > epsilon) throw new Error(red(bold(italic('eqE')) + ' expected ') + format(a) + red(' to equal ') + format(b) + red(' within ') + format(epsilon) + red('.'));
+    if (Math.abs(a - b) > epsilon) throw new Error(red(bold(italic('eqE')) + ' expected ') + pp2(a) + red(' to equal ') + pp2(b) + red(' within ') + pp2(epsilon) + red('.'));
   },
   lt: (a: number, b: number) => {
-    if (a >= b) throw new Error(red(bold(italic('lt')) + ' expected ') + format(a) + red(' to be less than ') + format(b) + red('.'));
+    if (a >= b) throw new Error(red(bold(italic('lt')) + ' expected ') + pp2(a) + red(' to be less than ') + pp2(b) + red('.'));
   },
   gt: (a: number, b: number) => {
-    if (a <= b) throw new Error(red(bold(italic('gt')) + ' expected ') + format(a) + red(' to be greater than ') + format(b) + red('.'));
+    if (a <= b) throw new Error(red(bold(italic('gt')) + ' expected ') + pp2(a) + red(' to be greater than ') + pp2(b) + red('.'));
   },
   eqO: (a: any, b: any) => {
     const aa = JSON.stringify(a);
     const bb = JSON.stringify(b);
-    if (aa !== bb) throw new Error(red(bold(italic('eqO')) + ' expected ') + format(a) + red(' to equal ') + format(b) + red('.') + ' Delta: ' + diffOfStrings(aa, bb));
+    if (aa !== bb) throw new Error(red(bold(italic('eqO')) + ' expected ') + pp2(a) + red(' to equal ') + pp2(b) + red('.') + ' Delta: ' + diffOfStrings(aa, bb));
   },
   includes: (a: any[], spec: any) => {
-    if (!a) throw new Error(red(bold(italic('includes')) + ' expected ') + format(a) + red(" to include ") + format(spec));
+    if (!a) throw new Error(red(bold(italic('includes')) + ' expected ') + pp2(a) + red(" to include ") + pp2(spec));
     if (spec instanceof RegExp) {
       if (!a.some(e => spec.test(e))) {
-        throw new Error(red(bold(italic('includes')) + " expected ") + format(a) + red(" to include a match for ") + format(spec) + red(" by performing regex tests."));
+        throw new Error(red(bold(italic('includes')) + " expected ") + pp2(a) + red(" to include a match for ") + pp2(spec) + red(" by performing regex tests."));
       }
     } else if (!a.includes(spec)) {
-      throw new Error(red(bold(italic('includes')) + " expected ") + format(a) + red(" to include ") + format(spec));
+      throw new Error(red(bold(italic('includes')) + " expected ") + pp2(a) + red(" to include ") + pp2(spec));
     }
   },
   includesO: (a: any, spec: any) => {
     const v = isSubsetObject(spec, a);
-    if (!v) throw new Error(red(bold(italic('includesO')) + ' expected ') + format(a) + red(' to include ') + format(spec));
+    if (!v) throw new Error(red(bold(italic('includesO')) + ' expected ') + pp2(a) + red(' to include ') + pp2(spec));
   },
   match: (v: any, spec: RegExp) => {
-    if (!spec.test(v)) throw new Error(red(bold(italic('match')) + ' expected ') + format(v) + red(` to match ${format(spec)}.`));
+    if (!spec.test(v)) throw new Error(red(bold(italic('match')) + ' expected ') + pp2(v) + red(` to match ${pp2(spec)}.`));
   },
   is: (v: any, ...message: any[]) => {
-    if (!v) throw new Error(red(bold(italic('is')) + ' expected ') + format(v) + red(` to be truthy.`) + format(...message));
+    if (!v) throw new Error(red(bold(italic('is')) + ' expected ') + pp2(v) + red(` to be truthy.`) + format(...message));
   },
   not: (v: any) => {
-    if (v) throw new Error(red(bold(italic('not')) + ' expected ') + format(v) + red(` to be falsy.`));
+    if (v) throw new Error(red(bold(italic('not')) + ' expected ') + pp2(v) + red(` to be falsy.`));
   },
   subseq: <T>(a: T[], spec: T[]) => {
     if (false === findContiguousSubsequenceSlidingWindow(spec, a)) {
-      throw new Error(red(bold(italic('subseq')) + " expected ") + format(a) + red(" to include ") + format(spec) + red(" as a contiguous subsequence."));
+      throw new Error(red(bold(italic('subseq')) + " expected ") + pp2(a) + red(" to include ") + pp2(spec) + red(" as a contiguous subsequence."));
     }
   },
   throws: (fn: () => void) => {
@@ -139,7 +139,7 @@ export const assertions = {
           }
         } else if (Array.isArray(expected_message)) {
           if (!expected_message.some(m => (e.message || e).includes(m))) {
-            throw new Error(`expected error message or thrown string to include one of "${format(expected_message)}", but got "${e}" instead.`);
+            throw new Error(`expected error message or thrown string to include one of "${pp2(expected_message)}", but got "${e}" instead.`);
           }
         }
       }
