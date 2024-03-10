@@ -6,7 +6,7 @@
   "scripts": {
     "typecheck": "tsc",
     "build": "babel src --out-dir build --copy-files --extensions \".ts\"",
-    "start": "node -r source-map-support/register build/dispatch/runner.js",
+    "start": "node --enable-source-maps build/dispatch/runner.js",
     "self-test": "npm run build && npm run start"
   },
   "author": "Steven Lu",
@@ -31,8 +31,7 @@
     "@typescript-eslint/eslint-plugin": "^6",
     "@typescript-eslint/parser": "^6",
     "eslint-plugin-import": "^2.29.1",
-    "eslint-plugin-node": "^11.1.0",
-    "source-map-support": "^0.5.21"
+    "eslint-plugin-node": "^11.1.0"
   },
   "dependencies": {
     "type-fest": "^4.10.2"

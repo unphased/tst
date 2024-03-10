@@ -11,7 +11,7 @@ export default {
   ],
   "ignore": [ "src/**/payload" ],
   // "highlightCode": true,
-  "sourceMaps": true,
+  "sourceMaps": "inline",
   "plugins": [
     ["module-resolver", {
       "root": ["./"],
