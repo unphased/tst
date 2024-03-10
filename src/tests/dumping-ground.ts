@@ -297,8 +297,8 @@ export const bootstrap_array_experiment2_test = test('object chaining', ({ l, a:
 
 export const regex_alternation_with_capture_grp = test('regex', ({ l, a: {eq} }) => {
   const re = /(\(.*\))|file:\/\/.*:\d+/;
-  l(re.exec('file://abc/def/ghi:123'));
-  l(re.exec('file://abc/def/ghi:123 blah'));
-  l(re.exec('(abc/def/ghi:123) blah'));
+  eq(re.exec('file://abc/def/ghi:123')[1], undefined);
+  eq(re.exec('file://abc/def/ghi:123 blah')[1], undefined);
+  eq(re.exec('(abc/def/ghi:123) blah').index, 0);
 });
 

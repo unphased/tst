@@ -159,7 +159,7 @@ export function parseFileLineColFromStackLineMakeHyperlink(stack_line?: string) 
   const fileURLWithHostname = fileURL.replace('file://', 'file://' + os.hostname());
   const content = stack_line?.match(/[^/]+\/[^/]+\.[tj]s:\d+:\d+/)?.[0];
   const final_hyperlink = `\u001b]8;;${fileURLWithHostname}\u001b\\${content}\u001b]8;;\u001b\\`;
-  console.error('final_hyperlink', final_hyperlink, JSON.stringify(final_hyperlink));
+  // console.error('final_hyperlink', final_hyperlink, JSON.stringify(final_hyperlink));
   return content ? final_hyperlink : 'Failure to resolve code location content!';
 }
 
