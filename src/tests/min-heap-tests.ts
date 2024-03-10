@@ -1,6 +1,6 @@
-import { test } from "./index.js";
+import { test } from "../index.js";
 import { Statistics, hrTimeMs } from "ts-utils";
-import { MinHeap } from "./min-heap.js";
+import { MinHeap } from "../min-heap.js";
 
 export const min_heap = test('minheap', ({ p, l, a: { eq, eqO } }) => {
   type N = { n: number; s?: string; };

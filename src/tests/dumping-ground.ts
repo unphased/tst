@@ -295,3 +295,10 @@ export const bootstrap_array_experiment2_test = test('object chaining', ({ l, a:
   l('y', y);
 });
 
+export const regex_alternation_with_capture_grp = test('regex', ({ l, a: {eq} }) => {
+  const re = /(\(.*\))|file:\/\/.*:\d+/;
+  l(re.exec('file://abc/def/ghi:123'));
+  l(re.exec('file://abc/def/ghi:123 blah'));
+  l(re.exec('(abc/def/ghi:123) blah'));
+});
+
