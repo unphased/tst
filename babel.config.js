@@ -10,8 +10,8 @@ export default {
     "@babel/preset-typescript"
   ],
   "ignore": [ "src/**/payload" ],
-  "highlightCode": true,
-  "sourceMaps": "inline",
+  // "highlightCode": true,
+  "sourceMaps": true,
   "plugins": [
     ["module-resolver", {
       "root": ["./"],

@@ -41,7 +41,8 @@ export async function trigger_dynamic_imports(files_filtered: string[])
       }
     }
   }).catch(err => {
-    throw new Error(`dynamic import failed on ${file}: ${err}`);
+    console.error(`dynamic import failed on ${file}:`);
+    throw err;
   })));
   stats.dynamic_import_duration = hrTimeMs(process.hrtime(start));
   console.error('test dispatch', 'trigger_dynamic_import stats', stats);
