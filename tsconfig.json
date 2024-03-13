@@ -7,10 +7,10 @@
     "outDir": "./dist",
     "moduleResolution": "nodenext",
     "baseUrl": "./",                                  /* Specify the base directory to resolve non-relative module names. */
-    "paths": {
+    /* "paths": {
       "ts-utils/terminal": ["../instrumenter/src/utils/terminal.js"],
       "ts-utils": ["../instrumenter/src/utils/utils.js"],
-    },
+    }, */
   },
 }
 
