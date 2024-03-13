@@ -21,6 +21,7 @@ export async function trigger_dynamic_imports(files_filtered: string[])
     dynamic_import_duration: 0
   };
   const start = process.hrtime();
+  console.error('trigger_dynamic_import files_filtered', files_filtered);
   await Promise.all(files_filtered.map(file => import(path.join(__dirname, "..", file)).then(exports => {
     // l("imported", exports, 'from', file);
     stats.files += 1;
@@ -41,7 +42,7 @@ export async function trigger_dynamic_imports(files_filtered: string[])
       }
     }
   }).catch(err => {
-    console.error(`dynamic import failed on ${file}:`);
+    console.error(`dynamic import failed on ${file} (${err})`);
     throw err;
   })));
   stats.dynamic_import_duration = hrTimeMs(process.hrtime(start));
