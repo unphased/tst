@@ -4,11 +4,7 @@ import * as path from 'path';
 import { TestMetadata } from '../types.js';
 import { hrTimeMs, red } from 'ts-utils';
 import { fileURLToPath } from 'url';
-import { testFnRegistry } from '../main.js';
-import { TFun } from '../types.js';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import { testFnRegistry, TFun } from '../main.js';
 
 // the global test function registries are needed for the import process below to implicitly register the tests as the
 // test function gets called. To reduce state management headaches, the hop over global vars is constrained to this
