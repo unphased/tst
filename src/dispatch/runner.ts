@@ -18,18 +18,10 @@ import { parseTestLaunchingArgs, tf, topt } from './util.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-export const discoverTests = async (specifiedTestFiles: ReturnType<typeof parseTestLaunchingArgs>['files']) => {
+export const discoverTests = async (targetDir: string, specifiedTestFiles: ReturnType<typeof parseTestLaunchingArgs>['files']) => {
   const startf = process.hrtime();
-  const fileSearchDir = topt(tf.TargetDir);
-  if (fileSearchDir) {
-    console.error('discoverTests: enumerating JavaScript/TypeScript code under the fileSearchDir', fileSearchDir);
-  } else {
-    console.error(`discoverTests: no fileSearchDir specified, enumerating JavaScript/TypeScript code under ${__dirname}/..`);
-  }
-  const files = fs.readdirSync(
-    fileSearchDir || path.join(__dirname, '..'), // to reach src/ TODO make more robust, maybe use projectDir helper?
-    { recursive: true, encoding: 'utf8' }
-  ).filter(f => path.resolve(__dirname, "..", f) !== __filename); // filter out self, importing that will break us
+  const files = fs.readdirSync(targetDir, { recursive: true, encoding: 'utf8' })
+    .filter(f => path.resolve(targetDir, f) !== __filename); // filter out self, importing that will break us
   const fileDiscoveryDuration = hrTimeMs(process.hrtime(startf));
   const start = process.hrtime();
   const files_filtered = files
@@ -49,7 +41,7 @@ export const discoverTests = async (specifiedTestFiles: ReturnType<typeof parseT
   console.error(`discoverTests: ${files_filtered.length} files to import: ${files_filtered.join(', ')}`);
 
   const fileFilteringDuration = hrTimeMs(process.hrtime(start));
-  const { registry, stats } = await trigger_dynamic_imports(files_filtered);
+  const { registry, stats } = await trigger_dynamic_imports(targetDir, files_filtered);
 
   return { registry, fileFilteringDuration, fileDiscoveryDuration, ...stats };
 }
@@ -84,9 +76,9 @@ const runParallelTests = async (registry: Awaited<ReturnType<typeof trigger_dyna
   return { structuredResults, parallelExecutionDuration: process.hrtime(start) };
 };
 
-const runTestsDirectly = async (testSpecification: ReturnType<typeof parseTestLaunchingArgs>, launch_opts?: LaunchOptions) => {
+const runTestsDirectly = async (targetDir: string, testSpecification: ReturnType<typeof parseTestLaunchingArgs>, launch_opts?: LaunchOptions) => {
   // 'core' of discoverTests
-  const { registry, stats } = await trigger_dynamic_imports(testSpecification.files);
+  const { registry, stats } = await trigger_dynamic_imports(targetDir, testSpecification.files);
   const start = process.hrtime();
   const testResults = await runTestsFromRegistry(registry, launch_opts, testSpecification.testPredicate, topt(tf.AsyncParallelTestLaunch));
   return { testResults, testExecutionDuration: process.hrtime(start), ...stats };
@@ -114,6 +106,21 @@ export const LaunchTests = async (rootPath?: string) => {
   let launch_opts = {echo_test_logging: false, expand_test_suites_reporting: true};
   if (topt(tf.ForceEnableLogging)) { launch_opts.echo_test_logging = true; }
   if (topt(tf.ForceDisableLogging)) { console.assert(!topt(tf.ForceEnableLogging)); launch_opts.echo_test_logging = false; }
+
+
+  const fileSearchDir = topt(tf.TargetDir);
+  // by default we provide no dir to search within for ts/js code to import. In this case, we are self testing this
+  // on library, and will not be running from a bundle, so I assume also that __dirname is (tst)/src/build/dispatch. Hence
+  // .. added to go to build.
+  const defaultDir = path.join(__dirname, '..');
+  if (fileSearchDir) {
+    console.error('discoverTests: enumerating JavaScript/TypeScript code under the fileSearchDir', fileSearchDir);
+  } else {
+    console.error(`discoverTests: no fileSearchDir specified, enumerating JavaScript/TypeScript code under ${defaultDir}`);
+  }
+  const targetDir = fileSearchDir || defaultDir;
+
+
   if (topt(tf.Parallel) && !topt(tf.Automated)) {
     // === root parallel launch
     // - discover tests as specified by easy test spec protocol
@@ -122,7 +129,7 @@ export const LaunchTests = async (rootPath?: string) => {
     // mostly transparent at this level whether it is launching locally or on remote nodes.)
     // - collate and record test results and recursive output metrics
     // - render test report
-    const { registry, ...discoveryMetrics } = await discoverTests(testSpecification.files);
+    const { registry, ...discoveryMetrics } = await discoverTests(targetDir, testSpecification.files);
     const { structuredResults, ...parallelLaunchMetrics } = await runParallelTests(registry, testSpecification.testPredicate);
     const { outputResults, distributed_metrics } = processDistributedTestResults(/* (complex types lining up here) */ structuredResults)
     testCount = outputResults.length;
@@ -138,7 +145,7 @@ export const LaunchTests = async (rootPath?: string) => {
     // - run tests
     // - record results and metrics
     // - render test report
-    const { registry, ...metrics } = await discoverTests(testSpecification.files);
+    const { registry, ...metrics } = await discoverTests(targetDir, testSpecification.files);
     const { testResults, ...metrics2 } = await runTests(registry, testSpecification.testPredicate, launch_opts);
     // there is a slight change in behavior now that I have test output writing to files broken out, which is if tests
     // fail outside of the runner (e.g. exception in I/O handler) then now we may never write any of the results to
@@ -159,7 +166,7 @@ export const LaunchTests = async (rootPath?: string) => {
     // - launch tests via direct test spec protocol (in practice for now, at first, this is identical to above easy
     // test spec protocol, but in future when that gets fleshed out to be easier it will diverge)
     // - simple collation takes place to send to stdout.
-    const { testResults, ...metrics } = await runTestsDirectly(testSpecification, launch_opts);
+    const { testResults, ...metrics } = await runTestsDirectly(targetDir, testSpecification, launch_opts);
     metricsForEcho = metrics;
     testCount = testResults.length;
     const dispatchResult: TestDispatchResult = { testResults, ...metrics };

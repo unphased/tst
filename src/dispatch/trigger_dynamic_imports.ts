@@ -13,7 +13,7 @@ const __dirname = path.dirname(__filename);
 // the global test function registries are needed for the import process below to implicitly register the tests as the
 // test function gets called. To reduce state management headaches, the hop over global vars is constrained to this
 // one, and subsequent test handling will be done functionally
-export async function trigger_dynamic_imports(files_filtered: string[])
+export async function trigger_dynamic_imports(containingDir: string, files_filtered: string[])
 {
   const stats: { [k: string]: number } = {
     files: 0,
@@ -23,7 +23,7 @@ export async function trigger_dynamic_imports(files_filtered: string[])
   };
   const start = process.hrtime();
   console.error('trigger_dynamic_import files_filtered', files_filtered);
-  await Promise.all(files_filtered.map(file => import(path.join(__dirname, "..", file)).then(exports => {
+  await Promise.all(files_filtered.map(file => import(path.join(containingDir, file)).then(exports => {
     // l("imported", exports, 'from', file);
     stats.files += 1;
     for (const [name, fn] of Object.entries(exports as { [key: string]: any; })) {

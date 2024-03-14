@@ -170,7 +170,7 @@ export const resource_metrics_overlapping_spawns = test('spawnAsync', async ({ l
 export const resource_metrics_overlapping_spawns_inception = test('test', async ({l, t, spawn}) => {
   // aim to confirm relevant data of 6 procs in above test are reflected in test report.
   const projDir = getBuildProjDir();
-  const ret = await spawn('node', [path.join(projDir, 'dispatch', 'runner.js'), TestLaunchFlags.ExactTestNameMatching, TestLaunchFlags.Automated, 'tests/self.js', TestLaunchSeparator, 'resource_metrics_overlapping_spawns'], {
+  const ret = await spawn('node', ['--enable-source-maps', path.join(projDir, 'dispatch', 'runner.js'), TestLaunchFlags.ExactTestNameMatching, TestLaunchFlags.Automated, 'tests/self.js', TestLaunchSeparator, 'resource_metrics_overlapping_spawns'], {
     bufferStdout: true
   });
   t('exemptFromAsserting', true);
