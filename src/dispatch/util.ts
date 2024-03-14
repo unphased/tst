@@ -65,15 +65,15 @@ export const parseTestLaunchingArgs = (args?: string[], rootPath?: string) => {
         break;
       }
     }
+  }
 
-    // reconcile a possible given rootPath with any parsed TargetDir launch flag, they mean the same thing. Anyway just
-    // have the former override the latter, but be noisy if that happens.
-    if (topt(tf.TargetDir) && rootPath) {
-      console.error(`Must reconcile rootPath with TargetDir flag as both were specified (intentional???? i think not!) rootPath=${rootPath} TargetDir=${topt(tf.TargetDir)}`);
-      testLaunchConfig[tf.TargetDir] = rootPath;
-    } else if (rootPath) {
-      testLaunchConfig.push({ [tf.TargetDir]: rootPath });
-    }
+  // reconcile a possible given rootPath with any parsed TargetDir launch flag, they mean the same thing. Anyway just
+  // have the former override the latter, but be noisy if that happens.
+  if (topt(tf.TargetDir) && rootPath) {
+    console.error(`Must reconcile rootPath with TargetDir flag as both were specified (intentional???? i think not!) rootPath=${rootPath} TargetDir=${topt(tf.TargetDir)}`);
+    testLaunchConfig[tf.TargetDir] = rootPath;
+  } else if (rootPath) {
+    testLaunchConfig.push({ [tf.TargetDir]: rootPath });
   }
 
   if (!args || !args.length) {

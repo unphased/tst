@@ -98,7 +98,7 @@ const isProgramLaunchContext = () => {
 */
 export const LaunchTests = async (rootPath?: string) => {
   const testSpecification = parseTestLaunchingArgs(process.argv.slice(2), rootPath);
-  console.error("test launch spec:", testSpecification.files, testSpecification.testPredicate.toString());
+  console.error("test launch spec (files, predicate):", testSpecification.files, testSpecification.testPredicate.toString());
   let metricsForEcho: { [k: string]: any } = {};
   let metricsEasyRead = '';
 
