@@ -8,7 +8,7 @@
   "scripts": {
     "typecheck": "tsc",
     "build": "babel src --out-dir build --copy-files --extensions \".ts\"",
-    "bundle": "npm run build && esbuild ./build/index.js --bundle --minify --platform=node --sourcemap --format=esm --outfile=./dist/bundle.js",
+    "bundle": "npm run build && esbuild ./build/index.js --bundle --platform=node --sourcemap --format=esm --outfile=./dist/bundle.js --external:express",
     "start": "node --enable-source-maps build/dispatch/runner.js",
     "self-test": "npm run build && npm run start"
   },
