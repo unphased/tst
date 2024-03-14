@@ -1,3 +1,4 @@
+import { Simplify } from 'type-fest';
 import { ChildProcess, execSync, spawn } from 'child_process';
 import { readFileSync, unlinkSync } from 'fs';
 import * as os from 'os';
@@ -122,7 +123,7 @@ const bold = (s: string) => colors.bold + s + colors.bold_reset;
 export const spawnAsync = ((command: string, args: string[], logger_?: typeof console.error, options?: SpawnAsyncOpts): Promise<SpawnAsyncReturnBase|SpawnAsyncReturnWResources|SpawnAsyncReturnWStdout|SpawnAsyncReturnWStdoutAndResources> => {
   const start = process.hrtime();
   const logger = logger_ ?? console.error;
-  const opts = { ...options } as SpawnAsyncOpts & (OptStateWithMetrics | OptStateWithoutMetrics) & Partial<OptStateWithStdin>;
+  const opts = { ...options } as Simplify<SpawnAsyncOpts & ({ time_output_file?: string; bypassResourceMetrics?: true; }) & Partial<OptStateWithStdin>>;
 
   // resolve opts that override other opts
   if (opts?.hideAllMeta) {

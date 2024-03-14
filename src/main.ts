@@ -22,11 +22,16 @@ const isProgramLaunchContext = () => {
 // used for instanceof check.
 export const AsyncFunction = (async () => {}).constructor;
 
+// type guard for async function
+export const isAsyncFunction = (fn: any): fn is (...args: any[]) => Promise<any> => {
+  return fn instanceof AsyncFunction;
+};
+
 // wrap assertion logic with call counting and logging
 const augmentedAssertions = (assertionMetrics: TestAssertionMetrics, options: TestOptions) => {
   const ret = {} as typeof assertions; // returning same shape as our collection of assertions.
-  for (const [name, fn] of Object.entries(assertions) as [keyof typeof assertions, (...args: any[]) => void][]) {
-    const asyn = fn instanceof AsyncFunction;
+  for (const [name, fn] of Object.entries(assertions) as [keyof typeof assertions, any][]) {
+    const asyn = isAsyncFunction(fn);
     let amln = assertionMetrics.logs[name];
     const loggerbody = (args_: any[]) => {
       if (!amln) amln = assertionMetrics.logs[name] = { buffer: [] };
@@ -54,7 +59,7 @@ const augmentedAssertions = (assertionMetrics: TestAssertionMetrics, options: Te
       aa[name] = (aa[name] || 0) + 1;
     }
     if (asyn) {
-      ret[name] = async (...args) => {
+      ret[name] = ((async (...args) => {
         loggerbody(args);
         try {
           await fn(...args);
@@ -63,9 +68,9 @@ const augmentedAssertions = (assertionMetrics: TestAssertionMetrics, options: Te
           assertionMetrics.assertionFailure = true;
           throw e;
         }
-      }
+      }) as any);
     } else {
-      ret[name] = (...args) => {
+      ret[name] = (((...args) => {
         loggerbody(args);
         try {
           fn(...args);
@@ -73,7 +78,7 @@ const augmentedAssertions = (assertionMetrics: TestAssertionMetrics, options: Te
           assertionMetrics.assertionFailure = true;
           throw e;
         }
-      }
+      }) as any);
     }
   }
   return ret;

@@ -3,7 +3,6 @@
 import * as path from 'path';
 import { TestMetadata } from '../types.js';
 import { hrTimeMs, red } from 'ts-utils';
-import { fileURLToPath } from 'url';
 import { testFnRegistry, TFun } from '../main.js';
 
 // the global test function registries are needed for the import process below to implicitly register the tests as the

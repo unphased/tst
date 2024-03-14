@@ -160,7 +160,8 @@ export const LaunchTests = async (rootPath?: string) => {
     // - parse complex launch schedule
     // - spawn processes launching tests accordingly, awaiting their output
     // - recursive automated test run ("medium", possibly recursive complexity) collation takes place here and sent to stdout
-    await dispatchLaunches(testSpecification);
+    // await dispatchLaunches(testSpecification);
+    console.error('UNIMPLEMENTED');
   } else { // Here is the case of automated and non parallel
     // === this is a leaf node parallel launch which does actual test launching and also uses easy test spec protocol
     // - launch tests via direct test spec protocol (in practice for now, at first, this is identical to above easy

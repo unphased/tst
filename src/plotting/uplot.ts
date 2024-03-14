@@ -76,12 +76,13 @@ const uPlot_preprocess = (plotdata: PlotData[]) => plotdata.map(d => {
   // untranspose
   const uncollated = d.data.map((_, i) => collated.map(row => row[i]));
   const { targetNavGroupId } = d;
-  if (d.y_axes.filter(y => y.clickNavMapXS).some(y => !Array.isArray(y.clickNavMapXS) || y.clickNavMapXS.length !== d.data[0].length)) {
+  const y_cNMXS = d.y_axes.filter(y => y instanceof Object && y.clickNavMapXS) as Exclude<typeof d.y_axes[0], string>[];
+  if (y_cNMXS.some(y => !Array.isArray(y.clickNavMapXS) || y.clickNavMapXS.length !== d.data[0].length)) {
     throw new Error('clickNavMapXS must be an array of arrays of strings of the same length as the x axis');
   }
   if (d.clickNavMapX && (typeof d.clickNavMapX !== 'object' || !Array.isArray(d.clickNavMapX) || d.clickNavMapX.length !== d.data[0].length)) {
     throw new Error('clickNavMapX must be an array of strings of the same length as the x axis');
-  }
+  } // tbh i am unsure i should have dynamic assertions like this since type checking does the job and this adds maint burden.
   return { opts, data: uncollated, targetNavGroupId, mappingX: d.clickNavMapX, mappingSX: d.y_axes.map(y => y.clickNavMapXS) };
 });
 
