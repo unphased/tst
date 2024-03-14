@@ -56,6 +56,8 @@ export class Chainable<T> {
     this.object = object;
   }
 
+  // the R suffix indicates a notion of "raw" where it will not return a Chainable instance, just the thing inside
+  // (which is drilled down into the structure by however many levels were chained).
   objR<K extends keyof T, V extends T[K]>(
     key: K,
     objToMerge?: V
@@ -93,9 +95,9 @@ export class Chainable<T> {
 
   // unfortunately this way of chaining prevents native syntax since we hace to stay in a chain of Chainable return
   // values. so sub is used to perform array indexing.
-  subR<I extends T extends (infer U)[] ? number : never>(index: I): U {
+  subR<I extends number>(index: I): T extends (infer U)[] ? U : never {
     if (Array.isArray(this.object)) {
-      return this.object[index];
+      return this.object[index] as T extends (infer U)[] ? U : never;
     } else {
       throw new Error('Operation `sub` is not valid on non-array types.');
     }
