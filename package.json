@@ -3,12 +3,12 @@
   "version": "0.0.1",
   "description": "A lightweight all-powerful TypeScript test library.",
   "exports": {
-    ".": "dispatch/index.js"
+    ".": "dist/bundle.js"
   },
   "scripts": {
     "typecheck": "tsc",
     "build": "babel src --out-dir build --copy-files --extensions \".ts\"",
-    "bundle": "npm run build && esbuild ./build --bundle --minify --platform=node --sourcemap --outfile=./dist/bundle.js",
+    "bundle": "npm run build && esbuild ./build/index.js --bundle --minify --platform=node --sourcemap --format=esm --outfile=./dist/bundle.js",
     "start": "node --enable-source-maps build/dispatch/runner.js",
     "self-test": "npm run build && npm run start"
   },

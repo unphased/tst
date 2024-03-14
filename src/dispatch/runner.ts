@@ -102,8 +102,7 @@ const isProgramLaunchContext = () => {
  *** Realistically, sticking to hub/spoke model when going over the network between machines is the only reasonable
  *** approach. Consider that the combined output would be a larger payload. compression may make an impact but it's just a questionable approach.
 */
-
-isProgramLaunchContext() && void (async () => {
+export const LaunchTests = async () => {
   const testSpecification = parseTestLaunchingArgs(process.argv.slice(2));
   console.error("test launch spec:", testSpecification.files, testSpecification.testPredicate.toString());
   let metricsForEcho: { [k: string]: any } = {};
@@ -165,6 +164,8 @@ isProgramLaunchContext() && void (async () => {
     console.log(JSON.stringify(dispatchResult));
   }
   console.error(`Test launch complete, ${testCount} tests, metrics:`, util.inspect(metricsForEcho, { colors: true, depth: 8 }), `\n${metricsEasyRead}`);
-})();
+};
+
+isProgramLaunchContext() && void (LaunchTests)();
 
 
