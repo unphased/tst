@@ -20,7 +20,7 @@ export async function trigger_dynamic_imports(containingDir: string, files_filte
   const start = process.hrtime();
   console.error('trigger_dynamic_import files_filtered', files_filtered);
   await Promise.all(files_filtered.map(file => import(path.join(containingDir, file)).then(exports => {
-    // l("imported", exports, 'from', file);
+    // console.error("imported", exports, 'from', containingDir, file);
     stats.files += 1;
     for (const [name, fn] of Object.entries(exports as { [key: string]: any; })) {
       stats.all_exported_items_count += 1;
