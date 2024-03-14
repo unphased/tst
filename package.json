@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "A lightweight all-powerful TypeScript test library.",
   "exports": {
-    ".": "dist/bundle.js"
+    ".": "./dist/bundle.js"
   },
   "scripts": {
     "typecheck": "tsc",
