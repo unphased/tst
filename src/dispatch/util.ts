@@ -19,10 +19,10 @@ export function isTestLaunchFlagTakingOneArg(flag: string): flag is TestLaunchFl
 
 // tLC is a container to track jaunch flag values set from cli
 export const testLaunchConfig: (TestLaunchFlags | ({
-  [flag in TestLaunchFlagsTakingOneArg]: string;
+  [flag in TestLaunchFlagsTakingOneArg]?: string;
 }))[] = [];
 
-export const parseTestLaunchingArgs = (args?: string[]) => {
+export const parseTestLaunchingArgs = (args?: string[], rootPath?: string) => {
   // - first, go from the beginning looking through args in the first group for flags.
   // any that are handled will be removed from further processing.
   // - then comes a series of file names implicitly under src/. We filter the modules we will import by this list
@@ -65,6 +65,15 @@ export const parseTestLaunchingArgs = (args?: string[]) => {
         break;
       }
     }
+
+    // reconcile a possible given rootPath with any parsed TargetDir launch flag, they mean the same thing. Anyway just
+    // have the former override the latter, but be noisy if that happens.
+    if (topt(tf.TargetDir) && rootPath) {
+      console.error(`Must reconcile rootPath with TargetDir flag as both were specified (intentional???? i think not!) rootPath=${rootPath} TargetDir=${topt(tf.TargetDir)}`);
+      testLaunchConfig[tf.TargetDir] = rootPath;
+    } else if (rootPath) {
+      testLaunchConfig.push({ [tf.TargetDir]: rootPath });
+    }
   }
 
   if (!args || !args.length) {
@@ -87,6 +96,9 @@ export const parseTestLaunchingArgs = (args?: string[]) => {
   } else { // default, a loose user friendly cli for test name matching.
     return { files, testPredicate: (test: TestMetadata) => args.slice(idxSeparator + 1).some(a => `${test.suite ? test.suite + ':' : ''}${test.name}`.toLowerCase().includes(a.toLowerCase())) }; 
   }
+  // note at this point the files list is just a plain deserialization of the arg list (intended to filter files to
+  // autodynimport) and hasn't been validated.
+
 };
 
 // lookup object for sugaring. This lets you pull up the name of all launch flags I have defined
