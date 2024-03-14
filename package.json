@@ -2,9 +2,7 @@
   "name": "tst",
   "version": "0.0.1",
   "description": "A lightweight all-powerful TypeScript test library.",
-  "exports": {
-    ".": "./dist/bundle.js"
-  },
+  "main": "./dist/bundle.js",
   "types": "./dist/index.d.ts",
   "scripts": {
     "typecheck": "tsc",
