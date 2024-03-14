@@ -23,6 +23,8 @@ export const discoverTests = async (specifiedTestFiles: ReturnType<typeof parseT
   const fileSearchDir = topt(tf.TargetDir);
   if (fileSearchDir) {
     console.error('discoverTests: enumerating JavaScript/TypeScript code under the fileSearchDir', fileSearchDir);
+  } else {
+    console.error(`discoverTests: no fileSearchDir specified, enumerating JavaScript/TypeScript code under ${__dirname}/..`);
   }
   const files = fs.readdirSync(
     fileSearchDir || path.join(__dirname, '..'), // to reach src/ TODO make more robust, maybe use projectDir helper?
