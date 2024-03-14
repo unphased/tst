@@ -1,7 +1,7 @@
 import { hrTimeMs, italic, pp, red } from "ts-utils";
 import { colors } from 'ts-utils/terminal';
 import { LaunchOptions } from '../config/launchOptions.js';
-import { AsyncFunction, TFun, testParamMaker } from '../index.js';
+import { AsyncFunction, TFun, testParamMaker } from '../main.js';
 import { Embeds, ErrorSpec, ResourceMetrics, TestAssertionMetrics, TestLogs, TestMetadata, TestOptions, TestResult } from '../types.js';
 import { tf, topt } from './util.js';
 

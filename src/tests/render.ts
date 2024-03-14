@@ -1,5 +1,5 @@
 import { lexAnsi } from 'ts-utils/terminal';
-import { test } from '../index.js';
+import { test } from '../main.js';
 import { splitString } from "../render/draw-border.js";
 import { renderHrTimeMs, renderPercentage, renderTruncFromMs, renderTruncHrTime } from "../util.js";
 

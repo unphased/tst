@@ -4,7 +4,8 @@ import * as path from 'path';
 import { TestMetadata } from '../types.js';
 import { hrTimeMs, red } from 'ts-utils';
 import { fileURLToPath } from 'url';
-import { TFun, testFnRegistry } from '../index.js';
+import { testFnRegistry } from '../main.js';
+import { TFun } from '../types.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

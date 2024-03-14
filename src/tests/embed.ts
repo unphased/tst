@@ -1,7 +1,7 @@
 // import { writeFileSync } from "fs";
 import { uPlot_assemble } from "../plotting/uplot.js";
 import { build_html_page } from "../plotting/index.js";
-import { test } from "../index.js";
+import { test } from "../main.js";
 import { XMLParser } from "fast-xml-parser";
 import { writeFileSync } from "fs";
 

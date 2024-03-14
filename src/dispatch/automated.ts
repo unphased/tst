@@ -1,7 +1,7 @@
 import * as os from 'os';
 import { format, hrTimeMs, weightedAverageFromBackByLUT } from "ts-utils";
 import { loadTestContext } from '../analyze-test-results.js';
-import { TFun } from '../index.js';
+import { TFun } from '../main.js';
 import { MinHeap } from '../min-heap.js';
 import { spawnAsync } from '../process.js';
 import { establishTestResultsDir, getTestReportingPath } from '../render/render-test-results.js';

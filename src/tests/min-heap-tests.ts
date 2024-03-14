@@ -1,4 +1,4 @@
-import { test } from "../index.js";
+import { test } from "../main.js";
 import { Statistics, hrTimeMs } from "ts-utils";
 import { MinHeap } from "../min-heap.js";
 

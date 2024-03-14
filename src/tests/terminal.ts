@@ -1,5 +1,5 @@
 import { lexAnsi } from 'ts-utils/terminal';
-import { test } from '../index.js';
+import { test } from '../main.js';
 
 export const simple_ansi_strip = test('ansi', ({ a: { includesO } }) => {
   const s = 'hello \x1b[31mworld\x1b[2m foo\x1b[39m bar\x1b[m\nb\x1b[33maz';

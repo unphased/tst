@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { execSync } from 'child_process';
-import { test } from '../index.js';
+import { test } from '../main.js';
 import { fileURLToPath } from 'url';
 import { TestLaunchFlags, TestLaunchSeparator } from "../dispatch/flags.js";
 const __filename = fileURLToPath(import.meta.url);

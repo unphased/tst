@@ -1,5 +1,5 @@
 import { exec, execSync } from 'child_process';
-import { test } from '../index.js';
+import { test } from '../main.js';
 import { hrTimeMs, pathShortName, red } from 'ts-utils';
 import { fileURLToPath } from 'url';
 import { Writable, Readable } from 'stream';
