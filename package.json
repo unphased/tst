@@ -2,7 +2,9 @@
   "name": "tst",
   "version": "0.0.1",
   "description": "A lightweight all-powerful TypeScript test library.",
-  "main": "index.js",
+  "exports": {
+    ".": "dispatch/index.js"
+  },
   "scripts": {
     "typecheck": "tsc",
     "build": "babel src --out-dir build --copy-files --extensions \".ts\"",
