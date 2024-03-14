@@ -10,7 +10,8 @@
     "build": "babel src --out-dir build --copy-files --extensions \".ts\"",
     "bundle": "npm run build && esbuild ./build/index.js --bundle --platform=node --sourcemap --format=esm --outfile=./dist/bundle.js --external:express",
     "start": "node --enable-source-maps ./build/dispatch/runner.js",
-    "self-test": "npm run bundle && npm run start"
+    "self-test": "npm run bundle && npm run start",
+    "watch": "watchexec --exts ts -- npm run bundle"
   },
   "author": "Steven Lu",
   "license": "none (this will be updated, make an issue if you have any queries!)",
