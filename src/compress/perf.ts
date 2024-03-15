@@ -104,7 +104,7 @@ export const compare_stream_efficiency_in_context_of_compression = test('streams
 });
 
 // just a simple check of compression ratio perf
-export const brotli_quick_efficiency = test('brotli compression', async ({ t, p, l, a: {eq}}) => {
+export const brotli_compression_efficiency = test('brotli compression', async ({ t, p, l, a: {eq}}) => {
   { // so i want to add one more dimension to this to compare the other compressions and shove them in the same graphs. It's definitely straightforward.
     const ratios: number[] = [];
     const compdlens: number[] = [];
