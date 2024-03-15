@@ -10,6 +10,7 @@
     "bundle": "npm run build && esbuild ./build/index.js --bundle --platform=node --sourcemap --format=esm --outfile=./dist/bundle.js --external:express",
     "postbundle": "time tsc -p tsconfig.for_decls.json",
     "start": "node --enable-source-maps ./build/dispatch/runner.js",
+    "debug": "node --inspect-brk --enable-source-maps ./build/dispatch/runner.js",
     "self-test": "npm run bundle && npm run start",
     "watch": "watchexec --exts ts,json -- npm run bundle"
   },

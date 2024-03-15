@@ -17,30 +17,34 @@ export async function trigger_dynamic_imports(containingDir: string, files_filte
     dynamic_import_duration: 0
   };
   const start = process.hrtime();
-  console.error('trigger_dynamic_import files_filtered', files_filtered);
-  await Promise.all(files_filtered.map(file => import(path.join(containingDir, file)).then(exports => {
-    // console.error("imported", exports, 'from', containingDir, file);
-    stats.files += 1;
-    for (const [name, fn] of Object.entries(exports as { [key: string]: any; })) {
-      stats.all_exported_items_count += 1;
-      if (typeof fn !== 'function') continue;
-      const got = testFnRegistry.get(fn as TFun | ((...args: Parameters<TFun>) => Promise<void>));
-      if (typeof got === 'object') {
-        stats.exported_test_fns += 1;
-        got.name = name || fn.name;
-        if (!got.name) {
-          console.error(`${red('Warning')}: Test function ${fn} from ${file} has no name.`);
+  console.error('trigger_dynamic_import files_filtered', files_filtered, 'pwd', process.cwd());
+  await Promise.all(files_filtered.map(file => {
+    const pth = path.resolve(containingDir, file);
+    console.error('importing', pth);
+    return import(pth).then(exports => {
+      // console.error("imported", exports, 'from', containingDir, file);
+      stats.files += 1;
+      for (const [name, fn] of Object.entries(exports as { [key: string]: any; })) {
+        stats.all_exported_items_count += 1;
+        if (typeof fn !== 'function') continue;
+        const got = testFnRegistry.get(fn as TFun | ((...args: Parameters<TFun>) => Promise<void>));
+        if (typeof got === 'object') {
+          stats.exported_test_fns += 1;
+          got.name = name || fn.name;
+          if (!got.name) {
+            console.error(`${red('Warning')}: Test function ${fn} from ${file} has no name.`);
+          }
+          got.filename = file;
+          // console.error('test tracing runTests():', got);
+          // } else {
+          // console.log(`The export ${name} from ${file} is not a registered test`);
         }
-        got.filename = file;
-        // console.error('test tracing runTests():', got);
-        // } else {
-        // console.log(`The export ${name} from ${file} is not a registered test`);
       }
-    }
-  }).catch(err => {
-    console.error(`dynamic import failed on ${file} (${err})`);
-    throw err;
-  })));
+    }).catch(err => {
+      console.error(`dynamic import failed on ${file} (${err})`);
+      throw err;
+    })
+  }));
   stats.dynamic_import_duration = hrTimeMs(process.hrtime(start));
   console.error('test dispatch', 'trigger_dynamic_import stats', stats);
   return {
