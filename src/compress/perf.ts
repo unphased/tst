@@ -23,9 +23,9 @@ function makeCompressionStream(type: CompressionType, level: number) {
   }
 }
 
-export const compare_stream_efficiency_in_context_of_compression = test('streams', async ({ t, p, l, a: {eqO}}) => {
+export const compare_stream_efficiency_in_context_of_compression = test('streams', async ({ t, p, l, a: {eqO, eq}}) => {
   // mainly want to compare the handy compress functions node gives against full blown making our own streams and
-  // piping.
+  // piping. If as expected then the cb's are simply implementing the same underneath and perf will match.
   const methods = ['gzip_stream', 'gzip_cb'];
   const durations = new Map<string, {ns: number, index: number}[]>();
   const record = (hrDelta: ReturnType<typeof process.hrtime>, index: number, method: string) => {
@@ -33,15 +33,20 @@ export const compare_stream_efficiency_in_context_of_compression = test('streams
     d.push({ ns: hrDelta[0] * 1e9 + hrDelta[1], index });
     durations.set(method, d);
   };
+
+  const lens: number[] = [];
   
   for (const method of methods) {
-    for (let i = 1000; i < 20000; i = Math.ceil(i * 1.07)) {
+    for (let i = 1000; i < 800000; i = Math.ceil(i * 1.3)) {
       const input = Array.from({length: i}, (_, j) => `abcdefghijk${Math.sqrt(j)}`).join('\n');
+      if (method === methods[0]) {
+        lens.push(input.length);
+      }
       const inputBuf = Buffer.from(input);
       // do some simple round trips
       if (method === 'gzip_stream') {
         const start = process.hrtime();
-        const gzipCompress = makeCompressionStream(CompressionType.gzip, 9);
+        const gzipCompress = makeCompressionStream(CompressionType.gzip, 3);
         const gzipDecompress = zlib.createGunzip();
         const inStream = new stream.Readable({ read() {
           this.push(inputBuf);
@@ -65,7 +70,7 @@ export const compare_stream_efficiency_in_context_of_compression = test('streams
       } else if (method === 'gzip_cb') {
         const start = process.hrtime();
         const decompd = await new Promise((resolve, reject) => {
-          zlib.gzip(inputBuf, { level: 9 }, (err, compressed) => {
+          zlib.gzip(inputBuf, { level: 3 }, (err, compressed) => {
             if (err) reject(err);
             zlib.gunzip(compressed, (err, decompressed) => {
               if (err) reject(err);
@@ -82,14 +87,19 @@ export const compare_stream_efficiency_in_context_of_compression = test('streams
 
   // for sanity; the records' indices (that determine the generated test cases content) should be the same values
   eqO(durations.get('gzip_stream').map(({_ns, index}) => index), durations.get('gzip_cb').map(({_ns, index}) => index));
+  eq(lens.length, [...durations.values()][0].length);
 
   p('uplot', [{
     title: 'compression, comparing runtime perf of manual streams vs convenience node functions',
     y_axes: [...durations.keys()].map(meth => meth + ' runtime ns'),
     data: [
-      durations.get('gzip_stream').map(({ns, index}) => index), // x axis is the size of the input roughly
+      durations.get('gzip_stream').map(({_ns, index}) => index), // x axis is the size of the input roughly
       ...Array.from(durations.values()).map(arr => arr.map(({ ns }) => ns))
     ]
+  }, {
+    title: 'job index input byte size',
+    y_axes: ['input size'],
+    data: [[...durations.values()][0].map(({_ns, index}) => index), lens]
   }]);
 });
 
