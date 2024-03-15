@@ -174,9 +174,10 @@ export const LaunchTests = async (rootPath?: string, launchOpts?: LaunchOptions)
     console.log(JSON.stringify(dispatchResult));
   }
   console.error(`Test launch complete, ${testCount} tests, metrics:`, util.inspect(metricsForEcho, { colors: true, depth: 8 }), `\n${metricsEasyRead}`);
-  startServer();
+  if (launch_opts.web_server) {
+    startServer();
+  }
 };
 
 isProgramLaunchContext() && void (LaunchTests)('./build');
-
 
