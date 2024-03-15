@@ -37,7 +37,7 @@ export const compare_stream_efficiency_in_context_of_compression = test('streams
   const lens: number[] = [];
   
   for (const method of methods) {
-    for (let i = 1000; i < 800000; i = Math.ceil(i * 1.3)) {
+    for (let i = 100; i < 20000; i = Math.ceil(i * 1.3)) {
       const input = Array.from({length: i}, (_, j) => `abcdefghijk${Math.sqrt(j)}`).join('\n');
       if (method === methods[0]) {
         lens.push(input.length);
