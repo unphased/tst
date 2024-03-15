@@ -151,6 +151,8 @@ function produceHtmlTestResults(results: TestResult[]) {
   clearTestResultPages();
   for (const result of results) {
     for (const [group, embeds] of Object.entries(groupBy(result.embeds, 'group_id'))) {
+      // Each test can produce zero, one or more html pages. the embeds can be established in any order, but group_id is used to group
+      // into pages. 
       pushTestResultPage((result.suite ? result.suite + ':' : '') + result.name + (group ? ': ' + group : ''), Object.values(build_html_page(embeds)).join('\n'));
     }
   }

@@ -104,23 +104,56 @@ export const compare_stream_efficiency_in_context_of_compression = test('streams
 });
 
 // just a simple check of compression ratio perf
-// export const brotli_quick_efficiency = test('brotli compression', async ({ t, p, l, a: {eq}}) => {
-//   const ratios: number[] = [];
-//   const NUM = 10;
-//   for (let i = 0; i < NUM; i++) {
-//     const input = Buffer.from(`hello ${'z'.repeat(i)} world`);
-//     const brotliCompress = makeCompressionStream(CompressionType.brotli, zlib.constants.BROTLI_DEFAULT_QUALITY);
-//     const brotliDecompress = makeDecompressionStream(CompressionType.brotli);
-//     const compressed = 
-//     const ratio = compressed.length / input.length;
-//     ratios[i] = ratio;
-//     const decompressed = await brotliDecompress(compressed);
-//     eq(input, decompressed);
-//   }
-//   p("uplot", [{
-//     title: 'brotli ratios for a single repeated char',
-//     y_axes: ['r'],
-//     data: [Array.from({length: NUM}, (_, i) => i), ratios]
-//   }]);
-//   l('ratios', ratios);
-// });
+export const brotli_quick_efficiency = test('brotli compression', async ({ t, p, l, a: {eq}}) => {
+  { // so i want to add one more dimension to this to compare the other compressions and shove them in the same graphs. It's definitely straightforward.
+    const ratios: number[] = [];
+    const compdlens: number[] = [];
+    const durationsMs: number[] = [];
+    const i_s: number[] = [];
+    for (let i = 1; i < 1000000; i = Math.ceil(i * 1.3)) {
+      i_s.push(i);
+      const input = Buffer.from(`hello ${'z'.repeat(i)} world`);
+      const brotliCompress = makeCompressionStream(CompressionType.brotli, zlib.constants.BROTLI_DEFAULT_QUALITY);
+      const inStream = new stream.Readable({ read() {
+        this.push(input);
+        this.push(null);
+      }});
+      const start = process.hrtime();
+      const out = inStream.pipe(brotliCompress);
+      const compd = await new Promise<string>((resolve, reject) => {
+        let buf = '';
+        out.on('data', (chunk) => {
+          if (chunk) {
+            buf += chunk.toString();
+          }
+        });
+        out.on('end', () => {
+          resolve(buf);
+        });
+        out.on('error', reject);
+      });
+      const end = process.hrtime(start);
+      const duration = end[0] * 1e9 + end[1];
+      durationsMs.push(duration/1e6);
+
+      const ratio = compd.length / input.length;
+      ratios.push(ratio);
+      compdlens.push(compd.length);
+    }
+
+    p("uplot", [{
+      title: 'brotli ratios for a single repeated char',
+      y_axes: ['compression ratio'],
+      data: [i_s, ratios]
+    },{
+      title: 'brotli compressed length',
+      y_axes: ['compressed length'],
+      data: [i_s, compdlens]
+    },
+    {
+      title: 'brotli compression duration',
+      y_axes: ['duration ms'],
+      data: [i_s, durationsMs]
+    }]);
+  }
+});
