@@ -88,7 +88,7 @@ export const compare_stream_efficiency_in_context_of_compression = test('streams
     y_axes: [...durations.keys()].map(meth => meth + ' runtime ns'),
     data: [
       durations.get('gzip_stream').map(({ns, index}) => index), // x axis is the size of the input roughly
-      durations.get('gzip_stream').map(({ns}, i) => ns))
+      ...Array.from(durations.values()).map(arr => arr.map(({ ns }) => ns))
     ]
   }]);
 });
