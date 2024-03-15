@@ -6,8 +6,8 @@ import { LaunchOptions } from './config/launchOptions.js';
 import { PlotData } from './plotting/index.js';
 import { plotters } from "./plotting/plotters_index.js";
 import { SpawnAsyncOpts, SpawnAsyncTestLogTraced, isBypassResourceMetrics, spawnAsync } from './process.js';
-import { Embeds, ResourceMetrics, TestAssertionMetrics, TestLogs, TestOptions } from "./types.js";
-import { TestMetadata } from './types.js';
+import { Embeds, ResourceMetrics, TestAssertionMetrics, TestLogs, TestMetadata, TestOptions } from "./types.js";
+
 import * as os from 'os';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -193,3 +193,4 @@ export function test(fn_or_suite_name: (TFunOrAsync) | string, fn_or_opts?: (TFu
 
 export { diffOfStrings } from './assertions.js';
 export { ProcessError, execAsync, spawnAsync, stdoutColorizer } from './process.js';
+
