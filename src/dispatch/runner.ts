@@ -96,14 +96,15 @@ const isProgramLaunchContext = () => {
  *** Realistically, sticking to hub/spoke model when going over the network between machines is the only reasonable
  *** approach. Consider that the combined output would be a larger payload. compression may make an impact but it's just a questionable approach.
 */
-export const LaunchTests = async (rootPath?: string) => {
+export const LaunchTests = async (rootPath?: string, launchOpts?: LaunchOptions) => {
   const testSpecification = parseTestLaunchingArgs(process.argv.slice(2), rootPath);
   console.error("test launch spec (files, predicate):", testSpecification.files, testSpecification.testPredicate.toString());
   let metricsForEcho: { [k: string]: any } = {};
   let metricsEasyRead = '';
 
   let testCount: number = 0;
-  let launch_opts = {echo_test_logging: false, expand_test_suites_reporting: true};
+  let default_launch_opts = {echo_test_logging: false, expand_test_suites_reporting: true};
+  let launch_opts = { ...default_launch_opts, ...launchOpts };
   if (topt(tf.ForceEnableLogging)) { launch_opts.echo_test_logging = true; }
   if (topt(tf.ForceDisableLogging)) { console.assert(!topt(tf.ForceEnableLogging)); launch_opts.echo_test_logging = false; }
 

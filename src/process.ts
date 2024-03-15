@@ -47,7 +47,7 @@ type RemoveSIGPrefix<T extends string> = T extends `SIG${infer Rest}` ? Rest : n
 type SignalNamesWithoutSIG = RemoveSIGPrefix<SignalKeysWithSIG>;
 
 export type SpawnAsyncOpts = {
-  onstdout?: (data: any) => void;
+  onstdout?: (data: string | Buffer) => void;
   onspawn?: (proc: ChildProcess, kill: (string?: SignalNamesWithoutSIG) => void) => void;
   fillBg?: true; // fill bgcolor to rest of line in io log colorization. Note the colorizer default is true so only need to set this if you want to specify false
   hideLaunchAndClose?: true; // suppresses logging of launch and close events. But nonzero exit will still be logged.
@@ -65,13 +65,14 @@ export type SpawnAsyncOpts = {
   bypassResourceMetrics?: true; // set to true to suppress resource metrics collection by directly launching instead of launching under [g]time. From light benchmarking it should shave an entire ms off your process launch.
   bufferStdout?: true; // set to true to return stdout as a string in the promise resolution. Note this will also suppress stdout logging.
   showStdoutWhenBuffering?: true; // only has effect when bufferStdout is true. set to true to do the usual stdout logging in addition to returning it buffered in the promise resolution.
+  stdinStream?: NodeJS.ReadableStream; // set to a stream to pipe it to the process's stdin.
 };
 
 // used to bind the type of a state variable (string holding path of records) we'll use in the function to the value of the config flag
 type OptStateWithMetrics = { bypassResourceMetrics: undefined; time_output_file: string; };
 type OptStateWithoutMetrics = { bypassResourceMetrics: true; time_output_file: undefined; };
 
-type OptStateWithStdin = { bufferStdout: true, stdoutBuf: string };
+type OptStateWithStdout = { bufferStdout: true, stdoutBuf: string };
 
 type SpawnAsyncReturnWResources = SpawnAsyncReturnBase & {
   resources: SpawnResourceReport;
@@ -123,7 +124,7 @@ const bold = (s: string) => colors.bold + s + colors.bold_reset;
 export const spawnAsync = ((command: string, args: string[], logger_?: typeof console.error, options?: SpawnAsyncOpts): Promise<SpawnAsyncReturnBase|SpawnAsyncReturnWResources|SpawnAsyncReturnWStdout|SpawnAsyncReturnWStdoutAndResources> => {
   const start = process.hrtime();
   const logger = logger_ ?? console.error;
-  const opts = { ...options } as Simplify<SpawnAsyncOpts & ({ time_output_file?: string; bypassResourceMetrics?: true; }) & Partial<OptStateWithStdin>>;
+  const opts = { ...options } as Simplify<SpawnAsyncOpts & ({ time_output_file?: string; bypassResourceMetrics?: true; }) & Partial<OptStateWithStdout>>;
 
   // resolve opts that override other opts
   if (opts?.hideAllMeta) {
@@ -179,6 +180,10 @@ export const spawnAsync = ((command: string, args: string[], logger_?: typeof co
         });
       });
     }
+    if (opts?.stdinStream) {
+      opts.stdinStream.pipe(proc.stdin);
+    }
+
     const outstream = stdoutColorizer(opts?.fillBg);
     const errstream = stderrColorizer(opts?.fillBg);
     if (opts?.bufferStdout) {
