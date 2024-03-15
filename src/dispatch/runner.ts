@@ -12,6 +12,7 @@ import { launchAutomatedProcessTestsFromRegistryInParallel, processDistributedTe
 import { runTestsFromRegistry } from './runTestsFromRegistry.js';
 import { trigger_dynamic_imports } from './trigger_dynamic_imports.js';
 import { parseTestLaunchingArgs, tf, topt } from './util.js';
+import { startServer } from '../web-server.js';
 
 // import { ResourceMonitoringWorkerLaunch } from './resource-monitoring.js';
 
@@ -173,6 +174,7 @@ export const LaunchTests = async (rootPath?: string, launchOpts?: LaunchOptions)
     console.log(JSON.stringify(dispatchResult));
   }
   console.error(`Test launch complete, ${testCount} tests, metrics:`, util.inspect(metricsForEcho, { colors: true, depth: 8 }), `\n${metricsEasyRead}`);
+  startServer();
 };
 
 isProgramLaunchContext() && void (LaunchTests)('./build');
