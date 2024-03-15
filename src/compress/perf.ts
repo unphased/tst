@@ -145,12 +145,11 @@ export const brotli_quick_efficiency = test('brotli compression', async ({ t, p,
       title: 'brotli ratios for a single repeated char',
       y_axes: ['compression ratio'],
       data: [i_s, ratios]
-    },{
+    }, {
       title: 'brotli compressed length',
       y_axes: ['compressed length'],
       data: [i_s, compdlens]
-    },
-    {
+    }, {
       title: 'brotli compression duration',
       y_axes: ['duration ms'],
       data: [i_s, durationsMs]
