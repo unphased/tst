@@ -19,14 +19,15 @@ import { startServer } from '../web-server.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-export const discoverTests = async (targetDir: string, specifiedTestFiles: ReturnType<typeof parseTestLaunchingArgs>['files']) => {
+export const discoverTests = async (targetDir: string, js_files_only: boolean, specifiedTestFiles: ReturnType<typeof parseTestLaunchingArgs>['files']) => {
   const startf = process.hrtime();
   const files = fs.readdirSync(targetDir, { recursive: true, encoding: 'utf8' })
     .filter(f => path.resolve(targetDir, f) !== __filename); // filter out self, importing that will break us
   const fileDiscoveryDuration = hrTimeMs(process.hrtime(startf));
   const start = process.hrtime();
+  const js_ts_re = js_files_only ? /\.js$/ : /\.[jt]s$/;
   const files_filtered = files
-    .filter(f => f.match(/\.[jt]s$/)) // importing non js/ts files will fail -- i got some config json and log files under build
+    .filter(f => f.match(js_ts_re)) // importing non js/ts files will fail -- i got some config json and log files under build
     .filter(f => !f.match(/\/payload\/|^workers\//))
     // gluing multiple filters into one regex:
     // 1. importing code under instrument/payload (not ever meant to be tested or run here) will break likely due to
@@ -129,7 +130,7 @@ export const LaunchTests = async (rootPath?: string, launchOpts?: LaunchOptions)
     // mostly transparent at this level whether it is launching locally or on remote nodes.)
     // - collate and record test results and recursive output metrics
     // - render test report
-    const { registry, ...discoveryMetrics } = await discoverTests(fileSearchDir, testSpecification.files);
+    const { registry, ...discoveryMetrics } = await discoverTests(fileSearchDir, topt(tf.ImportJsOnly), testSpecification.files);
     const { structuredResults, ...parallelLaunchMetrics } = await runParallelTests(registry, testSpecification.testPredicate);
     const { outputResults, distributed_metrics } = processDistributedTestResults(/* (complex types lining up here) */ structuredResults)
     testCount = outputResults.length;
@@ -145,7 +146,7 @@ export const LaunchTests = async (rootPath?: string, launchOpts?: LaunchOptions)
     // - run tests
     // - record results and metrics
     // - render test report
-    const { registry, ...metrics } = await discoverTests(fileSearchDir, testSpecification.files);
+    const { registry, ...metrics } = await discoverTests(fileSearchDir, topt(tf.ImportJsOnly), testSpecification.files);
     const { testResults, ...metrics2 } = await runTests(registry, testSpecification.testPredicate, launch_opts);
     // there is a slight change in behavior now that I have test output writing to files broken out, which is if tests
     // fail outside of the runner (e.g. exception in I/O handler) then now we may never write any of the results to

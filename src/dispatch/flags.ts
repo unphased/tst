@@ -14,6 +14,7 @@ export enum TestLaunchFlags {
   ForceEnableLogging = '_test_logging_on',
   AsyncParallelTestLaunch = '_async_parallel',
   ExactTestNameMatching = '_exact_test_names', // default cli to use loose test specifier matching logic.
+  ImportJsOnly = '--import-js-only', // for use when launching tests on compilation products so we don't let node choke on importing .d.ts files (... so we dont have to carefully organize those .d.ts files and impact their discovery by other projects)
 }
 
 export enum TestLaunchFlagsTakingOneArg {
