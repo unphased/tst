@@ -10,6 +10,7 @@
     "bundle": "npm run build && esbuild ./build/index.js --bundle --platform=node --sourcemap --format=esm --outfile=./dist/bundle.js --external:express",
     "postbundle": "time tsc -p tsconfig.for_decls.json",
     "start": "node --enable-source-maps ./build/dispatch/run_and_serve.js",
+    "test": "node --enable-source-maps ./build/dispatch/runner.js",
     "debug": "node --inspect-brk --enable-source-maps ./build/dispatch/runner.js",
     "self-test": "npm run bundle && npm run start",
     "watch-simple": "watchexec --exts ts,json -- npm run bundle",
@@ -35,6 +36,7 @@
     "eslint-plugin-node": "^11.1.0",
     "express": "^4.18.2",
     "fast-xml-parser": "^4.3.4",
+    "tsx": "^4.7.1",
     "typescript": "^5.3.3"
   },
   "dependencies": {

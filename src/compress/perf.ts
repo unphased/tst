@@ -1,5 +1,6 @@
 import * as zlib from 'node:zlib';
 import * as stream from 'node:stream';
+import { cartesian } from 'ts-utils';
 
 import { test } from '../main.js';
 
@@ -26,6 +27,19 @@ function makeCompressionStream(type: CompressionType, level: number) {
 export const compare_stream_efficiency_in_context_of_compression = test('streams', async ({ t, p, l, a: {eqO, eq}}) => {
   // mainly want to compare the handy compress functions node gives against full blown making our own streams and
   // piping. If as expected then the cb's are simply implementing the same underneath and perf will match.
+  enum compression {
+    gzip, brotli, deflateraw
+  }
+  enum method {
+    stream, convenience_cb
+  }
+  enum level {
+    one = 1, three = 3, five = 5, seven = 7, nine = 9
+  }
+  // const combinations = cartesian(ty, meth, level);
+  const evaluate = async (type: ty, method: meth, level: number, input: string) => {
+
+  };
   const methods = ['gzip_stream', 'gzip_cb'];
   const durations = new Map<string, {ns: number, index: number}[]>();
   const record = (hrDelta: ReturnType<typeof process.hrtime>, index: number, method: string) => {
@@ -105,6 +119,7 @@ export const compare_stream_efficiency_in_context_of_compression = test('streams
 
 // just a simple check of compression ratio perf
 export const brotli_compression_efficiency = test('brotli compression', async ({ t, p, l, a: {eq}}) => {
+  t('exemptFromAsserting', true);
   { // so i want to add one more dimension to this to compare the other compressions and shove them in the same graphs. It's definitely straightforward.
     const ratios: number[] = [];
     const compdlens: number[] = [];
