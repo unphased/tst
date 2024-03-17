@@ -68,7 +68,30 @@ export const compression_megabench = test('streams', async ({ t, p, l, a: {eqO, 
   const routines = [
     {
       name: 'stream', routine: async (input: Buffer, methods: AlgoMethod) => {
-
+        const metrics: Partial<Metrics> = {};
+        const start = process.hrtime();
+        const gzipCompress = makeCompressionStream(CompressionType.gzip, 3);
+        const gzipDecompress = zlib.createGunzip();
+        const inStream = new stream.Readable({ read() {
+          this.push(inputBuf);
+          this.push(null);
+        }});
+        const decompd = await new Promise((resolve, reject) => {
+          const out = inStream.pipe(gzipCompress).pipe(gzipDecompress);
+          let buf: string = '';
+          out.on('data', (chunk) => {
+            if (chunk) {
+              buf += chunk.toString();
+            }
+          });
+          out.on('end', () => {
+            resolve(buf);
+          });
+        });
+        const end = process.hrtime(start);
+        record(end, i, method);
+        eqO(input, decompd);
+        return metrics;
       }
     }, {
       name: 'convenience_cb', routine: async (input: Buffer, level: number, methods: AlgoMethod) => {
