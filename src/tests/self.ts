@@ -244,7 +244,7 @@ test('test export method', separate_export_and_test_decl);
 
 // a simple check on the deep equal functionality. I am fairly certain since funs get dropped in json.stringify that
 // this will test for that. It will also check that it's doing a deep equality instead of object ref equality.
-export const compare_functions_and_stuff = test('assertions', ({ t, l, a: { eqO, throws } }) => {
+export const deep_equal_simple = test('assertions', ({ t, l, a: { eqO, throws } }) => {
   const double = (i: number) => i * 2;
   const double2 = (i: number) => i * 2;
   eqO(double, double);
