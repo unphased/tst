@@ -242,3 +242,31 @@ export const global_test_function_exported_as_var = test('test export method', g
 export function separate_export_and_test_decl({ t }) { t('exemptFromAsserting', true); }
 test('test export method', separate_export_and_test_decl);
 
+// a simple check on the deep equal functionality. I am fairly certain since funs get dropped in json.stringify that
+// this will test for that. It will also check that it's doing a deep equality instead of object ref equality.
+export const compare_functions_and_stuff = test('assertions', ({ t, l, a: { eqO, throws } }) => {
+  const double = (i: number) => i * 2;
+  const double2 = (i: number) => i * 2;
+  eqO(double, double);
+  throws(() => { // canonical way to test for an assertion failure as all my assertions throw to indicate failure.
+    eqO(double, double2); // note this will throw an interesting error message. it'll say expected double to equal double2, then render a diff, but the diff will be empty, since their code is identical
+  });
+
+  const obj = { a: double };
+  const obj2 = { a: double };
+  const obj3 = { a: double2 };
+  eqO(obj, obj2);
+  throws(() => {
+    eqO(obj, obj3);
+  });
+});
+
+// Inceptideep is a second form of inception that is deeper by leveraging the test bundle instead of just
+// calling self from the babel'd js code from tree in build. It's a test approach closer to what a lib would see. It's
+// somewhat aspirational though, because realistically these meta-tests are being run from build
+///// I'm not implementing this yet; don't have a suitable behavior to test this with. It's a bit of a hardcore concept
+// export const deep_equal_with_differing_functions_inceptideep = test('assertions', async ({spawn}) => {
+//   const projDir = getBuildProjDir(); // I guess gonna be using build dir to derive dist dir for the time being, as i do not have a helper to grab that.
+//   // the approach is going to involve (1) put a brand new test in a string literal here into a ts file, (2) launch
+//   it with tsx and work out how to link it to the bundle (this tst test lib's bundle) (3) validate output
+// });
