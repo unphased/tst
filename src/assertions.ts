@@ -74,8 +74,8 @@ export function findContiguousSubsequenceSlidingWindow<T>(needle: T[], haystack:
 // export const Nce = (n: number, cb: () => void) => { }
 // export const once = (cb: () => void) => { Nce(1, cb); }
 export const assertions = {
-  // TODO switch the protocol here to throw special errors that wrap a hrtime as well so that the timing won't include
-  // the time taken to generate these errors (some of which do spawns etc).
+  // TODO switch the protocol here to throw special errors that wrap a hrtime as well so that the timing for failed
+  // tests won't include the time taken to generate these errors (some of which do spawns etc).
   eq: <T>(a: T, b: T, ...message: any[]) => {
     if (a !== b) throw new Error(red(bold(italic('eq')) + ' expected ') + pp2(a) + red(' to equal ') + pp2(b) + '. ' + format(...message));
   },
