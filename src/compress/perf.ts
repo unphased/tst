@@ -1,6 +1,6 @@
 import * as zlib from 'node:zlib';
 import * as stream from 'node:stream';
-import { cartesian } from 'ts-utils';
+import { cartesian, cartesianAll } from 'ts-utils';
 
 import { test } from '../main.js';
 
@@ -24,23 +24,87 @@ function makeCompressionStream(type: CompressionType, level: number) {
   }
 }
 
-export const compare_stream_efficiency_in_context_of_compression = test('streams', async ({ t, p, l, a: {eqO, eq}}) => {
-  // mainly want to compare the handy compress functions node gives against full blown making our own streams and
-  // piping. If as expected then the cb's are simply implementing the same underneath and perf will match.
-  enum compression {
-    gzip, brotli, deflateraw
-  }
-  enum method {
-    stream, convenience_cb
-  }
-  enum level {
-    one = 1, three = 3, five = 5, seven = 7, nine = 9
-  }
-  // const combinations = cartesian(ty, meth, level);
+export const compression_megabench = test('streams', async ({ t, p, l, a: {eqO, eq}}) => {
+  // Started out mainly wanting to compare the handy compress functions node gives against full blown making our own streams and
+  // piping. Then realized I can make this a lot more elegantly automated for comparisons so it grew into a benchmark
+  // of every conceivable thing.
+  type CStream = zlib.Gzip | zlib.BrotliCompress | zlib.Deflate | zlib.DeflateRaw;
+  type DCStream = zlib.Gunzip | zlib.BrotliDecompress | zlib.Inflate | zlib.InflateRaw;
+
+  type AlgoMethod = {
+    name: string;
+    stream: (level: number) => CStream;
+    de_stream_maker: () => DCStream; // the decompressors never need to have options specified
+    cb: (input: Buffer, level: number, cb: (error: Error | null, result: Buffer) => void) => void;
+    de_cb: (input: Buffer, cb: (error: Error | null, result: Buffer) => void) => void;
+  };
+
+  // we make slight adjustments (in particular for brotli) to produce a uniform API
+  const comp_algoes: AlgoMethod[] = [
+    { name: 'gzip',
+      stream: (l: number) => zlib.createGzip({level: l}),
+      de_stream_maker: zlib.createGunzip,
+      cb: (i,l,cb) => zlib.gzip(i, {level: l}, cb),
+      de_cb: zlib.gunzip
+    }, { name: 'brotli',
+      stream: (l: number) => zlib.createBrotliCompress({params:{[zlib.constants.BROTLI_PARAM_QUALITY]: l}}),
+      de_stream_maker: zlib.createBrotliDecompress,
+      cb: (i,l,cb) => zlib.brotliCompress(i, {params: {[zlib.constants.BROTLI_PARAM_QUALITY]: l}}, cb),
+      de_cb: zlib.brotliDecompress
+    }, { name: 'deflateRaw',
+      stream: (l: number) => zlib.createDeflateRaw({level: l}),
+      de_stream_maker: zlib.createInflateRaw,
+      cb: (i,l,cb) => zlib.deflateRaw(i, {level: l}, cb),
+      de_cb: zlib.inflateRaw
+    },
+  ];
+
+  type Metrics = {
+    compMs: number;
+    decompMs: number;
+    compRatio: number;
+  };
+
+  const routines = [
+    {
+      name: 'stream', routine: async (input: Buffer, methods: AlgoMethod) => {
+
+      }
+    }, {
+      name: 'convenience_cb', routine: async (input: Buffer, level: number, methods: AlgoMethod) => {
+        const metrics: Partial<Metrics> = {};
+        const start = process.hrtime();
+        const round_trip_data = await new Promise((resolve, reject) => {
+          methods.cb(input, level, (err, compressed: Buffer) => {
+            if (err) reject(err);
+            metrics.compMs = process.hrtime(start)[0] * 1e3 + process.hrtime(start)[1] / 1e6;
+            metrics.compRatio = compressed.length / input.length;
+            const startDecomp = process.hrtime();
+            methods.de_cb(compressed, (err, decompressed) => {
+              if (err) reject(err);
+              metrics.decompMs = process.hrtime(startDecomp)[0] * 1e3 + process.hrtime(startDecomp)[1] / 1e6;
+              resolve(decompressed.toString());
+            });
+          });
+        });
+        // not using eq at the moment, merely to reduce test record overhead since this is a huge test 
+        if (round_trip_data !== input.toString()) {
+          throw new Error('round trip data did not match input');
+        }
+        return metrics;
+      }
+    },
+  ];
+
+  // varieties of data to compress
+  const datagens = [
+  ];
+  const combos = cartesianAll(datagens, comp_algoes, routines, [1, 3, 5, 7, 9] as const);
+
   const evaluate = async (type: ty, method: meth, level: number, input: string) => {
 
   };
-  const methods = ['gzip_stream', 'gzip_cb'];
+  // const methods = ['gzip_stream', 'gzip_cb'];
   const durations = new Map<string, {ns: number, index: number}[]>();
   const record = (hrDelta: ReturnType<typeof process.hrtime>, index: number, method: string) => {
     const d = durations.get(method) || [];
@@ -50,10 +114,10 @@ export const compare_stream_efficiency_in_context_of_compression = test('streams
 
   const lens: number[] = [];
   
-  for (const method of methods) {
+  for (const method of routines) {
     for (let i = 100; i < 20000; i = Math.ceil(i * 1.3)) {
       const input = Array.from({length: i}, (_, j) => `abcdefghijk${Math.sqrt(j)}`).join('\n');
-      if (method === methods[0]) {
+      if (method === routines[0]) {
         lens.push(input.length);
       }
       const inputBuf = Buffer.from(input);
