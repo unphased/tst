@@ -4,6 +4,7 @@ import { tmpdir } from 'os';
 import { join } from 'path';
 import { colors } from 'ts-utils/terminal';
 import { bold, format, pp2, italic, red } from 'ts-utils';
+import equal from 'deep-equal';
 
 export const diffOfStrings = (a: string, b: string) => {
   // load the strings into unique tmpfiles
@@ -90,9 +91,7 @@ export const assertions = {
     if (a <= b) throw new Error(red(bold(italic('gt')) + ' expected ') + pp2(a) + red(' to be greater than ') + pp2(b) + red('.'));
   },
   eqO: (a: any, b: any) => {
-    const aa = JSON.stringify(a);
-    const bb = JSON.stringify(b);
-    if (aa !== bb) throw new Error(red(bold(italic('eqO')) + ' expected ') + pp2(a) + red(' to equal ') + pp2(b) + red('.') + ' Delta: ' + diffOfStrings(aa, bb));
+    if (!equal(a, b)) throw new Error(red(bold(italic('eqO')) + ' expected ') + pp2(a) + red(' to equal ') + pp2(b) + red('.') + ' Delta: ' + diffOfStrings(format(a), format(b)));
   },
   includes: (a: any[], spec: any) => {
     if (!a) throw new Error(red(bold(italic('includes')) + ' expected ') + pp2(a) + red(" to include ") + pp2(spec));
