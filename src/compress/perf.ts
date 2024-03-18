@@ -1,6 +1,6 @@
 import * as zlib from 'node:zlib';
 import * as stream from 'node:stream';
-import { cartesianAll } from 'ts-utils';
+import { cartesianAll, identical, mapObjectProps } from 'ts-utils';
 import { test } from '../main.js';
 
 // helpers
@@ -103,7 +103,7 @@ export const compression_megabench = test('streams', async ({ t, p, l, a: {eqO, 
           methods.cb(input, level, (err, compressed: Buffer) => {
             if (err) reject(err);
             metrics.compMs = process.hrtime(start)[0] * 1e3 + process.hrtime(start)[1] / 1e6;
-            metrics.compRatio = compressed.length / input.length;
+            metrics.compRatio = input.length / compressed.length;
             const startDecomp = process.hrtime();
             methods.de_cb(compressed, (err, decompressed) => {
               if (err) reject(err);
@@ -125,12 +125,12 @@ export const compression_megabench = test('streams', async ({ t, p, l, a: {eqO, 
   // TODO definitely stands to gain scalability from converting these to generators
   const datagens = [ // all have tests growing geometrically in size
     { name: 'a-k and a number (usually but not always many digits)', produce: () =>
-      Array.from({length: 30}, (_, i) =>
+      Array.from({length: 10}, (_, i) =>
         Array.from({length: Math.ceil(1.3 ** (i + 10))}, (_, j) => 'abcdefghijk ' + Math.sqrt(j)).join('\n')
       )
     },
     { name: 'a-z with a number intercalated at random position', produce: () => 
-      Array.from({length: 30}, (_, i) =>
+      Array.from({length: 10}, (_, i) =>
         Array.from({length: Math.ceil(1.3 ** (i + 10))}, (_, j) => {
           const az = 'abcdefghijklmnopqrstuvwxyz';
           const rand = Math.floor(Math.random() * az.length);
@@ -139,15 +139,17 @@ export const compression_megabench = test('streams', async ({ t, p, l, a: {eqO, 
       )
     },
     { name: 'random numbers', produce: () =>
-      Array.from({length: 30}, (_, i) =>
+      Array.from({length: 10}, (_, i) =>
         Array.from({length: Math.ceil(1.3 ** (i + 10))}, (_, j) => Math.random().toString()).join('\n')
       )
     }
   ];
 
+  const levels = [1, 3, 5, 7, 9] as const;
+
   // note: datagens here is still actually a 2D construct (e.g. each data scheme is an independent battery of tests,
   // rather than one data point) but it is not suitable for expansion via cartesian product.
-  const combos = cartesianAll(datagens, comp_algoes, routines, [1, 3, 5, 7, 9] as const);
+  const combos = cartesianAll(datagens, comp_algoes, routines, levels);
 
   // 3 * 3 * 2 * 5 = 90 combos, each dataset coming in 50 sizes, so we'll have 4500 points to plot.
   l(combos);
@@ -155,21 +157,23 @@ export const compression_megabench = test('streams', async ({ t, p, l, a: {eqO, 
   type Key = {
     dataset: string;
     dataset_i: number;
+    data_size: number;
     algo: string;
     routine: string;
     level: number;
   };
 
-  const results: { meta: Key, values: Metrics }[] = [];
+  const structured: { meta: Key, values: Metrics }[] = [];
   for (const [data_maker, algo, job, level] of combos) {
     const data = data_maker.produce();
     for (let i = 0; i < data.length; i++) {
       const input = Buffer.from(data[i]);
       const metrics = await job.routine(input, level, algo);
-      results.push({
+      structured.push({
         meta: {
           dataset: data_maker.name,
           dataset_i: i,
+          data_size: input.length,
           algo: algo.name,
           routine: job.name,
           level
@@ -178,8 +182,48 @@ export const compression_megabench = test('streams', async ({ t, p, l, a: {eqO, 
       });
     }
   }
-  
-  l(results);
+  l('s.l', structured.length);
+
+  // data reshaping in preparation for plotting. collapse data to strings for easy fetching. Group by dataset and sort
+  // these groups by size.
+  const grab_bag: { [k: string]: [ number, number, number ][] } = {};
+  for (const { meta, values } of structured) {
+    const { dataset, dataset_i, data_size, algo, routine, level } = meta;
+    const nvs = mapObjectProps(values, (k, v) => ({ n: `${dataset} ${algo} ${routine} level ${level}: ${k}`, v }));
+    for (const { n, v } of nvs) {
+      if (!grab_bag[n]) grab_bag[n] = [];
+      grab_bag[n].push([dataset_i, data_size, v]);
+    }
+  }
+
+  // inspection confirms that sort order is never impacted by above reshaping.
+  l('gb.l', Object.keys(grab_bag).length);
+
+  // cartesian is used here to reconstruct the shape of grab bag keys a sanity check
+  const y_axes = cartesianAll(datagens.map(e => e.name), comp_algoes.map(e => e.name), routines.map(e => e.name), levels, Object.keys(structured[0].values)).map(([d, a, r, l, k]) => `${d} ${a} ${r} level ${l}: ${k}`);
+  l(y_axes);
+  l('ya.l', y_axes.length);
+  eqO(Object.keys(grab_bag), y_axes); // this confirms the order is exactly the same as well. Now we are confident we can plot
+
+  // filter and reshape a last time (to yield only the values) so we can plot these with separate y axes
+  const just_runtimes = Object.entries(grab_bag).filter(([k, v]) => k.includes('compMs') || k.includes('decompMs')).map(([k, v]) => [ k, v.map(e => e[2]) ]);
+  l('jt', just_runtimes);
+  const just_ratios = Object.entries(grab_bag).filter(([k, v]) => k.includes('compRatio')).map(([k, v]) => [ k, v.map(e => e[2]) ]);
+  l('jr', just_ratios);
+  const all_run_lengths = datagens.map(e => e.name).map(datan => {
+    const lengths = Object.entries(grab_bag).filter(([k, v]) => k.includes(datan)).map(([k, v]) => [ v.map(e => e[1]) ]);
+    l(datan, 'lengths', lengths, identical(lengths));
+  }) ;
+
+  // const just_ratios = 
+  // p('uplot', [{
+  //   title: 'size vs runtime'
+  //   y_axes, )
+  //
+  // p('uplot', [{
+  //   title: 'runtime over input size',
+  //   y_axes: ['compMs', 'decompMs'],
+  // }])
 
   // const methods = ['gzip_stream', 'gzip_cb'];
   //
