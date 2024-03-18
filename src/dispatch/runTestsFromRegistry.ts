@@ -41,7 +41,14 @@ export async function runTestsFromRegistry(testRegistry: Map<TFun | ((...args: P
     console[topt(tf.Automated) ? 'error' : 'log'](`${colors.blue}Running ${asyn ? 'async ' : ''}test ${magenta(asyn ? ul(name) : name)}${suite ? ` from suite '${suite}'` : ''} ${colors.dim + stack + colors.bold_reset}`);
     const testFailureHeader = `${colors.red}Failure${colors.fg_reset} in test ${colors.red}${suite ? italic(suite + ':') : ''}${ul(name)}${colors.fg_reset}`;
     const start = process.hrtime();
-    try {
+    if (topt(tf.NoCatching)) {
+      // no attempt at managing output is made under this mode
+      if (isAsyncVoidTFun(testFn)) {
+        await testFn(testParam);
+      } else {
+        testFn(testParam);
+      }
+    } else try {
       if (isAsyncVoidTFun(testFn)) {
         await testFn(testParam);
       } else {
@@ -69,6 +76,7 @@ export async function runTestsFromRegistry(testRegistry: Map<TFun | ((...args: P
       const finalMemSample = process.memoryUsage.rss(); // this memory value is not the full story but I figure it doesnt hurt to sample it here
       const durationMs = hrTimeMs(end);
       const err = e as Error;
+      if (topt(tf.RethrowFromTests)) throw e; 
       !options.fails && console.error(testFailureHeader, err);
       return { ...options, durationMs, name, async: asyn, file, stack, suite, logs, assertionMetrics, resourceMetrics, cpu, finalMemSample, embeds, failure: options.fails ? compatibleFailure(options.fails, err) : err };
     }

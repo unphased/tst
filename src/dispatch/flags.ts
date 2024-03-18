@@ -15,6 +15,8 @@ export enum TestLaunchFlags {
   AsyncParallelTestLaunch = '_async_parallel',
   ExactTestNameMatching = '_exact_test_names', // default cli to use loose test specifier matching logic.
   ImportJsOnly = '--import-js-only', // for use when launching tests on compilation products so we don't let node choke on importing .d.ts files (... so we dont have to carefully organize those .d.ts files and impact their discovery by other projects)
+  RethrowFromTests = '--rethrow', // used to obtain the raw thrown exception from a failed test (prevents proper handling and reporting of test results, but useful for debug)
+  NoCatching = '--no-catch', // even more hardcore than the above, prevent catching of exceptions in tests. mainly aids in debugging. Really need to use this together with a test specifier...
 }
 
 export enum TestLaunchFlagsTakingOneArg {

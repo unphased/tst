@@ -63,7 +63,7 @@ export const runTests = async (
   // source file(s) we found these tests in, from the parent runner instance, and then specify them
   // based on the suite and name.
 
-  establishTestResultsDir().catch(e => { throw new Error(`Error establishing test results dir: ${e}`); });
+  establishTestResultsDir();
   const start = process.hrtime();
   const testResults = await runTestsFromRegistry(registry, launch_opts, predicate, topt(tf.AsyncParallelTestLaunch));
   const testExecutionDuration = hrTimeMs(process.hrtime(start));
@@ -120,7 +120,6 @@ export const LaunchTests = async (rootPath?: string, launchOpts?: LaunchOptions)
   } else {
     throw new Error(`discoverTests: no fileSearchDir specified`);
   }
-
 
   if (topt(tf.Parallel) && !topt(tf.Automated)) {
     // === root parallel launch

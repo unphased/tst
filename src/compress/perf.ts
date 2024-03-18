@@ -1,28 +1,39 @@
 import * as zlib from 'node:zlib';
 import * as stream from 'node:stream';
-import { cartesian, cartesianAll } from 'ts-utils';
-
+import { cartesianAll } from 'ts-utils';
 import { test } from '../main.js';
 
-enum CompressionType {
-  gzip,
-  brotli,
-  deflate,
-  deflateRaw,
-}
+// helpers
+const stream_from = (s: string | Buffer) => new stream.Readable({ read() {
+  this.push(s);
+  this.push(null);
+}});
+const pump_stream = (input: stream.Readable) => new Promise<Buffer>((res, rej) => {
+  let buf: Buffer = Buffer.from('');
+  input.on('data', (chunk) => {
+    if (chunk) {
+      buf = Buffer.concat([buf, chunk]);
+    }
+  });
+  input.on('end', () => {
+    res(buf);
+  });
+  input.on('error', rej);
+});
 
-function makeCompressionStream(type: CompressionType, level: number) {
-  switch (type) {
-    case CompressionType.gzip:
-      return zlib.createGzip({ level });
-    case CompressionType.brotli:
-      return zlib.createBrotliCompress({ params: { [zlib.constants.BROTLI_PARAM_QUALITY]: level } });
-    case CompressionType.deflate:
-      return zlib.createDeflate({ level });
-    case CompressionType.deflateRaw:
-      return zlib.createDeflateRaw({ level });
-  }
-}
+// so as part of getting compression megabench to work i had to troubleshoot the stream assembly and figured might as
+// well make a test for it
+export const streams_weird = test('streams', async ({ t, p, l, a: {eqO, eq}}) => {
+  const compStream = zlib.createGzip({level: 9});
+  const decompStream = zlib.createGunzip();
+  const input = Buffer.from('abc');
+  const inStream = stream_from(input);
+  const compd = await pump_stream(inStream.pipe(compStream));
+  l('compd', compd);
+  const compdInStream = stream_from(compd);
+  const decompd = await pump_stream(compdInStream.pipe(decompStream));
+  eqO(decompd, input); // buffers are not a base type and cannot be compared with eq.
+});
 
 export const compression_megabench = test('streams', async ({ t, p, l, a: {eqO, eq}}) => {
   // Started out mainly wanting to compare the handy compress functions node gives against full blown making our own streams and
@@ -67,31 +78,22 @@ export const compression_megabench = test('streams', async ({ t, p, l, a: {eqO, 
 
   const routines = [
     {
-      name: 'stream', routine: async (input: Buffer, methods: AlgoMethod) => {
+      name: 'stream', routine: async (input: Buffer, level: number, methods: AlgoMethod) => {
         const metrics: Partial<Metrics> = {};
         const start = process.hrtime();
-        const gzipCompress = makeCompressionStream(CompressionType.gzip, 3);
-        const gzipDecompress = zlib.createGunzip();
-        const inStream = new stream.Readable({ read() {
-          this.push(inputBuf);
-          this.push(null);
-        }});
-        const decompd = await new Promise((resolve, reject) => {
-          const out = inStream.pipe(gzipCompress).pipe(gzipDecompress);
-          let buf: string = '';
-          out.on('data', (chunk) => {
-            if (chunk) {
-              buf += chunk.toString();
-            }
-          });
-          out.on('end', () => {
-            resolve(buf);
-          });
-        });
-        const end = process.hrtime(start);
-        record(end, i, method);
-        eqO(input, decompd);
-        return metrics;
+        const compStream = methods.stream(level);
+        const decompStream = methods.de_stream_maker();
+        const inStream = stream_from(input);
+        const compd = await pump_stream(inStream.pipe(compStream));
+        metrics.compMs = process.hrtime(start)[0] * 1e3 + process.hrtime(start)[1] / 1e6;
+        metrics.compRatio = compd.length / input.length; // lengths may not be comparable between buffer and string, but should be fine when test cases here are all ascii
+        const compdInStream = stream_from(compd);
+        const decompd = await pump_stream(compdInStream.pipe(decompStream));
+        metrics.decompMs = process.hrtime(start)[0] * 1e3 + process.hrtime(start)[1] / 1e6;
+        if (input.toString() !== decompd.toString()) {
+          throw new Error('round trip data (stream) did not match input');
+        }
+        return metrics as Metrics;
       }
     }, {
       name: 'convenience_cb', routine: async (input: Buffer, level: number, methods: AlgoMethod) => {
@@ -112,96 +114,87 @@ export const compression_megabench = test('streams', async ({ t, p, l, a: {eqO, 
         });
         // not using eq at the moment, merely to reduce test record overhead since this is a huge test 
         if (round_trip_data !== input.toString()) {
-          throw new Error('round trip data did not match input');
+          throw new Error('round trip data (cb) did not match input');
         }
-        return metrics;
+        return metrics as Metrics;
       }
     },
   ];
 
-  // varieties of data to compress
-  const datagens = [
+  // varieties of data to compress. `produce` returns string[], each is a test case
+  // TODO definitely stands to gain scalability from converting these to generators
+  const datagens = [ // all have tests growing geometrically in size
+    { name: 'a-k and a number (usually but not always many digits)', produce: () =>
+      Array.from({length: 30}, (_, i) =>
+        Array.from({length: Math.ceil(1.3 ** (i + 10))}, (_, j) => 'abcdefghijk ' + Math.sqrt(j)).join('\n')
+      )
+    },
+    { name: 'a-z with a number intercalated at random position', produce: () => 
+      Array.from({length: 30}, (_, i) =>
+        Array.from({length: Math.ceil(1.3 ** (i + 10))}, (_, j) => {
+          const az = 'abcdefghijklmnopqrstuvwxyz';
+          const rand = Math.floor(Math.random() * az.length);
+          return az.slice(0, rand) + ' ' + Math.sqrt(j) + ' ' + az.slice(rand);
+        }).join('\n')
+      )
+    },
+    { name: 'random numbers', produce: () =>
+      Array.from({length: 30}, (_, i) =>
+        Array.from({length: Math.ceil(1.3 ** (i + 10))}, (_, j) => Math.random().toString()).join('\n')
+      )
+    }
   ];
+
+  // note: datagens here is still actually a 2D construct (e.g. each data scheme is an independent battery of tests,
+  // rather than one data point) but it is not suitable for expansion via cartesian product.
   const combos = cartesianAll(datagens, comp_algoes, routines, [1, 3, 5, 7, 9] as const);
 
-  const evaluate = async (type: ty, method: meth, level: number, input: string) => {
+  // 3 * 3 * 2 * 5 = 90 combos, each dataset coming in 50 sizes, so we'll have 4500 points to plot.
+  l(combos);
 
-  };
-  // const methods = ['gzip_stream', 'gzip_cb'];
-  const durations = new Map<string, {ns: number, index: number}[]>();
-  const record = (hrDelta: ReturnType<typeof process.hrtime>, index: number, method: string) => {
-    const d = durations.get(method) || [];
-    d.push({ ns: hrDelta[0] * 1e9 + hrDelta[1], index });
-    durations.set(method, d);
+  type Key = {
+    dataset: string;
+    dataset_i: number;
+    algo: string;
+    routine: string;
+    level: number;
   };
 
-  const lens: number[] = [];
-  
-  for (const method of routines) {
-    for (let i = 100; i < 20000; i = Math.ceil(i * 1.3)) {
-      const input = Array.from({length: i}, (_, j) => `abcdefghijk${Math.sqrt(j)}`).join('\n');
-      if (method === routines[0]) {
-        lens.push(input.length);
-      }
-      const inputBuf = Buffer.from(input);
-      // do some simple round trips
-      if (method === 'gzip_stream') {
-        const start = process.hrtime();
-        const gzipCompress = makeCompressionStream(CompressionType.gzip, 3);
-        const gzipDecompress = zlib.createGunzip();
-        const inStream = new stream.Readable({ read() {
-          this.push(inputBuf);
-          this.push(null);
-        }});
-        const decompd = await new Promise((resolve, reject) => {
-          const out = inStream.pipe(gzipCompress).pipe(gzipDecompress);
-          let buf: string = '';
-          out.on('data', (chunk) => {
-            if (chunk) {
-              buf += chunk.toString();
-            }
-          });
-          out.on('end', () => {
-            resolve(buf);
-          });
-        });
-        const end = process.hrtime(start);
-        record(end, i, method);
-        eqO(input, decompd);
-      } else if (method === 'gzip_cb') {
-        const start = process.hrtime();
-        const decompd = await new Promise((resolve, reject) => {
-          zlib.gzip(inputBuf, { level: 3 }, (err, compressed) => {
-            if (err) reject(err);
-            zlib.gunzip(compressed, (err, decompressed) => {
-              if (err) reject(err);
-              resolve(decompressed.toString());
-            });
-          });
-        });
-        const end = process.hrtime(start);
-        record(end, i, method);
-        eqO(input, decompd);
-      }
+  const results: { meta: Key, values: Metrics }[] = [];
+  for (const [data_maker, algo, job, level] of combos) {
+    const data = data_maker.produce();
+    for (let i = 0; i < data.length; i++) {
+      const input = Buffer.from(data[i]);
+      const metrics = await job.routine(input, level, algo);
+      results.push({
+        meta: {
+          dataset: data_maker.name,
+          dataset_i: i,
+          algo: algo.name,
+          routine: job.name,
+          level
+        },
+        values: metrics
+      });
     }
   }
+  
+  l(results);
 
-  // for sanity; the records' indices (that determine the generated test cases content) should be the same values
-  eqO(durations.get('gzip_stream').map(({_ns, index}) => index), durations.get('gzip_cb').map(({_ns, index}) => index));
-  eq(lens.length, [...durations.values()][0].length);
-
-  p('uplot', [{
-    title: 'compression, comparing runtime perf of manual streams vs convenience node functions',
-    y_axes: [...durations.keys()].map(meth => meth + ' runtime ns'),
-    data: [
-      durations.get('gzip_stream').map(({_ns, index}) => index), // x axis is the size of the input roughly
-      ...Array.from(durations.values()).map(arr => arr.map(({ ns }) => ns))
-    ]
-  }, {
-    title: 'job index input byte size',
-    y_axes: ['input size'],
-    data: [[...durations.values()][0].map(({_ns, index}) => index), lens]
-  }]);
+  // const methods = ['gzip_stream', 'gzip_cb'];
+  //
+  // p('uplot', [{
+  //   title: 'compression, comparing runtime perf of manual streams vs convenience node functions',
+  //   y_axes: [...durations.keys()].map(meth => meth + ' runtime ns'),
+  //   data: [
+  //     durations.get('gzip_stream').map(({_ns, index}) => index), // x axis is the size of the input roughly
+  //     ...Array.from(durations.values()).map(arr => arr.map(({ ns }) => ns))
+  //   ]
+  // }, {
+  //   title: 'job index input byte size',
+  //   y_axes: ['input size'],
+  //   data: [[...durations.values()][0].map(({_ns, index}) => index), lens]
+  // }]);
 });
 
 // just a simple check of compression ratio perf
@@ -215,7 +208,7 @@ export const brotli_compression_efficiency = test('brotli compression', async ({
     for (let i = 1; i < 1000000; i = Math.ceil(i * 1.3)) {
       i_s.push(i);
       const input = Buffer.from(`hello ${'z'.repeat(i)} world`);
-      const brotliCompress = makeCompressionStream(CompressionType.brotli, zlib.constants.BROTLI_DEFAULT_QUALITY);
+      const brotliCompress = zlib.createBrotliCompress({params: { [zlib.constants.BROTLI_PARAM_QUALITY]: zlib.constants.BROTLI_DEFAULT_QUALITY }});
       const inStream = new stream.Readable({ read() {
         this.push(input);
         this.push(null);
