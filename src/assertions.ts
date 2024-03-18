@@ -71,9 +71,30 @@ export function findContiguousSubsequenceSlidingWindow<T>(needle: T[], haystack:
   }
   return false;
 }
-// used to assert the amount of times some code got triggered
+
+// helper type guard
+function isStringArray(a: any): a is string[] {
+  return Array.isArray(a) && a.every(e => typeof e === 'string');
+}
+
+// this is a nice example of overload functional types being assignable to objects.
+function includes(a: string[], spec: RegExp): void;
+function includes<T>(a: T[], spec: T): void;
+function includes(a: any, spec: any) {
+  if (!a || !a.length) throw new Error(red(bold(italic('includes')) + ' expected ') + pp2(a) + red(" to include ") + pp2(spec) + ' but it cannot, on account of being falsy or empty.');
+  if (isStringArray(a) && spec instanceof RegExp) {
+    if (!a.some((e: string) => spec.test(e))) {
+      throw new Error(red(bold(italic('includes')) + " expected ") + pp2(a) + red(" to include a match for ") + pp2(spec) + red(" by performing regex tests."));
+    }
+  } else if (!a.includes(spec)) {
+    throw new Error(red(bold(italic('includes')) + " expected ") + pp2(a) + red(" to include ") + pp2(spec));
+  }
+}
+
+// TODO Explore some assertions to use to assert the amount of times some code got triggered?
 // export const Nce = (n: number, cb: () => void) => { }
 // export const once = (cb: () => void) => { Nce(1, cb); }
+
 export const assertions = {
   // TODO switch the protocol here to throw special errors that wrap a hrtime as well so that the timing for failed
   // tests won't include the time taken to generate these errors (some of which do spawns etc).
@@ -84,25 +105,21 @@ export const assertions = {
   eqE: (a: number, b: number, epsilon: number) => {
     if (Math.abs(a - b) > epsilon) throw new Error(red(bold(italic('eqE')) + ' expected ') + pp2(a) + red(' to equal ') + pp2(b) + red(' within ') + pp2(epsilon) + red('.'));
   },
+  ne: <T>(a: T, b: T) => {
+    if (a === b) throw new Error(red(bold(italic('ne')) + ' expected ') + pp2(a) + red(' to not equal ') + pp2(b) + red('.'));
+  },
   lt: (a: number, b: number) => {
     if (a >= b) throw new Error(red(bold(italic('lt')) + ' expected ') + pp2(a) + red(' to be less than ') + pp2(b) + red('.'));
   },
   gt: (a: number, b: number) => {
     if (a <= b) throw new Error(red(bold(italic('gt')) + ' expected ') + pp2(a) + red(' to be greater than ') + pp2(b) + red('.'));
   },
-  eqO: (a: any, b: any) => {
+  eqO: <T>(a: T, b: T) => {
     if (!equal(a, b)) throw new Error(red(bold(italic('eqO')) + ' expected ') + pp2(a) + red(' to equal ') + pp2(b) + red('.') + ' Delta: ' + diffOfStrings(format(a), format(b)));
   },
-  includes: (a: any[], spec: any) => {
-    if (!a) throw new Error(red(bold(italic('includes')) + ' expected ') + pp2(a) + red(" to include ") + pp2(spec));
-    if (spec instanceof RegExp) {
-      if (!a.some(e => spec.test(e))) {
-        throw new Error(red(bold(italic('includes')) + " expected ") + pp2(a) + red(" to include a match for ") + pp2(spec) + red(" by performing regex tests."));
-      }
-    } else if (!a.includes(spec)) {
-      throw new Error(red(bold(italic('includes')) + " expected ") + pp2(a) + red(" to include ") + pp2(spec));
-    }
+  neO: (a: any, b: any) => {
   },
+  includes,
   includesO: (a: any, spec: any) => {
     const v = isSubsetObject(spec, a);
     if (!v) throw new Error(red(bold(italic('includesO')) + ' expected ') + pp2(a) + red(' to include ') + pp2(spec));

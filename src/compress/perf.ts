@@ -1,6 +1,6 @@
 import * as zlib from 'node:zlib';
 import * as stream from 'node:stream';
-import { cartesianAll, identical, mapObjectProps } from 'ts-utils';
+import { cartesianAll, identical, mapObjectProps, memoized } from 'ts-utils';
 import { test } from '../main.js';
 
 // helpers
@@ -35,7 +35,7 @@ export const streams_weird = test('streams', async ({ t, p, l, a: {eqO, eq}}) =>
   eqO(decompd, input); // buffers are not a base type and cannot be compared with eq.
 });
 
-export const compression_megabench = test('streams', async ({ t, p, l, a: {eqO, eq}}) => {
+export const compression_megabench = test('streams', async ({ t, p, l, a: {eqO, eq, is}}) => {
   // Started out mainly wanting to compare the handy compress functions node gives against full blown making our own streams and
   // piping. Then realized I can make this a lot more elegantly automated for comparisons so it grew into a benchmark
   // of every conceivable thing.
@@ -138,10 +138,10 @@ export const compression_megabench = test('streams', async ({ t, p, l, a: {eqO, 
         }).join('\n')
       )
     },
-    { name: 'random numbers', produce: () =>
+    { name: 'random numbers', produce: memoized(() =>
       Array.from({length: 10}, (_, i) =>
         Array.from({length: Math.ceil(1.3 ** (i + 10))}, (_, j) => Math.random().toString()).join('\n')
-      )
+      ))
     }
   ];
 
@@ -205,16 +205,25 @@ export const compression_megabench = test('streams', async ({ t, p, l, a: {eqO, 
   l('ya.l', y_axes.length);
   eqO(Object.keys(grab_bag), y_axes); // this confirms the order is exactly the same as well. Now we are confident we can plot
 
-  // filter and reshape a last time (to yield only the values) so we can plot these with separate y axes
-  const just_runtimes = Object.entries(grab_bag).filter(([k, v]) => k.includes('compMs') || k.includes('decompMs')).map(([k, v]) => [ k, v.map(e => e[2]) ]);
+  // TODO the following logic is based on string matching which is error prone
+  // filter and reshape a second-to-last time (to yield only the values) so we can plot these with separate y axes
+  const just_runtimes = Object.entries(grab_bag).filter(([k, v]) => k.includes('compMs') || k.includes('decompMs')).map(([k, v]) => [ k, v.map(e => e[2]) ] as const);
   l('jt', just_runtimes);
   const just_ratios = Object.entries(grab_bag).filter(([k, v]) => k.includes('compRatio')).map(([k, v]) => [ k, v.map(e => e[2]) ]);
   l('jr', just_ratios);
   const all_run_lengths = datagens.map(e => e.name).map(datan => {
     const lengths = Object.entries(grab_bag).filter(([k, v]) => k.includes(datan)).map(([k, v]) => [ v.map(e => e[1]) ]);
-    l(datan, 'lengths', lengths, identical(lengths));
-  }) ;
+    // l(datan, 'lengths', lengths, identical(lengths));
+    is(identical(lengths))
+    return [datan, lengths[0]];
+  });
+  l('arl', all_run_lengths);
 
+  p('uplot', [{
+    title: 'runtime over input size',
+    y_axes: just_runtimes.map(([k, v]) => k),
+    data: just_runtimes.map(([k, v]) => v)
+  }]);
   // const just_ratios = 
   // p('uplot', [{
   //   title: 'size vs runtime'
