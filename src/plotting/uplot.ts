@@ -12,7 +12,8 @@ function isStringArray(arr: any[]): arr is string[] {
   return arr.every(e => typeof e === 'string');
 }
 
-const colors = ["red", "green", "blue", "orange", "purple", "brown", "black", "pink", "gray", "cyan", "magenta", "yellow"];
+const colors = ["red", "green", "blue", "orange", "purple", "brown", "black", "pink", "gray", "cyan", "magenta"];
+
 const uPlot_preprocess = (plotdata: PlotData[]) => plotdata.map(d => {
   assertions.eq(d.y_axes.length, d.data.length - 1, 'y_axes length should be data length - 1');
   assertions.is(d.data.every(row => row.length === d.data[0].length), 'all rows should have same length');
@@ -22,10 +23,10 @@ const uPlot_preprocess = (plotdata: PlotData[]) => plotdata.map(d => {
     title: d.title,
     id: d.id || undefined,
     class: "uplot-chart",
-    width: 800,
+    width: 1400,
     height: 600,
     focus: {
-      alpha: 0.4
+      alpha: 0.1
     },
     cursor: {
       focus: {
@@ -54,7 +55,7 @@ const uPlot_preprocess = (plotdata: PlotData[]) => plotdata.map(d => {
           // THIS WONT SURVIVE JSON STRINGIFY (papered over with impl below)
           // value: (self, rawValue, sidx, idx) => 'sidx: ' + sidx + " idx: " + idx + ' ' + typeof rawValue === 'number' ? (y.unit_prefix || '') + rawValue.toFixed(2) + (y.unit_suffix || '') : '',
           // series style
-          stroke: y.color || colors[i],
+          stroke: y.color || colors[i % colors.length],
           width: y.width || 1,
           // fill: "rgba(255, 0, 0, 0.3)",
           // dash: [10, 5],

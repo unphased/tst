@@ -86,7 +86,7 @@ export const compression_megabench = test('streams', async ({ t, p, l, lo, a: {e
         const inStream = stream_from(input);
         const compd = await pump_stream(inStream.pipe(compStream));
         metrics.compMs = process.hrtime(start)[0] * 1e3 + process.hrtime(start)[1] / 1e6;
-        metrics.compRatio = compd.length / input.length; // lengths may not be comparable between buffer and string, but should be fine when test cases here are all ascii
+        metrics.compRatio = input.length / compd.length; // lengths may not be comparable between buffer and string, but should be fine when test cases here are all ascii
         const compdInStream = stream_from(compd);
         const decompd = await pump_stream(compdInStream.pipe(decompStream));
         metrics.decompMs = process.hrtime(start)[0] * 1e3 + process.hrtime(start)[1] / 1e6;
@@ -125,12 +125,12 @@ export const compression_megabench = test('streams', async ({ t, p, l, lo, a: {e
   // TODO definitely stands to gain scalability from converting these to generators
   const datagens = [ // all have tests growing geometrically in size
     { name: 'a-k and a number (usually but not always many digits)', produce: () =>
-      Array.from({length: 10}, (_, i) =>
+      Array.from({length: 30}, (_, i) =>
         Array.from({length: Math.ceil(1.3 ** (i + 10))}, (_, j) => 'abcdefghijk ' + Math.sqrt(j)).join('\n')
       )
     },
     { name: 'a-z with a number intercalated at random position', produce: () => 
-      Array.from({length: 10}, (_, i) =>
+      Array.from({length: 30}, (_, i) =>
         Array.from({length: Math.ceil(1.3 ** (i + 10))}, (_, j) => {
           const az = 'abcdefghijklmnopqrstuvwxyz';
           const rand = Math.floor(Math.random() * az.length);
@@ -139,19 +139,18 @@ export const compression_megabench = test('streams', async ({ t, p, l, lo, a: {e
       )
     },
     { name: 'random numbers', produce: memoized(() =>
-      Array.from({length: 10}, (_, i) =>
+      Array.from({length: 30}, (_, i) =>
         Array.from({length: Math.ceil(1.3 ** (i + 10))}, (_, j) => Math.random().toString()).join('\n')
       ))
     }
   ];
 
-  const levels = [1, 3, 5, 7, 9] as const;
+  const levels = [1, 3, 4, 5, 6, 7, 9] as const;
 
   // note: datagens here is still actually a 2D construct (e.g. each data scheme is an independent battery of tests,
   // rather than one data point) but it is not suitable for expansion via cartesian product.
   const combos = cartesianAll(datagens, comp_algoes, routines, levels);
 
-  // 3 * 3 * 2 * 5 = 90 combos, each dataset coming in 50 sizes, so we'll have 4500 points to plot.
   l(combos);
 
   type Key = {
@@ -193,23 +192,34 @@ export const compression_megabench = test('streams', async ({ t, p, l, lo, a: {e
   })));
   l('expanded.l', expanded.length);
   const graphs = cartesianAll(datagens.map(e => e.name), [true, false])
-    .map(([datan, isTimeMetric]) => ({ graph_group: expanded.filter(({ ks: { dataset, metricTimeCategory } }) => dataset === datan && metricTimeCategory === isTimeMetric), grouped_descriptors: { datan, metrictype: (isTimeMetric ? 'timings' : 'ratio') }}));
-  lo(graphs, {maxArrayLength: 10});
+    .map(([datan, isTimeMetric]) => ({ graph_group: expanded.filter(({ ks: { dataset, metricTimeCategory } }) => dataset === datan && metricTimeCategory === isTimeMetric), grouped_descriptors: { dataset: datan, metric: (isTimeMetric ? 'timings' : 'ratio') }}));
+  lo(['g', graphs], {maxArrayLength: 10});
 
   const graphs_1 = graphs.map(({ graph_group, grouped_descriptors }) =>
     ({
       desc: shortString(grouped_descriptors),
       series: cartesianAll(comp_algoes.map(e => e.name), routines.map(e => e.name), levels)
-          .map(([algo, routine, level]) => {
-            const grouped = graph_group.filter(({ ks: { algo: a, routine: r, level: l } }) => a === algo && r === routine && l === level);
-            return [shortString({algo, routine, level}), grouped.map(e => [e.ks.data_size, e.v])];
-          }
-          ))
+        .map(([algo, routine, level]) => {
+          const grouped = graph_group.filter(({ ks: { algo: a, routine: r, level: l } }) => a === algo && r === routine && l === level);
+          return {
+            seriesName: shortString({algo, routine, level}),
+            x: grouped.map(e => e.ks.data_size),
+            y: grouped.map(e => e.v)
+          };
         })
+    }));
 
-  lo(graphs_1, {maxArrayLength: 3});
+  // big check x axes agree among series, needed for regular uplot usage and I had to do quite a bit to set the stage
+  graphs_1.forEach(g => is(identical(g.series.map(s => s.x))));
+
+  lo(['g1', graphs_1], {maxArrayLength: 3});
   l('g1.l', graphs_1.length);
-  // p('uplot', graphs_1.map(g => ({title: g[0], y_axes: ['data size', 'value'], data: g[1]}));
+
+  p('uplot', graphs_1.map(g => ({
+    title: g.desc,
+    y_axes: g.series.map(s => s.seriesName),
+    data: [ g.series[0].x, ...g.series.map(s => s.y)]
+  })));
 });
 
 // just a simple check of compression ratio perf
