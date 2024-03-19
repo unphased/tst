@@ -23,8 +23,8 @@ const uPlot_preprocess = (plotdata: PlotData[]) => plotdata.map(d => {
     title: d.title,
     id: d.id || undefined,
     class: "uplot-chart",
-    width: 1400,
-    height: 600,
+    width: 1800,
+    height: 700,
     focus: {
       alpha: 0.1
     },

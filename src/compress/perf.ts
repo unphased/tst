@@ -142,10 +142,25 @@ export const compression_megabench = test('streams', async ({ t, p, l, lo, a: {e
       Array.from({length: 30}, (_, i) =>
         Array.from({length: Math.ceil(1.3 ** (i + 10))}, (_, j) => Math.random().toString()).join('\n')
       ))
+    },
+    { name: 'integers incrementing by 7', produce: () =>
+      Array.from({length: 40}, (_, i) =>
+        Array.from({length: Math.ceil(1.35 ** (i + 3))}, (_, j) => (j * 7).toString()).join('\n')
+      )
+    },
+    { name: 'integers incrementing by 1', produce: () =>
+      Array.from({length: 40}, (_, i) =>
+        Array.from({length: Math.ceil(1.35 ** (i + 3))}, (_, j) => j.toString()).join('\n')
+      )
+    },
+    { name: 'copies of the same string', produce: () =>
+      Array.from({length: 30}, (_, i) =>
+        Array.from({length: Math.ceil(1.3 ** (i + 3))}, (_, j) => 'abcdefghijk lorem ipsum lmnopqrstuv'.repeat(j)).join('\n')
+      )
     }
   ];
 
-  const levels = [1, 3, 4, 5, 6, 7, 9] as const;
+  const levels = [1, 3, 6, 7, 8, 9] as const;
 
   // note: datagens here is still actually a 2D construct (e.g. each data scheme is an independent battery of tests,
   // rather than one data point) but it is not suitable for expansion via cartesian product.
@@ -192,22 +207,25 @@ export const compression_megabench = test('streams', async ({ t, p, l, lo, a: {e
   })));
   l('expanded.l', expanded.length);
   const graphs = cartesianAll(datagens.map(e => e.name), [true, false])
-    .map(([datan, isTimeMetric]) => ({ graph_group: expanded.filter(({ ks: { dataset, metricTimeCategory } }) => dataset === datan && metricTimeCategory === isTimeMetric), grouped_descriptors: { dataset: datan, metric: (isTimeMetric ? 'timings' : 'ratio') }}));
+    .map(([datan, isTimeMetric]) => ({ graph_group: expanded.filter(({ ks: { dataset, metricTimeCategory } }) => dataset === datan && metricTimeCategory === isTimeMetric), grouped_descriptors: { dataset: datan, metric: (isTimeMetric ? 'timings' : 'ratio') } as const }));
   lo(['g', graphs], {maxArrayLength: 10});
 
-  const graphs_1 = graphs.map(({ graph_group, grouped_descriptors }) =>
-    ({
-      desc: shortString(grouped_descriptors),
-      series: cartesianAll(comp_algoes.map(e => e.name), routines.map(e => e.name), levels)
-        .map(([algo, routine, level]) => {
-          const grouped = graph_group.filter(({ ks: { algo: a, routine: r, level: l } }) => a === algo && r === routine && l === level);
-          return {
-            seriesName: shortString({algo, routine, level}),
-            x: grouped.map(e => e.ks.data_size),
-            y: grouped.map(e => e.v)
-          };
-        })
-    }));
+  const graphs_1 = graphs.map(({ graph_group, grouped_descriptors }) => {
+    const isTimeMetric = grouped_descriptors.metric === 'timings';
+    const seriesComboCommon = [comp_algoes.map(e => e.name), levels, routines.map(e => e.name)] as const;
+    const seriesComboRoots = isTimeMetric ? [...seriesComboCommon, ['compMs', 'decompMs']] as const : seriesComboCommon;
+    return { desc: shortString(grouped_descriptors),
+      series: cartesianAll(...seriesComboRoots)
+      .map(([algo, level, routine, timingMetricName]) => {
+        const grouped = graph_group.filter(({ ks: { algo: a, routine: r, level: l, metric } }) => a === algo && r === routine && l === level && (timingMetricName === undefined || timingMetricName === metric));
+        return {
+          seriesName: shortString({algo, routine, level, timingMetricName}),
+          x: grouped.map(e => e.ks.data_size),
+          y: grouped.map(e => e.v)
+        };
+      })
+    }
+  });
 
   // big check x axes agree among series, needed for regular uplot usage and I had to do quite a bit to set the stage
   graphs_1.forEach(g => is(identical(g.series.map(s => s.x))));
