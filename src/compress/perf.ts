@@ -160,7 +160,7 @@ export const compression_megabench = test('streams', async ({ t, p, l, lo, a: {e
     }
   ];
 
-  const levels = [3, 6, 9] as const;
+  const levels = [1, 3, 6, 9] as const;
 
   // note: datagens here is still actually a 2D construct (e.g. each data scheme is an independent battery of tests,
   // rather than one data point) but it is not suitable for expansion via cartesian product.
