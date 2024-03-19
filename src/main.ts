@@ -1,5 +1,5 @@
 import { dirname } from 'path';
-import { format } from 'ts-utils';
+import { format, format_opt } from 'ts-utils';
 import { fileURLToPath } from 'url';
 import { assertions } from './assertions.js';
 import { LaunchOptions } from './config/launchOptions.js';
@@ -112,15 +112,19 @@ const htmlPlotBuilderEmbedder = (embeds: Embeds) => (plotType: keyof typeof plot
 
 // produces interface with which to define a test accessed through param of test function
 export const testParamMaker = (config: LaunchOptions, logs: TestLogs, assertionMetrics: TestAssertionMetrics, options: TestOptions, resourceMetrics: ResourceMetrics, embeds: Embeds) => {
-  const logger = (...x: any[]) => {
-    const formatted = format(...x);
+  function logger_with_opts(x:any[], opts?: Parameters<typeof format_opt>[1]) {
+    const formatted = format_opt(x, opts);
     logs.push([process.hrtime(), formatted]);
     config.echo_test_logging && console.error(process.hrtime(), formatted);
+  }
+  function logger(...x: any[]) {
+    logger_with_opts(x);
   };
 
   return {
     // the logger you must use from a test
     l: logger,
+    lo: logger_with_opts,
     // Test option setter. Is the name too terse? We'll find out later.
     // This design makes it possible to colocate test specific configuration to the test itself, which should aid readability
     t: function setTestOption<K extends keyof TestOptions>(key: K, value: TestOptions[K]): void {

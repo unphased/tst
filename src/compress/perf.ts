@@ -1,6 +1,6 @@
 import * as zlib from 'node:zlib';
 import * as stream from 'node:stream';
-import { cartesianAll, identical, mapObjectProps, memoized } from 'ts-utils';
+import { cartesianAll, identical, mapObjectProps, memoized, shortString } from 'ts-utils';
 import { test } from '../main.js';
 
 // helpers
@@ -35,7 +35,7 @@ export const streams_weird = test('streams', async ({ t, p, l, a: {eqO, eq}}) =>
   eqO(decompd, input); // buffers are not a base type and cannot be compared with eq.
 });
 
-export const compression_megabench = test('streams', async ({ t, p, l, a: {eqO, eq, is}}) => {
+export const compression_megabench = test('streams', async ({ t, p, l, lo, a: {eqO, eq, is}}) => {
   // Started out mainly wanting to compare the handy compress functions node gives against full blown making our own streams and
   // piping. Then realized I can make this a lot more elegantly automated for comparisons so it grew into a benchmark
   // of every conceivable thing.
@@ -184,70 +184,32 @@ export const compression_megabench = test('streams', async ({ t, p, l, a: {eqO, 
   }
   l('s.l', structured.length);
 
-  // data reshaping in preparation for plotting. collapse data to strings for easy fetching. Group by dataset and sort
-  // these groups by size.
-  const grab_bag: { [k: string]: [ number, number, number ][] } = {};
-  for (const { meta, values } of structured) {
-    const { dataset, dataset_i, data_size, algo, routine, level } = meta;
-    const nvs = mapObjectProps(values, (k, v) => ({ n: `${dataset} ${algo} ${routine} level ${level}: ${k}`, v }));
-    for (const { n, v } of nvs) {
-      if (!grab_bag[n]) grab_bag[n] = [];
-      grab_bag[n].push([dataset_i, data_size, v]);
-    }
-  }
+  const expanded = structured.flatMap(({
+    meta: { dataset, data_size, algo, routine, level },
+    values
+  }) => mapObjectProps(values, (vk, v) => ({
+    ks: { dataset, data_size, algo, routine, level, metric: vk, metricTimeCategory: !!vk.match(/Ms$/) },
+    v
+  })));
+  l('expanded.l', expanded.length);
+  const graphs = cartesianAll(datagens.map(e => e.name), [true, false])
+    .map(([datan, isTimeMetric]) => ({ graph_group: expanded.filter(({ ks: { dataset, metricTimeCategory } }) => dataset === datan && metricTimeCategory === isTimeMetric), grouped_descriptors: { datan, metrictype: (isTimeMetric ? 'timings' : 'ratio') }}));
+  lo(graphs, {maxArrayLength: 10});
 
-  // inspection confirms that sort order is never impacted by above reshaping.
-  l('gb.l', Object.keys(grab_bag).length);
+  const graphs_1 = graphs.map(({ graph_group, grouped_descriptors }) =>
+    ({
+      desc: shortString(grouped_descriptors),
+      series: cartesianAll(comp_algoes.map(e => e.name), routines.map(e => e.name), levels)
+          .map(([algo, routine, level]) => {
+            const grouped = graph_group.filter(({ ks: { algo: a, routine: r, level: l } }) => a === algo && r === routine && l === level);
+            return [shortString({algo, routine, level}), grouped.map(e => [e.ks.data_size, e.v])];
+          }
+          ))
+        })
 
-  // cartesian is used here to reconstruct the shape of grab bag keys a sanity check
-  const y_axes = cartesianAll(datagens.map(e => e.name), comp_algoes.map(e => e.name), routines.map(e => e.name), levels, Object.keys(structured[0].values)).map(([d, a, r, l, k]) => `${d} ${a} ${r} level ${l}: ${k}`);
-  l(y_axes);
-  l('ya.l', y_axes.length);
-  eqO(Object.keys(grab_bag), y_axes); // this confirms the order is exactly the same as well. Now we are confident we can plot
-
-  // TODO the following logic is based on string matching which is error prone
-  // filter and reshape a second-to-last time (to yield only the values) so we can plot these with separate y axes
-  const just_runtimes = Object.entries(grab_bag).filter(([k, v]) => k.includes('compMs') || k.includes('decompMs')).map(([k, v]) => [ k, v.map(e => e[2]) ] as const);
-  l('jt', just_runtimes);
-  const just_ratios = Object.entries(grab_bag).filter(([k, v]) => k.includes('compRatio')).map(([k, v]) => [ k, v.map(e => e[2]) ]);
-  l('jr', just_ratios);
-  const all_run_lengths = datagens.map(e => e.name).map(datan => {
-    const lengths = Object.entries(grab_bag).filter(([k, v]) => k.includes(datan)).map(([k, v]) => [ v.map(e => e[1]) ]);
-    // l(datan, 'lengths', lengths, identical(lengths));
-    is(identical(lengths))
-    return [datan, lengths[0]];
-  });
-  l('arl', all_run_lengths);
-
-  p('uplot', [{
-    title: 'runtime over input size',
-    y_axes: just_runtimes.map(([k, v]) => k),
-    data: just_runtimes.map(([k, v]) => v)
-  }]);
-  // const just_ratios = 
-  // p('uplot', [{
-  //   title: 'size vs runtime'
-  //   y_axes, )
-  //
-  // p('uplot', [{
-  //   title: 'runtime over input size',
-  //   y_axes: ['compMs', 'decompMs'],
-  // }])
-
-  // const methods = ['gzip_stream', 'gzip_cb'];
-  //
-  // p('uplot', [{
-  //   title: 'compression, comparing runtime perf of manual streams vs convenience node functions',
-  //   y_axes: [...durations.keys()].map(meth => meth + ' runtime ns'),
-  //   data: [
-  //     durations.get('gzip_stream').map(({_ns, index}) => index), // x axis is the size of the input roughly
-  //     ...Array.from(durations.values()).map(arr => arr.map(({ ns }) => ns))
-  //   ]
-  // }, {
-  //   title: 'job index input byte size',
-  //   y_axes: ['input size'],
-  //   data: [[...durations.values()][0].map(({_ns, index}) => index), lens]
-  // }]);
+  lo(graphs_1, {maxArrayLength: 3});
+  l('g1.l', graphs_1.length);
+  // p('uplot', graphs_1.map(g => ({title: g[0], y_axes: ['data size', 'value'], data: g[1]}));
 });
 
 // just a simple check of compression ratio perf
