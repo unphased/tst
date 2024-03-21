@@ -95,29 +95,29 @@ export const compression_megabench = test('streams', async ({ t, p, l, lo, a: {e
         }
         return metrics as Metrics;
       }
-    // }, {
-    //   name: 'convenience_cb', routine: async (input: Buffer, level: number, methods: AlgoMethod) => {
-    //     const metrics: Partial<Metrics> = {};
-    //     const start = process.hrtime();
-    //     const round_trip_data = await new Promise((resolve, reject) => {
-    //       methods.cb(input, level, (err, compressed: Buffer) => {
-    //         if (err) reject(err);
-    //         metrics.compMs = process.hrtime(start)[0] * 1e3 + process.hrtime(start)[1] / 1e6;
-    //         metrics.compRatio = input.length / compressed.length;
-    //         const startDecomp = process.hrtime();
-    //         methods.de_cb(compressed, (err, decompressed) => {
-    //           if (err) reject(err);
-    //           metrics.decompMs = process.hrtime(startDecomp)[0] * 1e3 + process.hrtime(startDecomp)[1] / 1e6;
-    //           resolve(decompressed.toString());
-    //         });
-    //       });
-    //     });
-    //     // not using eq at the moment, merely to reduce test record overhead since this is a huge test 
-    //     if (round_trip_data !== input.toString()) {
-    //       throw new Error('round trip data (cb) did not match input');
-    //     }
-    //     return metrics as Metrics;
-    //   }
+    }, {
+      name: 'convenience_cb', routine: async (input: Buffer, level: number, methods: AlgoMethod) => {
+        const metrics: Partial<Metrics> = {};
+        const start = process.hrtime();
+        const round_trip_data = await new Promise((resolve, reject) => {
+          methods.cb(input, level, (err, compressed: Buffer) => {
+            if (err) reject(err);
+            metrics.compMs = process.hrtime(start)[0] * 1e3 + process.hrtime(start)[1] / 1e6;
+            metrics.compRatio = input.length / compressed.length;
+            const startDecomp = process.hrtime();
+            methods.de_cb(compressed, (err, decompressed) => {
+              if (err) reject(err);
+              metrics.decompMs = process.hrtime(startDecomp)[0] * 1e3 + process.hrtime(startDecomp)[1] / 1e6;
+              resolve(decompressed.toString());
+            });
+          });
+        });
+        // not using eq at the moment, merely to reduce test record overhead since this is a huge test 
+        if (round_trip_data !== input.toString()) {
+          throw new Error('round trip data (cb) did not match input');
+        }
+        return metrics as Metrics;
+      }
     },
   ];
 
@@ -140,7 +140,7 @@ export const compression_megabench = test('streams', async ({ t, p, l, lo, a: {e
     },
     { name: 'random numbers', produce: memoized(() =>
       Array.from({length: 30}, (_, i) =>
-        Array.from({length: Math.ceil(1.3 ** (i + 10))}, (_, j) => Math.random().toString()).join('\n')
+        Array.from({length: Math.ceil(1.3 ** (i + 10))}, (_, _j) => Math.random().toString()).join('\n')
       ))
     },
     { name: 'integers incrementing by 7', produce: () =>
