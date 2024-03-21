@@ -1,6 +1,6 @@
 import * as zlib from 'node:zlib';
 import * as stream from 'node:stream';
-import { cartesianAll, identical, mapObjectProps, memoized, shortString } from 'ts-utils';
+import { cartesianAll, identical, mapObjectProps, memoized, kvString } from 'ts-utils';
 import { test } from '../main.js';
 
 // helpers
@@ -214,12 +214,12 @@ export const compression_megabench = test('streams', async ({ t, p, l, lo, a: {e
     const isTimeMetric = grouped_descriptors.metric === 'timings';
     const seriesComboCommon = [comp_algoes.map(e => e.name), levels, routines.map(e => e.name)] as const;
     const seriesComboRoots = isTimeMetric ? [...seriesComboCommon, ['compMs', 'decompMs']] as const : seriesComboCommon;
-    return { desc: shortString(grouped_descriptors),
+    return { desc: kvString(grouped_descriptors),
       series: cartesianAll(...seriesComboRoots)
       .map(([algo, level, routine, timingMetricName]) => {
         const grouped = graph_group.filter(({ ks: { algo: a, routine: r, level: l, metric } }) => a === algo && r === routine && l === level && (timingMetricName === undefined || timingMetricName === metric));
         return {
-          seriesName: shortString({algo, routine, level, timingMetricName}),
+          seriesName: kvString({algo, routine, level, timingMetricName}),
           x: grouped.map(e => e.ks.data_size),
           y: grouped.map(e => e.v)
         };
