@@ -89,8 +89,9 @@ export const compression_megabench = test('streams', async ({ t, p, l, lo, a: {e
         metrics.compMB_s = size / (process.hrtime(start)[0] + process.hrtime(start)[1] / 1e9) / 1024 / 1024;
         metrics.compRatio = input.length / compd.length; // lengths may not be comparable between buffer and string, but should be fine when test cases here are all ascii
         const compdInStream = stream_from(compd);
+        const startDecomp = process.hrtime();
         const decompd = await pump_stream(compdInStream.pipe(decompStream));
-        metrics.decompMB_s = size / (process.hrtime(start)[0] + process.hrtime(start)[1] / 1e9) / 1024 / 1024;
+        metrics.decompMB_s = size / (process.hrtime(startDecomp)[0] + process.hrtime(startDecomp)[1] / 1e9) / 1024 / 1024;
         if (input.toString() !== decompd.toString()) {
           throw new Error('round trip data (stream) did not match input');
         }
