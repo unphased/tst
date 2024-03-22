@@ -52,22 +52,22 @@ export const compression_megabench = test('streams', async ({ t, p, l, lo, a: {e
 
   // we make slight adjustments (in particular for brotli) to produce a uniform API
   const comp_algoes: AlgoMethod[] = [
-    { name: 'gzip',
+    /* { name: 'gzip',
       stream: (l: number) => zlib.createGzip({level: l}),
       de_stream_maker: zlib.createGunzip,
       cb: (i,l,cb) => zlib.gzip(i, {level: l}, cb),
       de_cb: zlib.gunzip
-    }, { name: 'brotli',
+    },  */{ name: 'brotli',
       stream: (l: number) => zlib.createBrotliCompress({params:{[zlib.constants.BROTLI_PARAM_QUALITY]: l}}),
       de_stream_maker: zlib.createBrotliDecompress,
       cb: (i,l,cb) => zlib.brotliCompress(i, {params: {[zlib.constants.BROTLI_PARAM_QUALITY]: l}}, cb),
       de_cb: zlib.brotliDecompress
-    }, { name: 'deflateRaw',
+    }, /* { name: 'deflateRaw',
       stream: (l: number) => zlib.createDeflateRaw({level: l}),
       de_stream_maker: zlib.createInflateRaw,
       cb: (i,l,cb) => zlib.deflateRaw(i, {level: l}, cb),
       de_cb: zlib.inflateRaw
-    },
+    }, */
   ];
 
   type Metrics = {
@@ -180,12 +180,15 @@ export const compression_megabench = test('streams', async ({ t, p, l, lo, a: {e
     level: number;
   };
 
-  const structured: { meta: Key, values: Metrics }[] = [];
+  const REPEAT = 5;
+  const HOT_RUNS = 3; // take the hot results to be average of the last 3 runs
+
+  const structured: { meta: Key, values: Metrics[] }[] = [];
   for (const [data_maker, algo, job, level] of combos) {
     const data = data_maker.produce();
     for (let i = 0; i < data.length; i++) {
       const input = Buffer.from(data[i]);
-      const metrics = await job.routine(input, level, algo);
+      const metrics = await Promise.all(Array(REPEAT).fill(0).map(_ => job.routine(input, level, algo)));
       structured.push({
         meta: {
           dataset: data_maker.name,
@@ -204,11 +207,12 @@ export const compression_megabench = test('streams', async ({ t, p, l, lo, a: {e
   const expanded = structured.flatMap(({
     meta: { dataset, data_size, algo, routine, level },
     values
-  }) => mapObjectProps(values, (vk, v) => ({
-    ks: { dataset, data_size, algo, routine, level, metric: vk, metricTimeCategory: !!vk.match(/MB_s$/) },
+  }) => values.flatMap((e, i) => mapObjectProps(e, (vk, v) => ({
+    ks: { dataset, data_size, algo, routine, level, repeati: i, metric: vk, metricTimeCategory: !!vk.match(/MB_s$/) },
     v
-  })));
+  }))));
   l('expanded.l', expanded.length);
+  lo(['expanded', expanded], {maxArrayLength: 5});
   const graphs = cartesianAll(datagens.map(e => e.name), [true, false])
     .map(([datan, isSpeedMetric]) => ({ graph_group: expanded.filter(({ ks: { dataset, metricTimeCategory } }) => dataset === datan && metricTimeCategory === isSpeedMetric), grouped_descriptors: { dataset: datan, metric: (isSpeedMetric ? 'speed' : 'ratio') } as const }));
   lo(['g', graphs], {maxArrayLength: 10});
