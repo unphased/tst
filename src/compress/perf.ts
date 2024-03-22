@@ -71,8 +71,8 @@ export const compression_megabench = test('streams', async ({ t, p, l, lo, a: {e
   ];
 
   type Metrics = {
-    compMs: number;
-    decompMs: number;
+    compMB_s: number;
+    decompMB_s: number;
     compRatio: number;
   };
 
@@ -84,12 +84,13 @@ export const compression_megabench = test('streams', async ({ t, p, l, lo, a: {e
         const compStream = methods.stream(level);
         const decompStream = methods.de_stream_maker();
         const inStream = stream_from(input);
+        const size = input.length;
         const compd = await pump_stream(inStream.pipe(compStream));
-        metrics.compMs = process.hrtime(start)[0] * 1e3 + process.hrtime(start)[1] / 1e6;
+        metrics.compMB_s = size / (process.hrtime(start)[0] + process.hrtime(start)[1] / 1e9) / 1024 / 1024;
         metrics.compRatio = input.length / compd.length; // lengths may not be comparable between buffer and string, but should be fine when test cases here are all ascii
         const compdInStream = stream_from(compd);
         const decompd = await pump_stream(compdInStream.pipe(decompStream));
-        metrics.decompMs = process.hrtime(start)[0] * 1e3 + process.hrtime(start)[1] / 1e6;
+        metrics.decompMB_s = size / (process.hrtime(start)[0] + process.hrtime(start)[1] / 1e9) / 1024 / 1024;
         if (input.toString() !== decompd.toString()) {
           throw new Error('round trip data (stream) did not match input');
         }
@@ -99,15 +100,16 @@ export const compression_megabench = test('streams', async ({ t, p, l, lo, a: {e
       name: 'convenience_cb', routine: async (input: Buffer, level: number, methods: AlgoMethod) => {
         const metrics: Partial<Metrics> = {};
         const start = process.hrtime();
+        const size = input.length;
         const round_trip_data = await new Promise((resolve, reject) => {
           methods.cb(input, level, (err, compressed: Buffer) => {
             if (err) reject(err);
-            metrics.compMs = process.hrtime(start)[0] * 1e3 + process.hrtime(start)[1] / 1e6;
+            metrics.compMB_s = size / (process.hrtime(start)[0] + process.hrtime(start)[1] / 1e9) / 1024 / 1024;
             metrics.compRatio = input.length / compressed.length;
             const startDecomp = process.hrtime();
             methods.de_cb(compressed, (err, decompressed) => {
               if (err) reject(err);
-              metrics.decompMs = process.hrtime(startDecomp)[0] * 1e3 + process.hrtime(startDecomp)[1] / 1e6;
+              metrics.decompMB_s = size / (process.hrtime(startDecomp)[0] + process.hrtime(startDecomp)[1] / 1e9) / 1024 / 1024;
               resolve(decompressed.toString());
             });
           });
@@ -202,18 +204,18 @@ export const compression_megabench = test('streams', async ({ t, p, l, lo, a: {e
     meta: { dataset, data_size, algo, routine, level },
     values
   }) => mapObjectProps(values, (vk, v) => ({
-    ks: { dataset, data_size, algo, routine, level, metric: vk, metricTimeCategory: !!vk.match(/Ms$/) },
+    ks: { dataset, data_size, algo, routine, level, metric: vk, metricTimeCategory: !!vk.match(/MB_s$/) },
     v
   })));
   l('expanded.l', expanded.length);
   const graphs = cartesianAll(datagens.map(e => e.name), [true, false])
-    .map(([datan, isTimeMetric]) => ({ graph_group: expanded.filter(({ ks: { dataset, metricTimeCategory } }) => dataset === datan && metricTimeCategory === isTimeMetric), grouped_descriptors: { dataset: datan, metric: (isTimeMetric ? 'timings' : 'ratio') } as const }));
+    .map(([datan, isSpeedMetric]) => ({ graph_group: expanded.filter(({ ks: { dataset, metricTimeCategory } }) => dataset === datan && metricTimeCategory === isSpeedMetric), grouped_descriptors: { dataset: datan, metric: (isSpeedMetric ? 'speed' : 'ratio') } as const }));
   lo(['g', graphs], {maxArrayLength: 10});
 
   const graphs_1 = graphs.map(({ graph_group, grouped_descriptors }) => {
-    const isTimeMetric = grouped_descriptors.metric === 'timings';
+    const isSpeedMetric = grouped_descriptors.metric === 'speed';
     const seriesComboCommon = [comp_algoes.map(e => e.name), levels, routines.map(e => e.name)] as const;
-    const seriesComboRoots = isTimeMetric ? [...seriesComboCommon, ['compMs', 'decompMs']] as const : seriesComboCommon;
+    const seriesComboRoots = isSpeedMetric ? [...seriesComboCommon, ['compMB_s', 'decompMB_s']] as const : seriesComboCommon;
     return { desc: kvString(grouped_descriptors),
       series: cartesianAll(...seriesComboRoots)
       .map(([algo, level, routine, timingMetricName]) => {
