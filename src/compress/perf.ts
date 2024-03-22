@@ -207,10 +207,12 @@ export const compression_megabench = test('streams', async ({ t, p, l, lo, a: {e
   const expanded = structured.flatMap(({
     meta: { dataset, data_size, algo, routine, level },
     values
-  }) => values.flatMap((e, i) => mapObjectProps(e, (vk, v) => ({
-    ks: { dataset, data_size, algo, routine, level, repeati: i, metric: vk, metricTimeCategory: !!vk.match(/MB_s$/) },
-    v
-  }))));
+  }) => values.flatMap((e, i) => {
+      return mapObjectProps(e, (vk, v) => ({
+        ks: { dataset, data_size, algo, routine, level, repeati: i, metric: vk, metricTimeCategory: !!vk.match(/MB_s$/) },
+        v
+      }));
+    }));
   l('expanded.l', expanded.length);
   lo(['expanded', expanded], {maxArrayLength: 5});
   const graphs = cartesianAll(datagens.map(e => e.name), [true, false])

@@ -1,6 +1,6 @@
 import { Simplify } from 'type-fest';
 import { ChildProcess, execSync, spawn } from 'child_process';
-import { readFileSync, unlinkSync } from 'fs';
+import { readFileSync, unlinkSync, mkdirSync } from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import { Transform } from 'stream';
@@ -119,6 +119,8 @@ const bold = (s: string) => colors.bold + s + colors.bold_reset;
 // - onstdout: passes raw ondata events node receives from the process's stdout
 // - onspawn: cb for the process's spawn event
 // TODO provide a way possibly using debounce to configure how much output stream buffering to do.
+
+mkdirSync(path.join('/tmp/', 'nucleus_instrumentation_time_resource_metrics'), { recursive: true });
 
 // we had to fall back to overloading in order for typescript to be able to pass the return type through, conditional on input flag. Sadly this probably means we can't freely add tons of these kinds of logic or the code will get massively out of hand.
 export const spawnAsync = ((command: string, args: string[], logger_?: typeof console.error, options?: SpawnAsyncOpts): Promise<SpawnAsyncReturnBase|SpawnAsyncReturnWResources|SpawnAsyncReturnWStdout|SpawnAsyncReturnWStdoutAndResources> => {

@@ -119,7 +119,28 @@ export const testParamMaker = (config: LaunchOptions, logs: TestLogs, assertionM
   }
   function logger(...x: any[]) {
     logger_with_opts(x);
-  };
+  }
+
+  // this is verbatim from type-fest.
+  type ConditionalKeys<Base, Condition> = NonNullable<{
+    // Map through all the keys of the given base type.
+    [Key in keyof Base]:
+    // Pick only keys with types extending the given `Condition` type.
+    Base[Key] extends Condition
+    // Retain this key since the condition passes.
+        ? Key
+    // Discard this key since the condition fails.
+        : never;
+  }[keyof Base]>;
+  type BoolTestOptionsKeys = ConditionalKeys<TestOptions, boolean>;
+
+  function setTestOption<K extends BoolTestOptionsKeys>(key: K): void;
+  function setTestOption<K extends keyof TestOptions>(key: K, value: TestOptions[K]): void;
+  function setTestOption<K extends keyof TestOptions>(key: K, value?: TestOptions[K]): void {
+    options[key] = (value === undefined ? true : value) as TestOptions[K];
+    // behaviors to configure test functionality in response to configs being set will be performed here synchronously
+    // (but don't, may violate principle of least surprise)
+  }
 
   return {
     // the logger you must use from a test
@@ -127,10 +148,7 @@ export const testParamMaker = (config: LaunchOptions, logs: TestLogs, assertionM
     lo: logger_with_opts,
     // Test option setter. Is the name too terse? We'll find out later.
     // This design makes it possible to colocate test specific configuration to the test itself, which should aid readability
-    t: function setTestOption<K extends keyof TestOptions>(key: K, value: TestOptions[K]): void {
-      options[key] = value;
-      // behaviors to configure test functionality in response to configs being set will be performed here synchronously
-    },
+    t: setTestOption,
     // assertions accessed through here
     a: augmentedAssertions(assertionMetrics, options),
     // obtains metrics and logs from the currently executing test in a read only way, so you can make assertions on the
