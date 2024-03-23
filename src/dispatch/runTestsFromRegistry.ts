@@ -1,4 +1,4 @@
-import { hrTimeMs, italic, pp, red } from "ts-utils";
+import { hrTimeMs, italic, pp, red, mapObjectProps } from "ts-utils";
 import { colors } from 'ts-utils/terminal';
 import { LaunchOptions } from '../config/launchOptions.js';
 import { AsyncFunction, TFun, testParamMaker } from '../main.js';

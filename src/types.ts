@@ -13,6 +13,7 @@
 import { HtmlEmbedding } from "./plotting/index.js";
 import { AssertionName } from "./assertions.js";
 import { Simplify } from "type-fest";
+import * as stream from "node:stream";
 
 export type ErrorSpec = true | RegExp | string | (string | RegExp)[];
 
@@ -39,7 +40,9 @@ export type TestAssertionMetrics = {
   logs: {
     [key in AssertionName]?: {
       ringBufferOffset?: number; // undefined: keep using as array (continue to push). number: index into the array now used as ring buffer
-      buffer: [[number, number], string][];
+      buffer: string[];
+      // compressed_stream: stream.Transform;
+      // compressed_outbuf: Buffer;
     };
   };
   assertionCounts: {
@@ -47,6 +50,16 @@ export type TestAssertionMetrics = {
   };
   assertionFailure: boolean;
 };
+
+// type DeepReplace<T, K extends PropertyKey, U> = T extends object
+//   ? {
+//       [P in keyof T]: P extends K
+//         ? U // Replace the type of property K with type U
+//         : DeepReplace<T[P], K, U>; // Recursively process nested properties
+//     }
+//   : T;
+//
+// export type TestAssertionMetricsResolved = DeepReplace<TestAssertionMetrics, "compressed_stream", string>;
 
 export type SpawnResourceReport = {
   maxrss: number; // kilobytes

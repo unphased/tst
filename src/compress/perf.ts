@@ -2,24 +2,7 @@ import * as zlib from 'node:zlib';
 import * as stream from 'node:stream';
 import { cartesianAll, identical, mapObjectProps, memoized, kvString } from 'ts-utils';
 import { test } from '../main.js';
-
-// helpers
-const stream_from = (s: string | Buffer) => new stream.Readable({ read() {
-  this.push(s);
-  this.push(null);
-}});
-const pump_stream = (input: stream.Readable) => new Promise<Buffer>((res, rej) => {
-  let buf: Buffer = Buffer.from('');
-  input.on('data', (chunk) => {
-    if (chunk) {
-      buf = Buffer.concat([buf, chunk]);
-    }
-  });
-  input.on('end', () => {
-    res(buf);
-  });
-  input.on('error', rej);
-});
+import { stream_from, pump_stream } from './compression.js';
 
 // so as part of getting compression megabench to work i had to troubleshoot the stream assembly and figured might as
 // well make a test for it

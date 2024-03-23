@@ -8,7 +8,9 @@ import { plotters } from "./plotting/plotters_index.js";
 import { SpawnAsyncOpts, SpawnAsyncTestLogTraced, isBypassResourceMetrics, spawnAsync } from './process.js';
 import { Embeds, ResourceMetrics, TestAssertionMetrics, TestLogs, TestMetadata, TestOptions } from "./types.js";
 
-import * as os from 'os';
+import * as os from 'node:os';
+import * as stream from 'node:stream';
+import * as zlib from 'node:zlib';
 
 const __filename = fileURLToPath(import.meta.url);
 export const __dirname = dirname(__filename);
@@ -33,8 +35,13 @@ const augmentedAssertions = (assertionMetrics: TestAssertionMetrics, options: Te
   for (const [name, fn] of Object.entries(assertions) as [keyof typeof assertions, any][]) {
     const asyn = isAsyncFunction(fn);
     let amln = assertionMetrics.logs[name];
-    const loggerbody = (args_: any[]) => {
-      if (!amln) amln = assertionMetrics.logs[name] = { buffer: [] };
+    const logging_code_block = (args_: any[]) => {
+      if (!amln)
+        amln = assertionMetrics.logs[name] = {
+          buffer: [],
+          // compressed_stream: zlib.createBrotliCompress({params: {[zlib.constants.BROTLI_PARAM_QUALITY]: 3}})
+        };
+      // things have changed here. now buffer is no longer being used unless ring buffer mode is active.
       if (options.ringBufferLimitAssertionLogs !== undefined && (amln.ringBufferOffset === undefined || amln.buffer.length !== options.ringBufferLimitAssertionLogs)) {
         console.error('ring buffer limit changed to', options.ringBufferLimitAssertionLogs, 'from', amln.buffer.length)
         // Here is latch condition to convert to ring buffer (TODO make it correct for the updating ring buffer size case...)
@@ -48,11 +55,12 @@ const augmentedAssertions = (assertionMetrics: TestAssertionMetrics, options: Te
           amln.buffer.length = options.ringBufferLimitAssertionLogs; // leaves holes in array. should be fine.
         }
       }
-      const value: [[number, number], string] = [process.hrtime(), JSON.stringify(args_)];
+      const value = JSON.stringify([process.hrtime(), args_]);
       if (typeof amln.ringBufferOffset === 'number') {
         amln.buffer[amln.ringBufferOffset++] = value;
         amln.ringBufferOffset %= amln.buffer.length;
       } else {
+        // amln.compressed_stream.write(value + '\n');
         amln.buffer.push(value);
       }
       const aa = assertionMetrics.assertionCounts;
@@ -60,7 +68,7 @@ const augmentedAssertions = (assertionMetrics: TestAssertionMetrics, options: Te
     }
     if (asyn) {
       ret[name] = ((async (...args) => {
-        loggerbody(args);
+        logging_code_block(args);
         try {
           await fn(...args);
         } catch (e) {
@@ -71,7 +79,7 @@ const augmentedAssertions = (assertionMetrics: TestAssertionMetrics, options: Te
       }) as any);
     } else {
       ret[name] = (((...args) => {
-        loggerbody(args);
+        logging_code_block(args);
         try {
           fn(...args);
         } catch (e) {

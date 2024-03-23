@@ -130,7 +130,7 @@ export const assertions = {
   is: (v: any, ...message: any[]) => {
     if (!v) throw new Error(red(bold(italic('is')) + ' expected ') + pp2(v) + red(` to be truthy. `) + format(...message));
   },
-  not: (v: any, ...message: anyp[]) => {
+  not: (v: any, ...message: any[]) => {
     if (v) throw new Error(red(bold(italic('not')) + ' expected ') + pp2(v) + red(` to be falsy. `) + format(...message));
   },
   subseq: <T>(a: T[], spec: T[]) => {
