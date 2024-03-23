@@ -301,7 +301,6 @@ export const error_stack_format = test('stack trace', ({l, a:{eq, is, not}}) => 
       not(validate_code_position_none_match_res.some(re => m1.match(re)), m1, 'matched some of these forbidden patterns:', validate_code_position_none_match_res);
       return true
     };
-    const good = re.some(pred);
-    is(good, re.map(pred), 'failed to parse', stack, 'by ANY of patterns', re);
+    is(re.some(pred), re.map(pred), 'failed to parse', stack, 'by ANY of patterns', re);
   }
 });
