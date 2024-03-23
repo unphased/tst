@@ -282,10 +282,10 @@ export const error_stack_format = test('stack trace', ({l, a:{eq, is, not}}) => 
   const two_stacks = [...stack_here, ...stack_from_outer];
 
   const re = [
-    /at\s+(?:[\w<>]+\s+)?\((.*)\)/,
+    /at\s+(?:[\w<>]+\s+)?\((?:file:\/\/)?(.*)\)/,
     /at\s+file:\/\/(.*)$/
   ];
-  const validate_code_position_re = /^[\w\/.]:\d+:\d+$/;
+  const validate_code_position_re = /^[\w/.]+:\d+:\d+$/;
   const validate_code_position_none_match_res = [
     /\/\//, // consecutive slashes
   ];
