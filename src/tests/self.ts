@@ -270,3 +270,38 @@ export const deep_equal_simple = test('assertions', ({ t, l, a: { eqO, throws } 
 //   // the approach is going to involve (1) put a brand new test in a string literal here into a ts file, (2) launch
 //   it with tsx and work out how to link it to the bundle (this tst test lib's bundle) (3) validate output
 // });
+
+// Use this for help to get to the bottom of what some of the possible stack formats are. unfortunately we have to just
+// deal with whatever comes out since doing any overriding will break all known approaches for source mapping.
+function stack_from_outer_fn() {
+  return new Error().stack;
+}
+export const error_stack_format = test('stack trace', ({l, a:{eq, is, not}}) => {
+  const stack_here = new Error().stack.split('\n').slice(1);
+  const stack_from_outer = stack_from_outer_fn().split('\n').slice(1);
+  const two_stacks = [...stack_here, ...stack_from_outer];
+
+  const re = [
+    /at\s+(?:[\w<>]+\s+)?\((.*)\)/,
+    /at\s+file:\/\/(.*)$/
+  ];
+  const validate_code_position_re = /^[\w\/.]:\d+:\d+$/;
+  const validate_code_position_none_match_res = [
+    /\/\//, // consecutive slashes
+  ];
+
+  l(re);
+  l(two_stacks);
+  for (const stack of two_stacks) {
+    const pred = (r: RegExp) => {
+      const match = stack.match(r);
+      if (!match) return false;
+      const m1 = match[1];
+      is(m1.match(validate_code_position_re), 'captured group', m1, 'failed to validate by', validate_code_position_re);
+      not(validate_code_position_none_match_res.some(re => m1.match(re)), m1, 'matched some of these forbidden patterns:', validate_code_position_none_match_res);
+      return true
+    };
+    const good = re.some(pred);
+    is(good, re.map(pred), 'failed to parse', stack, 'by ANY of patterns', re);
+  }
+});

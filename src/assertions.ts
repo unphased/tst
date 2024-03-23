@@ -128,10 +128,10 @@ export const assertions = {
     if (!spec.test(v)) throw new Error(red(bold(italic('match')) + ' expected ') + pp2(v) + red(` to match ${pp2(spec)}.`));
   },
   is: (v: any, ...message: any[]) => {
-    if (!v) throw new Error(red(bold(italic('is')) + ' expected ') + pp2(v) + red(` to be truthy.`) + format(...message));
+    if (!v) throw new Error(red(bold(italic('is')) + ' expected ') + pp2(v) + red(` to be truthy. `) + format(...message));
   },
-  not: (v: any) => {
-    if (v) throw new Error(red(bold(italic('not')) + ' expected ') + pp2(v) + red(` to be falsy.`));
+  not: (v: any, ...message: anyp[]) => {
+    if (v) throw new Error(red(bold(italic('not')) + ' expected ') + pp2(v) + red(` to be falsy. `) + format(...message));
   },
   subseq: <T>(a: T[], spec: T[]) => {
     if (false === findContiguousSubsequenceSlidingWindow(spec, a)) {
