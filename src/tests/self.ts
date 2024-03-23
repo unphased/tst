@@ -288,7 +288,8 @@ export const error_stack_format = test('stack trace', ({l, a:{eq, is, not}}) => 
   const validate_code_position_re = /^[\w/.]+:\d+:\d+$/;
   const validate_code_position_none_match_res = [
     /\/\//, // consecutive slashes
-    /file:\/\// // file://
+    /file:\/\//, // file://
+    /^\s?at/ // "at"
   ];
 
   l(re);
