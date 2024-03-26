@@ -4,7 +4,7 @@ import { execSync } from 'child_process';
 import { test } from '../main.js';
 import { fileURLToPath } from 'url';
 import { TestLaunchFlags, TestLaunchSeparator } from "../dispatch/flags.js";
-import { timed } from 'ts-utils';
+import { timedMs } from 'ts-utils';
 import { deepStrictEqual } from 'assert';
 import equal from 'deep-equal';
 const __filename = fileURLToPath(import.meta.url);
@@ -310,20 +310,30 @@ export const error_stack_format = test('stack trace', ({l, a:{eq, is, not}}) => 
   }
 });
 
-export const deepequal_perf_collisions = test('deepequal', ({ l, a: { eqO } }) => {
-  const dSET = timed(deepStrictEqual);
-  const dE = timed(equal);
+export const deepequal_perf_collisions = test('deepequal', ({ l, p, a: { eqO } }) => {
+  const dSET = timedMs(deepStrictEqual);
+  const dE = timedMs(equal);
 
-  const arr_i = Array.from({ length: 1000 }).map((_, i) => ({n: 1}));
-  const arr_i_2 = Array.from({ length: 1000 }).map((_, i) => ({n: 1}));
-  const arr_5 = Array.from({ length: 1000 }).map(_ => ({n: 5}));
-  const arr_5_2 = Array.from({ length: 1000 }).map(_ => ({n: 5}));
+  const x: number[] = [];
+  const y_builtin_ms: number[] = [];
+  const y_deepeq_ms: number[] = [];
+  for (let i = 50; i < 50000; i = Math.round(i * 1.5)) {
+    const arr_i = Array.from({ length: i }).map((_, i) => ({n: i}));
+    const arr_i_2 = Array.from({ length: i }).map((_, i) => ({n: i}));
+    const builtin = dSET(arr_i, arr_i_2);
+    l(i, 'builtin:', builtin);
+    const deepeq = dE(arr_i, arr_i_2);
+    l(i, 'deepeq', deepeq);
+    x.push(i);
+    y_builtin_ms.push(builtin[1]);
+    y_deepeq_ms.push(deepeq[1]);
+  }
 
-  l(dSET(arr_5, arr_5_2));
-  l(dE(arr_5, arr_5_2));
-
-  l(dSET(arr_5, arr_5_2));
-  l(dE(arr_5, arr_5_2));
+  p('uplot', [{
+    title: "deep equal runtime comparison",
+    y_axes: ["builtin", "deep-equal", "deep-equal over builtin"],
+    data: [x, y_builtin_ms, y_deepeq_ms, y_deepeq_ms.map((v, i) => v / y_builtin_ms[i])]
+  }]);
   
 });
 

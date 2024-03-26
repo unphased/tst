@@ -181,7 +181,7 @@ export const LaunchTests = async (rootPath?: string, launchOpts?: LaunchOptions)
 
 if (isProgramLaunchContext()) {
   console.error('runner executing file:', __filename);
-  // launch tests by discovering them through however it is we find ourselves executing so we can launch as TS via TSX.
+  // launch tests by discovering them through however it is we find ourselves executing, so we can launch as TS via TSX.
   const launchPath = path.resolve(__dirname, '..');
   console.error('launching via:', launchPath);
   void (LaunchTests)(launchPath);
