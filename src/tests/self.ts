@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { execSync } from 'child_process';
-import { test } from '../main.js';
+import { parseFileLineColFromStackLineMakeHyperlink, test } from '../main.js';
 import { fileURLToPath } from 'url';
 import { TestLaunchFlags, TestLaunchSeparator } from "../dispatch/flags.js";
 import { timedMs } from 'ts-utils';
@@ -307,6 +307,8 @@ export const error_stack_format = test('stack trace', ({l, a:{eq, is, not}}) => 
       return true
     };
     is(re.some(pred), re.map(pred), 'failed to parse', stack, 'by ANY of patterns', re);
+    // also test against real impl from this lib
+    is(parseFileLineColFromStackLineMakeHyperlink(stack))
   }
 });
 

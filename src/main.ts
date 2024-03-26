@@ -1,5 +1,5 @@
 import { dirname } from 'path';
-import { format, format_opt } from 'ts-utils';
+import { format_opt } from 'ts-utils';
 import { fileURLToPath } from 'url';
 import { assertions } from './assertions.js';
 import { LaunchOptions } from './config/launchOptions.js';
@@ -187,15 +187,10 @@ export const testFnRegistry = new Map<TFun | ((...args: Parameters<TFun>) => Pro
 // This currently just gives the containing dir and the file name, which is a good simple holding pattern here.
 // Not sure if we even need anything further refined, because this emits a terminal hyperlink that has the completely
 // full file in a url.
-export function parseFileLineColFromStackLineMakeHyperlink(stack: string) {
-  const stack_line = stack?.split('\n')[2];
+export function parseFileLineColFromStackLineMakeHyperlink(stack_line?: string) {
   // stacks are already being rendered as file urls in ESM. We just need to inject a hostname into it.
   // console.error('pFLCFSLMH', stack_line);
   const m = stack_line.match(/at\s+(?:[\w<>]+\s+)?\((?:file:\/\/)?(.*)\)|at\s+file:\/\/(.*)/);
-  if (!m) {
-    console.error('stack:', format(stack));
-    throw new Error('Failure to parse stack line for file location!');
-  }
   const filePath = m[1] || m[2];
   if (!filePath) return 'Failure to resolve location assuming file url from stack!';
   const fileURLWithHostname = 'file://' + os.hostname() + filePath;
@@ -212,7 +207,7 @@ export function test(fn: TFunOrAsync, opts?: TestOptions): TFun;
 export function test(fn_or_suite_name: (TFunOrAsync) | string, fn_or_opts?: (TFunOrAsync | TestOptions), opts?: TestOptions) {
   const suite = typeof fn_or_suite_name === 'string' && fn_or_suite_name;
   let func: TFunOrAsync | undefined;
-  let meta_assembly: Record<string, any> = { stack: parseFileLineColFromStackLineMakeHyperlink(new Error().stack) };
+  let meta_assembly: Record<string, any> = { stack: parseFileLineColFromStackLineMakeHyperlink(new Error().stack?.split('\n')[2]) };
   if (suite) {
     if (!fn_or_opts || typeof fn_or_opts !== 'function') {
       throw new Error(`A test suite name (${suite}) was provided without a test function. Got a second arg of type ${typeof fn_or_opts}.`);
