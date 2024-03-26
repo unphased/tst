@@ -63,7 +63,7 @@ export const runTests = async (
   // source file(s) we found these tests in, from the parent runner instance, and then specify them
   // based on the suite and name.
 
-  establishTestResultsDir();
+  void establishTestResultsDir();
   const start = process.hrtime();
   const testResults = await runTestsFromRegistry(registry, launch_opts, predicate, topt(tf.AsyncParallelTestLaunch));
   const testExecutionDuration = hrTimeMs(process.hrtime(start));

@@ -122,8 +122,9 @@ const htmlPlotBuilderEmbedder = (embeds: Embeds) => (plotType: keyof typeof plot
 export const testParamMaker = (config: LaunchOptions, logs: TestLogs, assertionMetrics: TestAssertionMetrics, options: TestOptions, resourceMetrics: ResourceMetrics, embeds: Embeds) => {
   function logger_with_opts(x:any[], opts?: Parameters<typeof format_opt>[1]) {
     const formatted = format_opt(x, opts);
-    logs.push([process.hrtime(), formatted]);
-    config.echo_test_logging && console.error(process.hrtime(), formatted);
+    const t = process.hrtime();
+    logs.push([t, formatted]);
+    config.echo_test_logging && console.error(t, formatted);
   }
   function logger(...x: any[]) {
     logger_with_opts(x);

@@ -4,6 +4,9 @@ import { execSync } from 'child_process';
 import { test } from '../main.js';
 import { fileURLToPath } from 'url';
 import { TestLaunchFlags, TestLaunchSeparator } from "../dispatch/flags.js";
+import { timed } from 'ts-utils';
+import { deepStrictEqual } from 'assert';
+import equal from 'deep-equal';
 const __filename = fileURLToPath(import.meta.url);
 export const __dirname = path.dirname(__filename);
 
@@ -306,3 +309,22 @@ export const error_stack_format = test('stack trace', ({l, a:{eq, is, not}}) => 
     is(re.some(pred), re.map(pred), 'failed to parse', stack, 'by ANY of patterns', re);
   }
 });
+
+export const deepequal_perf_collisions = test('deepequal', ({ l, a: { eqO } }) => {
+  const dSET = timed(deepStrictEqual);
+  const dE = timed(equal);
+
+  const arr_i = Array.from({ length: 1000 }).map((_, i) => ({n: 1}));
+  const arr_i_2 = Array.from({ length: 1000 }).map((_, i) => ({n: 1}));
+  const arr_5 = Array.from({ length: 1000 }).map(_ => ({n: 5}));
+  const arr_5_2 = Array.from({ length: 1000 }).map(_ => ({n: 5}));
+
+  l(dSET(arr_5, arr_5_2));
+  l(dE(arr_5, arr_5_2));
+
+  l(dSET(arr_5, arr_5_2));
+  l(dE(arr_5, arr_5_2));
+  
+});
+
+

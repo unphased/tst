@@ -177,7 +177,18 @@ const writeResultToDisk = async (result: TestResult) => {
   await fsp.mkdir(path.resolve(...p), { recursive: true });
   await fsp.writeFile(path.resolve(...p, `${result.name}.json`), JSON.stringify(result, null, 2));
 };
-// a bit silly but the same date string used to identify a given test run can be extracted out of this.
+
+// when we save results for each test (immediately after running them) we compress the json result into files in the test reporting path.
+// At some later interval, recompress the historical data to crunch it down more since it will have a lot of
+// repetition.
+// employing compression will drastically reduce disk thrash.
+export function recompressResults() {
+  const p = getTestReportingPath();
+  // do a sanity check 
+}
+
+// another concept is to heuristically detect dumps of extensive listings of floating point values. Think about what
+// heuristics i can apply to manipulate or tie back to code when encountering this kind of data to avoid recording it.
 
 export const getTestReportingPath = () => current_test_reporting_session_path?.slice();
 // i think we are fine with this as a singleton for now, it is updated on each launch and used by all test reporting

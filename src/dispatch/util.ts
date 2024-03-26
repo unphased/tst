@@ -83,7 +83,9 @@ export const parseTestLaunchingArgs = (args?: string[], rootPath?: string) => {
   const idxSeparator = args.indexOf(TestLaunchSeparator);
   const files = idxSeparator === -1 ? [] : args.slice(0, idxSeparator);
 
-  if (topt(tf.ExactTestNameMatching)) { // to be really specific to match a test. Need full specification of suite if that exists.
+  const hasColonBeenSpecified = args.slice(idxSeparator + 1).some(a => a.includes(':'));
+
+  if (topt(tf.ExactTestNameMatching) || hasColonBeenSpecified) { // to be really specific to match a test. Need full specification of suite if that exists.
     const exactTestNameMatch = (test: TestMetadata, name: string) => {
       const nameString = `${test.suite ? test.suite + ':' : ''}${test.name}`;
       const ret = nameString === name;
@@ -92,8 +94,10 @@ export const parseTestLaunchingArgs = (args?: string[], rootPath?: string) => {
       // }
       return ret;
     };
+    console.error('Exact test name matching is being performed' + (hasColonBeenSpecified ? ' due to presence of colon in specifier' : ''));
     return { files, testPredicate: (test: TestMetadata) => args.slice(idxSeparator + 1).some(a => exactTestNameMatch(test, a)) };
   } else { // default, a loose user friendly cli for test name matching.
+    console.error('Loose test name matching is being performed')
     return { files, testPredicate: (test: TestMetadata) => args.slice(idxSeparator + 1).some(a => `${test.suite ? test.suite + ':' : ''}${test.name}`.toLowerCase().includes(a.toLowerCase())) }; 
   }
   // note at this point the files list is just a plain deserialization of the arg list (intended to filter files to

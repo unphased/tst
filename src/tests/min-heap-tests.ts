@@ -1,5 +1,5 @@
 import { test } from "../main.js";
-import { Statistics, hrTimeMs } from "ts-utils";
+import { Statistics, hrTimeMs, timed } from "ts-utils";
 import { MinHeap } from "../min-heap.js";
 
 export const min_heap = test('minheap', ({ p, l, a: { eq, eqO } }) => {
@@ -21,9 +21,9 @@ export const min_heap = test('minheap', ({ p, l, a: { eq, eqO } }) => {
   const heap_insert_times: number[] = [];
   const heap_extract_times: number[] = [];
 
-  for (let i = 0; i < 50; i++) {
+  for (let i = 0; i < 5; i++) {
     const len = Math.round(Math.random() * ((i % 4 === 0) ? 400 : 20000) + 5);
-    const random = Array.from({ length: len }, () => ({ n: Math.random() * 1000 }));
+    const random = Array.from({ length: len }, () => ({ n: Math.round(Math.random() * 100) }));
     // perform many operations to ensure the heap is working as intended
     const random_to_sort = random.slice();
     const start = process.hrtime();
@@ -44,7 +44,8 @@ export const min_heap = test('minheap', ({ p, l, a: { eq, eqO } }) => {
     eq(len, random.length);
     eq(random.length, heap_sorted.length);
     eq(random.length, sorted.length);
-    eqO(heap_sorted, sorted);
+    const eqOT = timed(eqO);
+    l('eqO deepequal timed', heap_sorted.length, eqOT(heap_sorted, sorted));
     sizes.push(len);
     perf_ratio.push(hrTimeMs(sort_time) / (hrTimeMs(heap_insert_time) + hrTimeMs(heap_extract_time)));
     sort_times.push(hrTimeMs(sort_time));
@@ -212,5 +213,115 @@ export const min_heap_with_greedy_scheduling_usage = test('minheap', ({ l, t, p 
   // // jobs in the worst way for scheduling will produce a smaller variance in the high value of variance seen (compared
   // // to random picking scheduling.)
   // lt(results[1].variance(), results[0].variance());
+});
+
+// found via testing that the minheap test performance degrades catastrophically when there are lots of collisions, which
+// should be handled properly, so this was created to uncover internal behavior. Turns out as highlighted by profiler, the culprit is deepEqual as called from eqO.
+export const minheap_comparison_collision_perf = test('minheap', ({ l, a: { eqO } }) => {
+  type N = { n: number; s?: string; };
+  l(timed(() => {
+    const mh = new MinHeap<N>('n');
+    for (let i = 0; i < 10000; i++) {
+      mh.insert({ n: i });
+    } // it's a bit awkward how the easiest way to log is to do so statelessly but then that prevents access for test machinery ..
+    let popped: N | undefined;
+    while ((popped = mh.extractMin())) {
+      // console.error('pop', popped);
+    }
+    const desc = 'incremental up test done';
+    // console.error(desc);
+    return desc;
+  })());
+  l(timed(() => {
+    const mh = new MinHeap<N>('n');
+    for (let i = 10000; i >= 0; i--) {
+      mh.insert({ n: i });
+    } // it's a bit awkward how the easiest way to log is to do so statelessly but then that prevents access for test machinery ..
+    let popped: N | undefined;
+    while ((popped = mh.extractMin())) {
+      // console.error('pop', popped);
+    }
+    const desc = 'incremental down test done';
+    // console.error(desc);
+    return desc;
+  })());
+  l(timed(() => {
+    const mh = new MinHeap<N>('n');
+    for (let i = 10000; i >= 0; i--) {
+      mh.insert({ n: Math.round(i / 10) });
+    } // it's a bit awkward how the easiest way to log is to do so statelessly but then that prevents access for test machinery ..
+    let popped: N | undefined;
+    while ((popped = mh.extractMin())) {
+      // console.error('pop', popped);
+    }
+    const desc = 'incremental down 10x dupes test';
+    // console.error(desc);
+    return desc;
+  })());
+  l(timed(() => {
+    const mh = new MinHeap<N>('n');
+    for (let i = 10000; i >= 0; i--) {
+      mh.insert({ n: Math.round(i / 100) });
+    } // it's a bit awkward how the easiest way to log is to do so statelessly but then that prevents access for test machinery ..
+    let popped: N | undefined;
+    while ((popped = mh.extractMin())) {
+      // console.error('pop', popped);
+    }
+    const desc = 'incremental down 100x dupes test';
+    // console.error(desc);
+    return desc;
+  })());
+  l(timed(() => {
+    const mh = new MinHeap<N>('n');
+    for (let i = 0; i < 10000; i++) {
+      mh.insert({ n: Math.round(i / 100) });
+    } // it's a bit awkward how the easiest way to log is to do so statelessly but then that prevents access for test machinery ..
+    let popped: N | undefined;
+    while ((popped = mh.extractMin())) {
+      // console.error('pop', popped);
+    }
+    const desc = 'incremental up 100x dupes test';
+    // console.error(desc);
+    return desc;
+  })());
+  l(timed(() => {
+    const mh = new MinHeap<N>('n');
+    for (let i = 10000; i >= 0; i--) {
+      mh.insert({ n: Math.round(i / 1000) });
+    } // it's a bit awkward how the easiest way to log is to do so statelessly but then that prevents access for test machinery ..
+    let popped: N | undefined;
+    while ((popped = mh.extractMin())) {
+      // console.error('pop', popped);
+    }
+    const desc = 'incremental down 1000x dupes test';
+    // console.error(desc);
+    return desc;
+  })());
+  l(timed(() => {
+    const mh = new MinHeap<N>('n');
+    for (let i = 0; i < 10000; i++) {
+      mh.insert({ n: Math.round(i / 1000) });
+    } // it's a bit awkward how the easiest way to log is to do so statelessly but then that prevents access for test machinery ..
+    let popped: N | undefined;
+    while ((popped = mh.extractMin())) {
+      // console.error('pop', popped);
+    }
+    const desc = 'incremental up 1000x dupes test';
+    // console.error(desc);
+    return desc;
+  })());
+  l(timed(() => {
+    const mh = new MinHeap<N>('n');
+    for (let i = 0; i < 10000; i++) {
+      mh.insert({ n: 3 });
+    } // it's a bit awkward how the easiest way to log is to do so statelessly but then that prevents access for test machinery ..
+    let popped: N | undefined;
+    while ((popped = mh.extractMin())) {
+      // console.error('pop', popped);
+    }
+    const desc = 'incremental up all dupes test';
+    // console.error(desc);
+    return desc;
+  })());
 });
 

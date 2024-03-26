@@ -6,11 +6,15 @@ type KeysMatching<T, V> = {
 export class MinHeap<T>{
   private heap: T[];
   private key: KeysMatching<T, number>;
+  private debug = false;
   constructor(propName: KeysMatching<T, number>);
   constructor(propName: KeysMatching<T, number>, initial: T[]);
   constructor(propName: KeysMatching<T, number>, initial?: T[]) {
     this.heap = initial ?? [];
     this.key = propName;
+  }
+  public enableDebug() {
+    this.debug = true;
   }
   private getParentIndex(i: number): number {
     return Math.floor((i - 1) / 2);
@@ -24,14 +28,19 @@ export class MinHeap<T>{
   private swap(index1: number, index2: number) {
     [this.heap[index1], this.heap[index2]] = [this.heap[index2], this.heap[index1]];
   }
+  private heapifySwapCount = 0;
   private heapifyUp() {
+    if (this.debug) { this.heapifySwapCount = 0; }
     let index = this.heap.length - 1;
     while (this.getParentIndex(index) >= 0 && this.heap[this.getParentIndex(index)][this.key] > this.heap[index][this.key]) {
       this.swap(this.getParentIndex(index), index);
+      if (this.debug) { this.heapifySwapCount++; }
       index = this.getParentIndex(index);
     }
+    if (this.debug) { console.error(`Heapify Up: swap count ${this.heapifySwapCount}`); }
   }
   private heapifyDown() {
+    if (this.debug) { this.heapifySwapCount = 0; }
     let index = 0;
     while (this.getLeftChildIndex(index) < this.heap.length) {
       let smallerChildIndex = this.getLeftChildIndex(index);
@@ -42,10 +51,12 @@ export class MinHeap<T>{
       if (this.heap[index][this.key] < this.heap[smallerChildIndex][this.key]) {
         break;
       }
+      if (this.debug) { this.heapifySwapCount++; }
       this.swap(index, smallerChildIndex);
 
       index = smallerChildIndex;
     }
+    if (this.debug) { console.error(`Heapify Down: swap count ${this.heapifySwapCount}`); }
   }
   public insert(value: T) {
     this.heap.push(value);
