@@ -196,7 +196,7 @@ export function parseFileLineColFromStackLineMakeHyperlink(stack_line?: string) 
     console.error('stack:', format(stack_line));
     throw new Error('Failure to parse stack line for file location!');
   }
-  const filePath = m[1] || m[2];
+  const filePath = m[1] || m[2] || m[3];
   if (!filePath) return 'Failure to resolve location assuming file url from stack!';
   const fileURLWithHostname = 'file://' + os.hostname() + filePath;
   const content = stack_line?.match(/[^/]+\/[^/]+\.[tj]s:\d+:\d+/)?.[0];
