@@ -285,15 +285,16 @@ export const error_stack_format = test('stack trace', ({l, a:{eq, is, not}}) => 
   const explicit_examples = [
     "    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)",
     "    at /Users/slu/blah/blah/blah.js:10:20",
+    "    at /Users/slu/static-sharing/test.ts:3:1539"
   ];
   const examples_of_stack_frames = [...stack_here, ...stack_from_outer, ...explicit_examples];
 
   const re = [
     /at\s+(?:[\w<>.]+\s+)?\((?:file:\/\/)?(.*)\)/,
     /at\s+file:\/\/(.*)$/,
-    /at\s+([\w/.]+:\d+:\d+)$/,
+    /at\s+([-\w/.]+:\d+:\d+)$/,
   ];
-  const validate_code_position_re = /^[\w/.:]+:\d+:\d+$/;
+  const validate_code_position_re = /^[-\w/.:]+:\d+:\d+$/;
   const validate_code_position_none_match_res = [
     /\/\//, // consecutive slashes
     /file:\//, // file:/
