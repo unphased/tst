@@ -282,22 +282,27 @@ function stack_from_outer_fn() {
 export const error_stack_format = test('stack trace', ({l, a:{eq, is, not}}) => {
   const stack_here = new Error().stack.split('\n').slice(1);
   const stack_from_outer = stack_from_outer_fn().split('\n').slice(1);
-  const two_stacks = [...stack_here, ...stack_from_outer];
+  const explicit_examples = [
+    "    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)",
+    "    at /Users/slu/blah/blah/blah.js:10:20",
+  ];
+  const examples_of_stack_frames = [...stack_here, ...stack_from_outer, ...explicit_examples];
 
   const re = [
-    /at\s+(?:[\w<>]+\s+)?\((?:file:\/\/)?(.*)\)/,
-    /at\s+file:\/\/(.*)$/
+    /at\s+(?:[\w<>.]+\s+)?\((?:file:\/\/)?(.*)\)/,
+    /at\s+file:\/\/(.*)$/,
+    /at\s+([\w/.]+:\d+:\d+)$/,
   ];
-  const validate_code_position_re = /^[\w/.]+:\d+:\d+$/;
+  const validate_code_position_re = /^[\w/.:]+:\d+:\d+$/;
   const validate_code_position_none_match_res = [
     /\/\//, // consecutive slashes
-    /file:\/\//, // file://
+    /file:\//, // file:/
     /^\s?at/ // "at"
   ];
 
-  l(re);
-  l(two_stacks);
-  for (const stack of two_stacks) {
+  l("regexes to implement code location detection in stacks:", re);
+  l("all the stack examples we're gonna test on:", examples_of_stack_frames);
+  for (const stack of examples_of_stack_frames) {
     const pred = (r: RegExp) => {
       const match = stack.match(r);
       if (!match) return false;
@@ -306,9 +311,9 @@ export const error_stack_format = test('stack trace', ({l, a:{eq, is, not}}) => 
       not(validate_code_position_none_match_res.some(re => m1.match(re)), m1, 'matched some of these forbidden patterns:', validate_code_position_none_match_res);
       return true
     };
-    is(re.some(pred), re.map(pred), 'failed to parse', stack, 'by ANY of patterns', re);
+    is(re.some(pred), 'failed to parse', stack, 'by ANY of patterns', re);
     // also test against real impl from this lib
-    is(parseFileLineColFromStackLineMakeHyperlink(stack))
+    is(parseFileLineColFromStackLineMakeHyperlink(stack), "need to be implemented in the library routine here as well!")
   }
 });
 

@@ -190,7 +190,9 @@ export const testFnRegistry = new Map<TFun | ((...args: Parameters<TFun>) => Pro
 export function parseFileLineColFromStackLineMakeHyperlink(stack_line?: string) {
   // stacks are already being rendered as file urls in ESM. We just need to inject a hostname into it.
   // console.error('pFLCFSLMH', stack_line);
-  const m = stack_line.match(/at\s+(?:[\w<>]+\s+)?\((?:file:\/\/)?(.*)\)|at\s+file:\/\/(.*)/);
+  const m = stack_line.match(/at\s+(?:[\w<>.]+\s+)?\((?:file:\/\/)?(.*)\)|at\s+file:\/\/(.*)$|at\s+([\w/.]+:\d+:\d+)$/);
+  // TODO: This regex is now unmaintainable so possibly we need to share code with the unit test...
+
   const filePath = m[1] || m[2];
   if (!filePath) return 'Failure to resolve location assuming file url from stack!';
   const fileURLWithHostname = 'file://' + os.hostname() + filePath;
