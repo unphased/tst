@@ -124,7 +124,7 @@ export const testParamMaker = (config: LaunchOptions, logs: TestLogs, assertionM
     const formatted = format_opt(x, opts);
     const t = process.hrtime();
     logs.push([t, formatted]);
-    config.echo_test_logging && console.error(t, formatted);
+    config.echo_test_logging && console.log(t, formatted);
   }
   function logger(...x: any[]) {
     logger_with_opts(x);

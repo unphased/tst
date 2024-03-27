@@ -115,7 +115,7 @@ export const assertions = {
     if (a <= b) throw new Error(red(bold(italic('gt')) + ' expected ') + pp2(a) + red(' to be greater than ') + pp2(b) + red('.'));
   },
   eqO: <T>(a: T, b: T) => {
-    if (!equal(a, b)) throw new Error(red(bold(italic('eqO')) + ' expected ') + pp2(a) + red(' to equal ') + pp2(b) + red('.') + ' Delta: ' + diffOfStrings(format(a), format(b)));
+    if (!equal(a, b)) throw new Error(red(bold(italic('eqO')) + ' expected ') + pp2(a) + red(' to equal ') + pp2(b) + red('.') + ' Delta: ' + diffOfStrings(format(a), format(b)).toString());
   },
   neO: (a: any, b: any) => {
     if (equal(a, b)) throw new Error(red(bold(italic('neO')) + ' expected ') + pp2(a) + red(' to not equal ') + pp2(b) + red('.'));
@@ -126,7 +126,7 @@ export const assertions = {
     if (!v) throw new Error(red(bold(italic('includesO')) + ' expected ') + pp2(a) + red(' to include ') + pp2(spec));
   },
   match: (v: string | Buffer, spec: RegExp) => {
-    if (!spec.test(v)) throw new Error(red(bold(italic('match')) + ' expected ') + pp2(v) + red(` to match ${pp2(spec)}.`));
+    if (!spec.test(v.toString())) throw new Error(red(bold(italic('match')) + ' expected ') + pp2(v) + red(` to match ${pp2(spec)}.`));
   },
   is: (v: any, ...message: any[]) => {
     if (!v) throw new Error(red(bold(italic('is')) + ' expected ') + pp2(v) + red(` to be truthy. `) + format(...message));

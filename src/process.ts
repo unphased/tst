@@ -209,6 +209,9 @@ export const spawnAsync = ((command: string, args: string[], logger_?: typeof co
     proc.stderr?.pipe(squashBlankLinesTransform()).pipe(errstream);
     outstream.on('data', opts.hideCmd ? pidOnlyLogger : cmdDisplayingLogger);
     errstream.on('data', opts.hideCmd ? pidOnlyLogger : cmdDisplayingLogger);
+    proc.stderr.on('error', (err) => {
+      console.error(`stderr error with pid=${pid}`, err);
+    });
     if (!opts?.hideLaunchAndClose) {
       proc.on('exit', (code, signal) => {
         cmdDisplayingLogger(`exited${code ? ` code ${code}` : ''}${signal ? ` signal ${signal}` : ''} (took ${renderTruncHrTime(process.hrtime(start))})`, false);

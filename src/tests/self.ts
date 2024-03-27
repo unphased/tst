@@ -24,7 +24,7 @@ const getBuildProjDir = () => {
   while (x = projDir.split(path.sep).pop(), x !== 'build' && x !== 'src') {
     projDir = path.resolve(projDir, '..');
   }
-  console.error('debug projDir:', projDir);
+  // console.error('debug projDir:', projDir);
   return projDir;
 };
 // by virtue of being an inception test (executes test runner), also tests the test specification file filter, test launching itself, etc.
@@ -343,6 +343,23 @@ export const deepequal_perf_collisions = test('deepequal', ({ l, p, a: { eqO } }
     data: [x, y_builtin_ms, y_deepeq_ms, y_deepeq_ms.map((v, i) => v / y_builtin_ms[i])]
   }]);
   
+});
+
+export const spawn_a_failing_command = test('spawnAsync', async ({ t, spawn, a: { eq, eqO, match } }) => {
+  t('fails', /exited with failure/);
+  const ret = await spawn('bash', ['-c', 'echo "abcdef"; >&2 echo "xyz123"; exit 1'], { bufferStdout: true, showStdoutWhenBuffering: true });
+  match(ret.stdout, /abcdef/);
+});
+
+export const spawn_must_show_full_error_on_failure = test('spawnAsync', async ({ l, spawn, a: { eq, eqO, match } }) => {
+  const projDir = getBuildProjDir();
+  l('projDir:', projDir);
+  const ret = await spawn('node', ['--enable-source-maps', path.join(projDir, 'dispatch', 'runner.js'), TestLaunchFlags.ExactTestNameMatching, TestLaunchFlags.ForceEnableLogging, 'tests/self.js', TestLaunchSeparator, 'spawnAsync:spawn_a_failing_command'], {
+    bufferStdout: true, showStdoutWhenBuffering: true
+  });
+  // confirm i can see the content emitted from the command
+  match(ret.stdout, /abcdef/);
+  match(ret.stdout, /xyz123/);
 });
 
 
