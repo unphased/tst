@@ -5,7 +5,7 @@
   "main": "./dist/bundle.js",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "typecheck": "tsc",
+    "typecheck": "tsc -p tsconfig.json",
     "build": "rm -rf build && mkdir -p build && babel src --out-dir build --copy-files --extensions \".ts\"",
     "bundle": "npm run build && esbuild ./build/index.js --bundle --platform=node --sourcemap --format=esm --outfile=./dist/bundle.js --external:express --external:deep-equal",
     "postbundle": "time tsc -p tsconfig.for_decls.json",

@@ -118,6 +118,7 @@ export const assertions = {
     if (!equal(a, b)) throw new Error(red(bold(italic('eqO')) + ' expected ') + pp2(a) + red(' to equal ') + pp2(b) + red('.') + ' Delta: ' + diffOfStrings(format(a), format(b)));
   },
   neO: (a: any, b: any) => {
+    if (equal(a, b)) throw new Error(red(bold(italic('neO')) + ' expected ') + pp2(a) + red(' to not equal ') + pp2(b) + red('.'));
   },
   includes,
   includesO: (a: any, spec: any) => {
