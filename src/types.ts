@@ -101,6 +101,10 @@ export type TestResult = {
 } & TestOptions;
 
 export type Embeds = (HtmlEmbedding & { group_id: string })[];
+export type CleanupHandlers = {
+  failedCleanup: () => void;
+  alwaysCleanup: () => void;
+};
 
 type TestDiscoveryMetrics = {
   importsDuration: [number, number];

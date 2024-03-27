@@ -6,7 +6,7 @@ import { LaunchOptions } from './config/launchOptions.js';
 import { PlotData } from './plotting/index.js';
 import { plotters } from "./plotting/plotters_index.js";
 import { SpawnAsyncOpts, SpawnAsyncTestLogTraced, isBypassResourceMetrics, spawnAsync } from './process.js';
-import { Embeds, ResourceMetrics, TestAssertionMetrics, TestLogs, TestMetadata, TestOptions } from "./types.js";
+import { CleanupHandlers, Embeds, ResourceMetrics, TestAssertionMetrics, TestLogs, TestMetadata, TestOptions } from "./types.js";
 
 import * as os from 'node:os';
 import * as stream from 'node:stream';
@@ -119,7 +119,7 @@ const htmlPlotBuilderEmbedder = (embeds: Embeds) => (plotType: keyof typeof plot
 };
 
 // produces interface with which to define a test accessed through param of test function
-export const testParamMaker = (config: LaunchOptions, logs: TestLogs, assertionMetrics: TestAssertionMetrics, options: TestOptions, resourceMetrics: ResourceMetrics, embeds: Embeds) => {
+export const testParamMaker = (config: LaunchOptions, logs: TestLogs, assertionMetrics: TestAssertionMetrics, options: TestOptions, resourceMetrics: ResourceMetrics, embeds: Embeds, handlers: CleanupHandlers) => {
   function logger_with_opts(x:any[], opts?: Parameters<typeof format_opt>[1]) {
     const formatted = format_opt(x, opts);
     const t = process.hrtime();
@@ -167,6 +167,8 @@ export const testParamMaker = (config: LaunchOptions, logs: TestLogs, assertionM
     spawn: asyncSpawnTestTracedMaker(resourceMetrics, logger),
     // html embed consumer for plots etc. When no disjoint groups are specified they get combined into a single page.
     p: htmlPlotBuilderEmbedder(embeds),
+    finally: (fn: () => void) => {
+    }
   }
 }
 

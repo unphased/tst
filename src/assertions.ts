@@ -124,7 +124,7 @@ export const assertions = {
     const v = isSubsetObject(spec, a);
     if (!v) throw new Error(red(bold(italic('includesO')) + ' expected ') + pp2(a) + red(' to include ') + pp2(spec));
   },
-  match: (v: any, spec: RegExp) => {
+  match: (v: string | Buffer, spec: RegExp) => {
     if (!spec.test(v)) throw new Error(red(bold(italic('match')) + ' expected ') + pp2(v) + red(` to match ${pp2(spec)}.`));
   },
   is: (v: any, ...message: any[]) => {

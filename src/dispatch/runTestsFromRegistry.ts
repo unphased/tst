@@ -2,7 +2,7 @@ import { hrTimeMs, italic, pp, red, mapObjectProps } from "ts-utils";
 import { colors } from 'ts-utils/terminal';
 import { LaunchOptions } from '../config/launchOptions.js';
 import { AsyncFunction, TFun, testParamMaker } from '../main.js';
-import { Embeds, ErrorSpec, ResourceMetrics, TestAssertionMetrics, TestLogs, TestMetadata, TestOptions, TestResult } from '../types.js';
+import { CleanupHandlers, Embeds, ErrorSpec, ResourceMetrics, TestAssertionMetrics, TestLogs, TestMetadata, TestOptions, TestResult } from '../types.js';
 import { tf, topt } from './util.js';
 
 const magenta = (str: string) => colors.magenta + str + colors.fg_reset;
@@ -36,7 +36,8 @@ export async function runTestsFromRegistry(testRegistry: Map<TFun | ((...args: P
     };
     const resourceMetrics: ResourceMetrics = [];
     const embeds: Embeds = [];
-    const testParam = testParamMaker(config, logs, assertionMetrics, options, resourceMetrics, embeds);
+    const handlers: CleanupHandlers = {};
+    const testParam = testParamMaker(config, logs, assertionMetrics, options, resourceMetrics, embeds, handlers);
 
     console[topt(tf.Automated) ? 'error' : 'log'](`${colors.blue}Running ${asyn ? 'async ' : ''}test ${magenta(asyn ? ul(name) : name)}${suite ? ` from suite '${suite}'` : ''} ${colors.dim + stack + colors.bold_reset}`);
     const testFailureHeader = `${colors.red}Failure${colors.fg_reset} in test ${colors.red}${suite ? italic(suite + ':') : ''}${ul(name)}${colors.fg_reset}`;
