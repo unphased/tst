@@ -96,22 +96,22 @@ export const test_name_collision = test('same test name', ({ l, t }) => {
   l('test_name_collision from self');
 });
 
-export const test_failure_assertion_log_correctness = test('test fails', ({ t, a: { eq, eqO }, m }) => {
-  const eqBuf = (mm: ReturnType<typeof m>) => mm.assertionMetrics.logs.eq?.buffer;
+export const test_failure_assertion_log_correctness = test('test fails', ({ t, l, a: { eq, eqO }, m }) => {
+  const eqBuf = (mm: ReturnType<typeof m>) => mm.assertionMetrics.logs.eq?.buffer.map(e => JSON.parse(e));
   eq(2, 2);
   const m1 = m();
   eq(eqBuf(m1)?.length, 1);
-  eq(eqBuf(m1)?.[0][1], '[2,2]');
+  eqO(eqBuf(m1)?.[0][1], [2,2]);
 
   new Array(1000).fill(null).forEach((_, i) => eq(i, i));
 
   const m2 = m();
-  eq(eqBuf(m2)?.length, 1003); // must count the two assertions we made above ;) This test is entertainingly self-referential like this.
-  eq(eqBuf(m2)?.[458][1], '[455,455]');
+  eq(eqBuf(m2)?.length, 1002); // must count the two assertions we made above ;) This test is entertainingly self-referential like this.
+  eqO(eqBuf(m2)?.[458][1], [456,456]);
 
   t('ringBufferLimitAssertionLogs', 50);
   const m3 = m();
-  eq(eqBuf(m3)?.length, 1005); // as we haven't made any more assertions so the resize for ring buffer should not have taken place
+  eq(eqBuf(m3)?.length, 1003); // as we haven't made any more assertions so the resize for ring buffer should not have taken place
 
   // It is at this exact point that now we have resized the ring buffer and the oldest logs purged.
   // Note this insertion of 1005 also is the initial ring buffer wrap value!

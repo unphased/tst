@@ -252,7 +252,7 @@ export const brotli_compression_efficiency = test('brotli compression', async ({
       const out = inStream.pipe(brotliCompress);
       const compd = await new Promise<string>((resolve, reject) => {
         let buf = '';
-        out.on('data', (chunk) => {
+        out.on('data', (chunk: Buffer) => {
           if (chunk) {
             buf += chunk.toString();
           }
