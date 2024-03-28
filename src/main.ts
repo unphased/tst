@@ -174,10 +174,10 @@ export const testParamMaker = (config: LaunchOptions, logs: TestLogs, assertionM
     // to move this out from a testparam into a separate third arg for the test definition. One
     // concept though would be to have helpful informative output if we detect a too-late cleanup
     // installation.
-    f: (fn: () => void) => { // on fail cleanup handler
+    failure_cleanup: (fn: () => void) => { // on fail cleanup handler
       cleanupHandlers.failedCleanupHandlers.push(fn);
     },
-    c: (fn: () => void) => { // on cleanup handler, always runs
+    cleanup: (fn: () => void) => { // on cleanup handler, always runs
       cleanupHandlers.alwaysCleanupHandlers.push(fn);
     }
   }

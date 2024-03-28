@@ -217,7 +217,8 @@ export const min_heap_with_greedy_scheduling_usage = test('minheap', ({ l, t, p 
 
 // found via testing that the minheap test performance degrades catastrophically when there are lots of collisions, which
 // should be handled properly, so this was created to uncover internal behavior. Turns out as highlighted by profiler, the culprit is deepEqual as called from eqO.
-export const minheap_comparison_collision_perf = test('minheap', ({ l, a: { eqO } }) => {
+export const minheap_comparison_collision_perf = test('minheap', ({ l, t, a: { eqO } }) => {
+  t('exemptFromAsserting');
   type N = { n: number; s?: string; };
   l(timed(() => {
     const mh = new MinHeap<N>('n');
