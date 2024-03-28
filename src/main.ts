@@ -177,6 +177,8 @@ export const testParamMaker = (config: LaunchOptions, logs: TestLogs, assertionM
     failure_cleanup: (fn: () => void) => { // on fail cleanup handler
       cleanupHandlers.failedCleanupHandlers.push(fn);
     },
+    // cleanup fn, something that will run at end of test as long as test execution reaches this point. So the
+    // convention is to put this immediately before or after the creation of whatever resource this is cleaning up!
     cleanup: (fn: () => void) => { // on cleanup handler, always runs
       cleanupHandlers.alwaysCleanupHandlers.push(fn);
     }
