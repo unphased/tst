@@ -106,7 +106,7 @@ export const test_failure_assertion_log_correctness = test('test fails', ({ t, l
   new Array(1000).fill(null).forEach((_, i) => eq(i, i));
 
   const m2 = m();
-  eq(eqBuf(m2)?.length, 1002); // must count the two assertions we made above ;) This test is entertainingly self-referential like this.
+  eq(eqBuf(m2)?.length, 1002); // must count the assertions we made above ;) This test is entertainingly self-referential like this.
   eqO(eqBuf(m2)?.[458][1], [456,456]);
 
   t('ringBufferLimitAssertionLogs', 50);
@@ -114,16 +114,17 @@ export const test_failure_assertion_log_correctness = test('test fails', ({ t, l
   eq(eqBuf(m3)?.length, 1003); // as we haven't made any more assertions so the resize for ring buffer should not have taken place
 
   // It is at this exact point that now we have resized the ring buffer and the oldest logs purged.
-  // Note this insertion of 1005 also is the initial ring buffer wrap value!
+  // Note this insertion of 1003 also is the initial ring buffer wrap value!
   const m4 = m();
   eq(eqBuf(m4)?.length, 50); // sanity check. this check wont make it into the m4 ring buffer snapshot.
   eq(m4.assertionMetrics.logs.eq?.ringBufferOffset, 1); // confirm have wrapped and is set to insert in position 1 next.
+  eqO(eqBuf(m4)[0][1], [1003,1003]);
 
   // to confirm the content we'll need to consider all the stuff that's taken place till the last metrics snapshot:
-  // We had 3 eq assertions made since we resized to 50. The last of which was wrapped back.
-  eqO(eqBuf(m4)?.slice(48).map(log => log[1]), ["[1003,1003]", '["[455,455]","[455,455]"]']);
-  eq(eqBuf(m4)?.[0][1], '[1005,1005]');
-  eqBuf(m4)?.slice(1, 48).forEach((log, i) => eq(log[1], `[${i + 953},${i + 953}]`, i));
+  // We had 3 eq assertions made since we resized to 50. The last of which was wrapped back to the front.
+  eqO(eqBuf(m4)?.slice(48).map(log => log[1]), [[999,999], [1002,1002]]);
+  eqO(eqBuf(m4)?.[0][1], [1003,1003]);
+  eqBuf(m4)?.slice(1, 48).forEach((log, i) => eqO(log[1], [i + 952, i + 952], i));
 });
 
 export const env_spawn = test('spawnAsync', async ({ spawn, a: { eq } }) => {
