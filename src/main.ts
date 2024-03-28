@@ -167,11 +167,18 @@ export const testParamMaker = (config: LaunchOptions, logs: TestLogs, assertionM
     spawn: asyncSpawnTestTracedMaker(resourceMetrics, logger),
     // html embed consumer for plots etc. When no disjoint groups are specified they get combined into a single page.
     p: htmlPlotBuilderEmbedder(embeds),
+    // the cleanup cb's are defined here. they will only enable and trigger if test fails after
+    // calls made here, which is a bit awkward (although is also a feature), this propery would
+    // apply as well to setTestOption, however in practice all options related behavior occurs after
+    // the test completes, so the only time this comes into play is here... TODO consider if we need
+    // to move this out from a testparam into a separate third arg for the test definition. One
+    // concept though would be to have helpful informative output if we detect a too-late cleanup
+    // installation.
     f: (fn: () => void) => { // on fail cleanup handler
-      cleanupHandlers.failedCleanup = fn;
+      cleanupHandlers.failedCleanupHandlers.push(fn);
     },
     c: (fn: () => void) => { // on cleanup handler, always runs
-      cleanupHandlers.alwaysCleanup = fn;
+      cleanupHandlers.alwaysCleanupHandlers.push(fn);
     }
   }
 }

@@ -36,7 +36,10 @@ export async function runTestsFromRegistry(testRegistry: Map<TFun | ((...args: P
     };
     const resourceMetrics: ResourceMetrics = [];
     const embeds: Embeds = [];
-    const handlers: CleanupHandlers = {};
+    const handlers: CleanupHandlers = {
+      failedCleanupHandlers: [],
+      alwaysCleanupHandlers: []
+    };
     const testParam = testParamMaker(config, logs, assertionMetrics, options, resourceMetrics, embeds, handlers);
 
     console[topt(tf.Automated) ? 'error' : 'log'](`${colors.blue}Running ${asyn ? 'async ' : ''}test ${magenta(asyn ? ul(name) : name)}${suite ? ` from suite '${suite}'` : ''} ${colors.dim + stack + colors.bold_reset}`);
@@ -70,7 +73,7 @@ export async function runTestsFromRegistry(testRegistry: Map<TFun | ((...args: P
 
       const should_have_failed = options.fails ? new Error(`Expected test to fail ${options.fails === true ? '' : `with an ${renderErrorSpec(options.fails)} Error `}due to specification of "fails" test option.`) : false;
       if (should_have_failed) { console.error(testFailureHeader, should_have_failed); }
-      handlers.alwaysCleanup && await (handlers.alwaysCleanup() as Promise<void>);
+      for (const handler of handlers.alwaysCleanupHandlers) await handler(); 
       return { ...options, durationMs, name, async: asyn, file, stack, suite, logs, assertionMetrics, resourceMetrics, cpu, finalMemSample, embeds, failure: should_have_failed };
     } catch (e) {
       const end = process.hrtime(start);
@@ -80,8 +83,8 @@ export async function runTestsFromRegistry(testRegistry: Map<TFun | ((...args: P
       const err = e as Error;
       if (topt(tf.RethrowFromTests)) throw e; 
       !options.fails && console.error(testFailureHeader, err);
-      handlers.failedCleanup && await (handlers.failedCleanup() as Promise<void>);
-      handlers.alwaysCleanup && await (handlers.alwaysCleanup() as Promise<void>);
+      for (const handler of handlers.failedCleanupHandlers) await handler();
+      for (const handler of handlers.alwaysCleanupHandlers) await handler();
       return { ...options, durationMs, name, async: asyn, file, stack, suite, logs, assertionMetrics, resourceMetrics, cpu, finalMemSample, embeds, failure: options.fails ? compatibleFailure(options.fails, err) : err };
     }
   }

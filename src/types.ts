@@ -102,8 +102,8 @@ export type TestResult = {
 
 export type Embeds = (HtmlEmbedding & { group_id: string })[];
 export type CleanupHandlers = {
-  failedCleanup?: () => void | Promise<void>;
-  alwaysCleanup?: () => void | Promise<void>;
+  failedCleanupHandlers: (() => void | Promise<void>)[];
+  alwaysCleanupHandlers: (() => void | Promise<void>)[];
 };
 
 type TestDiscoveryMetrics = {
