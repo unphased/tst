@@ -15,16 +15,12 @@ const renderTruncFromMsNuanced = (ms: number, width: number) => {
     const prec = suffix_zone === 3 ? [2,1,0][positioning] : [1,0,0][positioning];
     const has_space_gap = suffix_zone === 3 ? positioning === 2 : positioning === 1;
     const dbg = kvString({digits_place, positioning, suffix_zone, suffix, factor, ms, width});
-    const ret = digits_place > 5 ? (ms * 1e-3).toFixed(0) + 's' : (ms * factor).toFixed(prec) + (has_space_gap ? " " : "") + suffix;
-    console.error(ret, '===================', dbg);
-    return ret;
+    return digits_place > 5 ? (ms * 1e-3).toFixed(0) + 's' : (ms * factor).toFixed(prec) + (has_space_gap ? " " : "") + suffix;
   } else if (width === 6) { // with 4 digits available, something reasonable can still be done
     const dbg = kvString({digits_place, positioning, suffix_zone, suffix, factor, ms, width});
     const prec = suffix_zone === 3 ? [3,2,1][positioning] : [2,1,0][positioning];
     const has_space_gap = suffix_zone === 3 ? false : positioning === 2;
-    const ret = digits_place > 5 ? (ms * 1e-3).toFixed(0) + (digits_place === 6 ? ' s' : 's') : (ms * factor).toFixed(prec) + (has_space_gap ? " " : "") + suffix;
-    console.error(ret, '##########', dbg);
-    return ret;
+    return digits_place > 5 ? (ms * 1e-3).toFixed(0) + (digits_place === 6 ? ' s' : 's') : (ms * factor).toFixed(prec) + (has_space_gap ? " " : "") + suffix;
   } else {
     throw new Error("Width must be 5 or 6 to work in renderTruncFromMsNuanced");
   }
