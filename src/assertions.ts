@@ -4,7 +4,7 @@ import { tmpdir } from 'os';
 import { join } from 'path';
 import { colors } from 'ts-utils/terminal';
 import { bold, format, pp2, italic, red } from 'ts-utils';
-import equal from 'deep-equal';
+import { deepStrictEqual, notDeepStrictEqual } from 'assert';
 
 export const diffOfStrings = (a: string, b: string) => {
   // load the strings into unique tmpfiles
@@ -115,10 +115,19 @@ export const assertions = {
     if (a <= b) throw new Error(red(bold(italic('gt')) + ' expected ') + pp2(a) + red(' to be greater than ') + pp2(b) + red('.'));
   },
   eqO: <T>(a: T, b: T) => {
-    if (!equal(a, b)) throw new Error(red(bold(italic('eqO')) + ' expected ') + pp2(a) + red(' to equal ') + pp2(b) + red('.') + ' Delta: ' + diffOfStrings(format(a), format(b)).toString());
+    // unfortunately due to the expense of generating the message, I cannot just outsource it to deepStrictEqual's throw.
+    try {
+      deepStrictEqual(a, b);
+    } catch (e) {
+      throw new Error(red(bold(italic('eqO')) + ' expected ') + pp2(a) + red(' to equal ') + pp2(b) + red('.') + ' Delta: ' + diffOfStrings(format(a), format(b)).toString());
+    }
   },
   neO: (a: any, b: any) => {
-    if (equal(a, b)) throw new Error(red(bold(italic('neO')) + ' expected ') + pp2(a) + red(' to not equal ') + pp2(b) + red('.'));
+    try {
+      notDeepStrictEqual(a, b);
+    } catch (e) {
+      throw new Error(red(bold(italic('neO')) + ' expected ') + pp2(a) + red(' to not equal ') + pp2(b) + red('.'));
+    }
   },
   includes,
   includesO: (a: any, spec: any) => {
