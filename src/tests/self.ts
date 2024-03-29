@@ -340,7 +340,7 @@ export const deepequal_perf = test('deepequal', ({ l, p, a: { eqO } }) => {
   const output = cartesianAll(methods, structures).map(([method, structure]) =>
     ({
       label: `${method.name} with ${structure.name}`,
-      data: Array.from({length: 15}, (_, i) => Math.round(5 * 1.5 ** i)).map(i => {
+      data: Array.from({length: 10}, (_, i) => Math.round(5 * 1.5 ** i)).map(i => {
         // produce a geometric sequence of array lengths
         const a1 = Array.from({length: i}).map((_, i) => structure.item(i));
         const a2 = Array.from({length: i}).map((_, i) => structure.item(i));

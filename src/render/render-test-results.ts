@@ -2,7 +2,7 @@ import * as fs from "fs";
 import * as fsp from "fs/promises";
 import * as path from "path";
 import { spawnAsync } from '../process.js';
-import { colors } from 'ts-utils/terminal';
+import { colors, renderHorizBar } from 'ts-utils/terminal';
 import { groupBy, pp, red, sum, underline } from 'ts-utils';
 import { build_html_page } from "../plotting/index.js";
 import { ResourceMetrics, TestResult } from "../types.js";
@@ -47,7 +47,7 @@ const cpuUtil = (durationMs: number, userUs: number, systemUs: number) => {
 type MakeRequired<T, K extends keyof T> = T extends unknown ? Omit<T, K> & Required<Pick<T, K>> : never;
 type ResourceMetricsWithResources = MakeRequired<ResourceMetrics[0], 'resources'>[];
 
-export const renderResults = (results: TestResult[], launch_options: LaunchOptions, output_receiver = console.log) => {
+export const renderResults = (results: TestResult[], TotalExecutionTimeMsReference: number, launch_options: LaunchOptions, output_receiver = console.log) => {
   const expand = launch_options.expand_test_suites_reporting;
   const output: string[] = [];
   const groupBySuite = new Map<string, TestResult[]>();
@@ -61,6 +61,14 @@ export const renderResults = (results: TestResult[], launch_options: LaunchOptio
     existing.push(result);
   }
   let first_failed_test: TestResult | undefined;
+  // this duration total is the time the tests take to run in isolation, but the reference total time is the wall time
+  // taken to execute everything that we're displaying here even when parallel/distributed.
+  // one bar will be drawn to show the ratio between wall time and total test execution time.
+  const totalDuration = sum(results.map(r => r.durationMs));
+  // we will draw one bar for each test/suite, for tests, its going to be the ratio of runtime to the longest test
+  // for suites, it's the ratio of runtime to 
+  const maxDuration = Math.max(...results.map(r => r.durationMs));
+  const maxSuiteDuration = Math.max(...Array.from(groupBySuite.values()).map(r => sum(r.map(rr => rr.durationMs))));
   for (const [ suite, res ] of Array.from(groupBySuite.entries()).sort((a, b) => a[0].localeCompare(b[0]))) {
     const res_sorted = res.sort((a, b) => a.name.localeCompare(b.name));
     const failed_tests = res_sorted.filter(r => r.failure);
@@ -87,7 +95,7 @@ export const renderResults = (results: TestResult[], launch_options: LaunchOptio
       // has leading space
       const indicators = (ct.f ? `${colors.red} ${fail_char.repeat(ct.f)} ` : '') + (ct.p ? `${colors.green} ${pass_char.repeat(ct.p)} ` : '');
       const duration = sum(res.map(r => r.durationMs));
-      output.push(`${renderTruncFromMs(duration)} ${renderPercentage(cpuUtil(duration, sum(res.map(r => r.cpu.user)), sum(res.map(r => r.cpu.system))).cpu)} ${colors.reverse}${space_prefix_string}${passed_count} ${colors.reset} ${colors.reverse}${indicators}${colors.reset}${test_s_out_of_suite_string}`);
+      output.push(`${renderHorizBar(duration/maxSuiteDuration)} ${renderTruncFromMs(duration)} ${renderPercentage(cpuUtil(duration, sum(res.map(r => r.cpu.user)), sum(res.map(r => r.cpu.system))).cpu)} ${colors.reverse}${space_prefix_string}${passed_count} ${colors.reset} ${colors.reverse}${indicators}${colors.reset}${test_s_out_of_suite_string}`);
     }
     const results_to_show = (suite === '' || expand) ? res_sorted : failed_tests;
     for (const { durationMs, name, async, stack, failure, cpu, finalMemSample, resourceMetrics } of results_to_show) {
@@ -116,7 +124,7 @@ export const renderResults = (results: TestResult[], launch_options: LaunchOptio
 
       const cpuUtilAll = renderPercentage((cpuSys_self + cpuUser_self + cpuSys_spawned + cpuUser_spawned) / durationMs * 1000);
 
-      output.push(`${renderTruncFromMs(durationMs)} ${spawnCount ? spawnWithRecMeasurement !== spawnCount ? `${spawnCount} (${spawnWithRecMeasurement}): ` : `${spawnCount}: ` : ''}${maxRss.join(',')} ${cpuTimes.join(',')} ${cpuUtilAll} ${colors[failure ? 'red' : 'green'] + colors.reverse + (failure ? ` ${fail_char} FAIL ` : ` ${pass_char} PASS `) + colors.reset} ${async ? underline(name) : name} ${colors.dim + stack + colors.bold_reset}`);
+      output.push(`${renderHorizBar(durationMs / maxDuration, 5)} ${renderTruncFromMs(durationMs)} ${spawnCount ? spawnWithRecMeasurement !== spawnCount ? `${spawnCount} (${spawnWithRecMeasurement}): ` : `${spawnCount}: ` : ''}${maxRss.join(',')} ${cpuTimes.join(',')} ${cpuUtilAll} ${colors[failure ? 'red' : 'green'] + colors.reverse + (failure ? ` ${fail_char} FAIL ` : ` ${pass_char} PASS `) + colors.reset} ${async ? underline(name) : name} ${colors.dim + stack + colors.bold_reset}`);
     }
   }
 

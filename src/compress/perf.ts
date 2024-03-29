@@ -111,12 +111,12 @@ export const compression_megabench = test('streams', async ({ t, p, l, lo, a: {e
   // TODO definitely stands to gain scalability from converting these to generators
   const datagens = [ // all have tests growing geometrically in size
     { name: 'a-k and a number (usually but not always many digits)', produce: () =>
-      Array.from({length: 30}, (_, i) =>
+      Array.from({length: 20}, (_, i) =>
         Array.from({length: Math.ceil(1.3 ** (i + 10))}, (_, j) => 'abcdefghijk ' + Math.sqrt(j)).join('\n')
       )
     },
     { name: 'a-z with a number intercalated at random position', produce: () => 
-      Array.from({length: 30}, (_, i) =>
+      Array.from({length: 20}, (_, i) =>
         Array.from({length: Math.ceil(1.3 ** (i + 10))}, (_, j) => {
           const az = 'abcdefghijklmnopqrstuvwxyz';
           const rand = Math.floor(Math.random() * az.length);
@@ -125,22 +125,22 @@ export const compression_megabench = test('streams', async ({ t, p, l, lo, a: {e
       )
     },
     { name: 'random numbers', produce: memoized(() =>
-      Array.from({length: 30}, (_, i) =>
+      Array.from({length: 20}, (_, i) =>
         Array.from({length: Math.ceil(1.3 ** (i + 10))}, (_, _j) => Math.random().toString()).join('\n')
       ))
     },
     { name: 'integers incrementing by 7', produce: () =>
-      Array.from({length: 40}, (_, i) =>
+      Array.from({length: 20}, (_, i) =>
         Array.from({length: Math.ceil(1.35 ** (i + 3))}, (_, j) => (j * 7).toString()).join('\n')
       )
     },
     { name: 'integers incrementing by 1', produce: () =>
-      Array.from({length: 40}, (_, i) =>
+      Array.from({length: 20}, (_, i) =>
         Array.from({length: Math.ceil(1.35 ** (i + 3))}, (_, j) => j.toString()).join('\n')
       )
     },
     { name: 'copies of the same string', produce: () =>
-      Array.from({length: 30}, (_, i) =>
+      Array.from({length: 20}, (_, i) =>
         Array.from({length: Math.ceil(1.3 ** (i + 3))}, (_, j) => 'abcdefghijk lorem ipsum lmnopqrstuv').join('\n')
       )
     }

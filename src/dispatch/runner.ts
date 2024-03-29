@@ -75,7 +75,7 @@ const runParallelTests = async (registry: Awaited<ReturnType<typeof trigger_dyna
   const start = process.hrtime();
   // note establishTestResultsDir is called from launchAutomatedProcessTestsFromRegistryInParallel
   const structuredResults = await launchAutomatedProcessTestsFromRegistryInParallel(registry, predicate);
-  return { structuredResults, parallelExecutionDuration: process.hrtime(start) };
+  return { structuredResults, parallelExecutionDuration: hrTimeMs(process.hrtime(start)) };
 };
 
 const runTestsDirectly = async (targetDir: string, testSpecification: ReturnType<typeof parseTestLaunchingArgs>, launch_opts?: LaunchOptions) => {
@@ -105,7 +105,7 @@ export const LaunchTests = async (rootPath?: string, launchOpts?: LaunchOptions)
   let metricsEasyRead = '';
 
   let testCount: number = 0;
-  let default_launch_opts = {echo_test_logging: false, expand_test_suites_reporting: true};
+  const default_launch_opts = {echo_test_logging: false, expand_test_suites_reporting: false}
   let launch_opts = { ...default_launch_opts, ...launchOpts };
   if (topt(tf.ForceEnableLogging)) { launch_opts.echo_test_logging = true; }
   if (topt(tf.ForceDisableLogging)) { console.assert(!topt(tf.ForceEnableLogging)); launch_opts.echo_test_logging = false; }
@@ -138,7 +138,7 @@ export const LaunchTests = async (rootPath?: string, launchOpts?: LaunchOptions)
     const maxProcessRuntime = Math.max(...distributed_metrics.map(dm => dm.duration));
     metricsEasyRead = `Actual process runtimes\n${distributed_metrics.map(dm => renderVisualPercentageLowerIsBetter(dm.duration, maxProcessRuntime, 20) + ' ' + dm.duration + ' ' + dm.schedule.jobs.map(j => j.testName)).join('\n')}\nExpected runtimes\n${distributed_metrics.map(dm => renderVisualPercentageLowerIsBetter(maxProcessRuntime, dm.schedule.totalExpectedRuntimeMs, 50) + ' ' + dm.schedule.totalExpectedRuntimeMs + ' ' + dm.schedule.jobs.map(j => j.testName)).join('\n')}`;
     processTestResults(outputResults, metricsForEcho);
-    renderResults(outputResults, launch_opts);
+    renderResults(outputResults, parallelLaunchMetrics.parallelExecutionDuration, launch_opts);
   } else if (!topt(tf.Automated) && !topt(tf.Parallel)) {
     // === launching without any parallelism (to run all in one process) This is a least-complex happy path and also the OG path.
     // - discover tests as specified by easy test spec protocol
@@ -154,7 +154,7 @@ export const LaunchTests = async (rootPath?: string, launchOpts?: LaunchOptions)
     recordResults(testResults);
     metricsForEcho = { ...metrics, ...metrics2 };
     processTestResults(testResults, metricsForEcho);
-    renderResults(testResults, launch_opts);
+    renderResults(testResults, metrics2.testExecutionDuration, launch_opts);
   } else if (topt(tf.Automated) && topt(tf.Parallel)) {
     // === this is a mid tree node. takes complex (json?) input which specifies a launch schedule.
     // - parse complex launch schedule
