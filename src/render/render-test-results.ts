@@ -47,7 +47,7 @@ const cpuUtil = (durationMs: number, userUs: number, systemUs: number) => {
 type MakeRequired<T, K extends keyof T> = T extends unknown ? Omit<T, K> & Required<Pick<T, K>> : never;
 type ResourceMetricsWithResources = MakeRequired<ResourceMetrics[0], 'resources'>[];
 
-export const renderResults = (results: TestResult[], TotalExecutionTimeMsReference: number, launch_options: LaunchOptions, output_receiver = console.log) => {
+export const renderResults = (results: TestResult[], TotalExecutionTimeMsReference: number, launch_options: LaunchOptions, only_print_table = false, output_receiver = console.log) => {
   const expand = launch_options.expand_test_suites_reporting;
   const output: string[] = [];
   const groupBySuite = new Map<string, TestResult[]>();
@@ -129,6 +129,13 @@ export const renderResults = (results: TestResult[], TotalExecutionTimeMsReferen
   }
 
   output_receiver(drawBorder(output.join('\n'), `${results.length} tests in ${groupBySuite.size} suites`));
+
+  if (expand === 'both') {
+    renderResults(results, TotalExecutionTimeMsReference, { ...launch_options, expand_test_suites_reporting: false }, true, output_receiver);
+  }
+  if (only_print_table) {
+    return;
+  }
 
   // We also render out at the end the outputs of the first of the failed tests. This is almost always what is desired
   // in practice. only showing one helps us to focus on it and putting it at the end gives the best chance of keeping it all visible.
