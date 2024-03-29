@@ -41,11 +41,10 @@ export const simple_uplot = test('plotting', ({ l, p, t }) => {
   p('uplot', plots2, 'testing plotting');
   const html = Object.values(build_html_page([uPlot_assemble(plots1), uPlot_assemble(plots2)])).join('\n');
   const parser = new XMLParser(htmlParseOptions);
-  // perform full HTML validation
-  const output = parser.parse(html, true);
   // validation throws on errors so by validating it we are asserting.
   t('exemptFromAsserting', true);
-  l(output);
+  // perform full HTML validation
+  l(parser.parse(html, true));
   writeFileSync('simple_uplot.html', html);
 });
 
