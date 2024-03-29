@@ -31,3 +31,12 @@ export const visual_check = test('terminal precision bar rendering', ({ t, l, a:
     eq(r.length, 3, 'length of bar');
   }
 })
+
+// there are 9 possible levels showable with a single bar. the bar comes in 8 states of fill, so there is a 9th first state
+// representing 0. however if we have 3 chars for example, that makes for 25 states and not 27 states.
+export const fine_grain_check = test('terminal precision bar rendering', ({t, l, a: {eq}}) => {
+  const bars = '▏▎▍▌▋▊▉█';
+  eq(renderHorizBar(0, 1), ' ');
+  eq(renderHorizBar(1/9 - 0.0001, 1), ' ');
+  eq(renderHorizBar(1/9 + 0.0001, 1), bars[0]);
+});
