@@ -1,21 +1,51 @@
 import { renderBarRatioComparisonLowerIsBetter } from 'ts-utils/terminal';
-import { hrTimeMs } from 'ts-utils';
+import { hrTimeMs, kvString } from 'ts-utils';
 
 export const renderHrTimeMs = (hrTimeDelta: [number, number]) => hrTimeMs(hrTimeDelta).toFixed(5) + "ms";
-export const renderTruncFromMs = (ms: number) => {
-  if (ms >= 10000) {
+
+// against my better judgement... an impl allowing more precision to be shown by allowing microseconds
+const renderTruncFromMsNuanced = (ms: number, width: number) => {
+  if (width < 5) throw new Error("Width must be at least 5 to render fixed width");
+  const digits_place = ms === 0 ? -6 : Math.floor(Math.log10(ms));
+  const positioning = (digits_place + 30) % 3; // modulo 3, so now 0 = ones, 1 = tens, 2 = hundreds
+  const suffix_zone = Math.min(3, Math.floor(digits_place / 3) + 2); // div 3, shifted, so 0 = ns, 1 = us, 2 = ms, 3 = s
+  const factor = [1e6, 1e3, 1, 1e-3][suffix_zone];
+  const suffix = ['ns', 'us', 'ms', 's'][suffix_zone]
+  if (width === 5) { // 5 is unique. it only gives space for 3 digits usually, and that includes the decimal point
+    const prec = suffix_zone === 3 ? [2,1,0][positioning] : [1,0,0][positioning];
+    const has_space_gap = suffix_zone === 3 ? positioning === 2 : positioning === 1;
+    const dbg = kvString({digits_place, positioning, suffix_zone, suffix, factor, ms, width});
+    const ret = digits_place > 5 ? (ms * 1e-3).toFixed(0) + 's' : (ms * factor).toFixed(prec) + (has_space_gap ? " " : "") + suffix;
+    console.error(ret, '===================', dbg);
+    return ret;
+  } else if (width === 6) { // with 4 digits available, something reasonable can still be done
+    const dbg = kvString({digits_place, positioning, suffix_zone, suffix, factor, ms, width});
+    const prec = suffix_zone === 3 ? [3,2,1][positioning] : [2,1,0][positioning];
+    const has_space_gap = suffix_zone === 3 ? false : positioning === 2;
+    const ret = digits_place > 5 ? (ms * 1e-3).toFixed(0) + (digits_place === 6 ? ' s' : 's') : (ms * factor).toFixed(prec) + (has_space_gap ? " " : "") + suffix;
+    console.error(ret, '##########', dbg);
+    return ret;
+  } else {
+    throw new Error("Width must be 5 or 6 to work in renderTruncFromMsNuanced");
+  }
+};
+
+export const renderTruncFromMs = (ms: number, width = 9) => {
+  if (width < 7) return renderTruncFromMsNuanced(ms, width);
+  const displaySeconds = 10 ** (width - 5);
+  if (ms >= displaySeconds) {
     const s = ms / 1000;
     const digits_to_truncate = Math.floor(Math.log10(s));
-    const truncd = digits_to_truncate > 0 ? s.toFixed(6 - Math.min(6, digits_to_truncate)) : s.toFixed(6);
-    return truncd + (truncd.length === 7 ? " s" : "s");
+    const truncd = digits_to_truncate > 0 ? s.toFixed(width - 3 - Math.min(width - 3, digits_to_truncate)) : s.toFixed(width - 3);
+    return truncd + (truncd.length === (width - 2) ? " s" : "s");
   } else {
     const digits_to_truncate = Math.floor(Math.log10(ms));
-    const truncd = digits_to_truncate > 0 ? ms.toFixed(5 - digits_to_truncate) : ms.toFixed(5);
+    const truncd = digits_to_truncate > 0 ? ms.toFixed(width - 4 - digits_to_truncate) : ms.toFixed(width - 4);
     return truncd + "ms";
   }
 };
 // tabularized constant width time string output providing readability between 0 and 1000000s!
-export const renderTruncHrTime = (hrTimeDelta: [number, number]) => renderTruncFromMs(hrTimeMs(hrTimeDelta));
+export const renderTruncHrTime = (hrTimeDelta: [number, number], width = 9) => renderTruncFromMs(hrTimeMs(hrTimeDelta), width);
 
 export function renderPercentage(num: number, l?: (...args: any[]) => void) {
   if (num === 0) return "0.000%";

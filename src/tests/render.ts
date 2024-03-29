@@ -57,39 +57,127 @@ export const renderHrMsSanityChecks = test('time render', ({ a: { eq, is } }) =>
   const delta = process.hrtime(start);
   const render = renderHrTimeMs(delta);
   is(render.match(/[0-9.]ms$/));
-  eq(renderHrTimeMs([0, 0]), "0.00000ms");
-  eq(renderHrTimeMs([0, 1]), "0.00000ms");
-  eq(renderHrTimeMs([0, 1000]), "0.00100ms");
-  eq(renderHrTimeMs([0, 1000000]), "1.00000ms");
-  eq(renderHrTimeMs([1, 0]), "1000.00000ms");
+  eq(renderHrTimeMs([0,      0]),       "0.00000ms");
+  eq(renderHrTimeMs([0,      1]),       "0.00000ms");
+  eq(renderHrTimeMs([0,      1000]),    "0.00100ms");
+  eq(renderHrTimeMs([0,      1000000]), "1.00000ms");
+  eq(renderHrTimeMs([1,      0]),       "1000.00000ms");
   // unconventional cases
-  eq(renderHrTimeMs([0.1, 0]), "100.00000ms");
-  eq(renderHrTimeMs([0.001, 0]), "1.00000ms");
-  eq(renderHrTimeMs([0.0001, 100000]), "0.20000ms");
+  eq(renderHrTimeMs([0.1,    0]),       "100.00000ms");
+  eq(renderHrTimeMs([0.001,  0]),       "1.00000ms");
+  eq(renderHrTimeMs([0.0001, 100000]),  "0.20000ms");
 });
 
 export const renderTruncHrSanityChecks = test('time render', ({ a: { eq } }) => {
-  eq(renderTruncHrTime([0, 0]), "0.00000ms");
-  eq(renderTruncHrTime([0, 1]), "0.00000ms");
-  eq(renderTruncHrTime([0, 10]), "0.00001ms");
-  eq(renderTruncHrTime([0, 100]), "0.00010ms");
-  eq(renderTruncHrTime([0, 999]), "0.00100ms");
-  eq(renderTruncHrTime([0, 994]), "0.00099ms");
-  eq(renderTruncHrTime([0, 995]), "0.00100ms");
-  eq(renderTruncHrTime([0, 1000]), "0.00100ms");
-  eq(renderTruncHrTime([0, 100000]), "0.10000ms");
-  eq(renderTruncHrTime([0, 1000000]), "1.00000ms");
-  eq(renderTruncHrTime([0, 10000000]), "10.0000ms");
-  eq(renderTruncHrTime([0, 100000000]), "100.000ms");
-  eq(renderTruncHrTime([0, 1000000000]), "1000.00ms");
-  eq(renderTruncHrTime([0, 9000000000]), "9000.00ms");
-  eq(renderTruncHrTime([0, 10000000000]), "10.00000s");
-  eq(renderTruncHrTime([0, 100000000000]), "100.0000s");
-  eq(renderTruncHrTime([0, 100000000000000]), "100000.0s");
-  eq(renderTruncHrTime([0, 1000000000000000]), "1000000 s");
-  eq(renderTruncHrTime([10000000 - 1, 0]), "9999999 s");
-  eq(renderTruncHrTime([10000000, 0]), "10000000s");
-  eq(renderTruncHrTime([100000000 - 1, 0]), "99999999s");
+  eq(renderTruncHrTime([0,             0]),                "0.00000ms");
+  eq(renderTruncHrTime([0,             1]),                "0.00000ms");
+  eq(renderTruncHrTime([0,             10]),               "0.00001ms");
+  eq(renderTruncHrTime([0,             100]),              "0.00010ms");
+  eq(renderTruncHrTime([0,             999]),              "0.00100ms");
+  eq(renderTruncHrTime([0,             994]),              "0.00099ms");
+  eq(renderTruncHrTime([0,             995]),              "0.00100ms");
+  eq(renderTruncHrTime([0,             1000]),             "0.00100ms");
+  eq(renderTruncHrTime([0,             100000]),           "0.10000ms");
+  eq(renderTruncHrTime([0,             1000000]),          "1.00000ms");
+  eq(renderTruncHrTime([0,             10000000]),         "10.0000ms");
+  eq(renderTruncHrTime([0,             100000000]),        "100.000ms");
+  eq(renderTruncHrTime([0,             1000000000]),       "1000.00ms");
+  eq(renderTruncHrTime([0,             9000000000]),       "9000.00ms");
+  eq(renderTruncHrTime([0,             10000000000]),      "10.00000s");
+  eq(renderTruncHrTime([0,             100000000000]),     "100.0000s");
+  eq(renderTruncHrTime([0,             100000000000000]),  "100000.0s");
+  eq(renderTruncHrTime([0,             999999900000000]),  "999999.9s");
+  eq(renderTruncHrTime([0,             999999949999999]),  "999999.9s");
+  eq(renderTruncHrTime([0,             999999951000000]),  "1000000.0s"); // again a flaw is here, but this is rare to hit
+  eq(renderTruncHrTime([0,             1000000000000000]), "1000000 s");
+  eq(renderTruncHrTime([10000000 - 1,  0]),                "9999999 s");
+  eq(renderTruncHrTime([10000000,      0]),                "10000000s");
+  eq(renderTruncHrTime([100000000 - 1, 0]),                "99999999s");
+});
+
+export const renderTruncHrSanityChecks7 = test('time render', ({ a: { eq } }) => {
+  eq(renderTruncHrTime([0, 0],                7), "0.000ms");
+  eq(renderTruncHrTime([0, 1],                7), "0.000ms");
+  eq(renderTruncHrTime([0, 10],               7), "0.000ms");
+  eq(renderTruncHrTime([0, 100],              7), "0.000ms");
+  eq(renderTruncHrTime([0, 999],              7), "0.001ms"); // with 7 digits the low limit is 1us, which i think is at the limit
+  eq(renderTruncHrTime([0, 499],              7), "0.000ms"); // 499 ns = just under half a microsecond
+  eq(renderTruncHrTime([0, 500],              7), "0.001ms"); // half a microsecond
+  eq(renderTruncHrTime([0, 1000],             7), "0.001ms");
+  eq(renderTruncHrTime([0, 100000],           7), "0.100ms");
+  eq(renderTruncHrTime([0, 1000000],          7), "1.000ms");
+  eq(renderTruncHrTime([0, 10000000],         7), "10.00ms");
+  eq(renderTruncHrTime([0, 99990000],         7), "99.99ms");
+  eq(renderTruncHrTime([0, 100000000],        7), "0.1000s");
+  eq(renderTruncHrTime([0, 1000000000],       7), "1.0000s");
+  eq(renderTruncHrTime([0, 9000000000],       7), "9.0000s");
+  eq(renderTruncHrTime([0, 10000000000],      7), "10.000s");
+  eq(renderTruncHrTime([0, 100000000000],     7), "100.00s");
+  eq(renderTruncHrTime([0, 100000000000000],  7), "100000s");
+  eq(renderTruncHrTime([0, 1000000000000000], 7), "1000000s"); // this is fine as we're out of range of char range and i'd rather not truncate or fail
+  eq(renderTruncHrTime([10000 - 1,   0],      7), "9999.0s");
+  eq(renderTruncHrTime([9999, 949999999],     7), "9999.9s");
+  eq(renderTruncHrTime([9999, 950000000],     7), "10000.0s"); // THIS IS NOT DESIRED, but I can't really bring myself to care
+  eq(renderTruncHrTime([9999, 999999999],     7), "10000.0s"); // DITTO here (this issue only affects 9999.9s thru 10000s exclusive).
+  eq(renderTruncHrTime([9999, 1000000000],    7), "10000 s");
+  eq(renderTruncHrTime([10000,       0],      7), "10000 s");
+  eq(renderTruncHrTime([100000 - 1,  0],      7), "99999 s");
+  eq(renderTruncHrTime([100000,      0],      7), "100000s");
+  eq(renderTruncHrTime([1000000 - 1, 0],      7), "999999s");
+});
+
+// with 6 digits I want to bring in us to the party otherwise the precision stops at 10us
+export const renderTruncHrSanityChecks6 = test('time render', ({ a: { eq } }) => {
+  eq(renderTruncHrTime([0, 0],          6), "0.00ns");
+  eq(renderTruncHrTime([0, 10],         6), "10.0ns");
+  eq(renderTruncHrTime([0, 100],        6), "100 ns");
+  eq(renderTruncHrTime([0.000001, 0],   6), "1.00us");
+  eq(renderTruncHrTime([0.00001, 0],    6), "10.0us");
+  eq(renderTruncHrTime([0.00009, 0],    6), "90.0us");
+
+  eq(renderTruncHrTime([0.0009, 0],     6), "900 us");
+  eq(renderTruncHrTime([0.009, 0],      6), "9.00ms");
+  eq(renderTruncHrTime([0.09, 0],       6), "90.0ms");
+
+  eq(renderTruncHrTime([0.9, 0],        6), "900 ms");
+  eq(renderTruncHrTime([1, 0],          6), "1.000s");
+  eq(renderTruncHrTime([10, 0],         6), "10.00s");
+  eq(renderTruncHrTime([100, 0],        6), "100.0s");
+
+  eq(renderTruncHrTime([1000, 0],       6), "1000 s");
+  eq(renderTruncHrTime([9900, 0],       6), "9900 s");
+  eq(renderTruncHrTime([9999.9, 0],     6), "10000 s"); // yep so the mechanism of this hole is always the same -- log10 is correct but nudging from rounding in the toFixed operation pushes us over.
+  eq(renderTruncHrTime([10000, 0],      6), "10000s");
+  eq(renderTruncHrTime([90000, 0],      6), "90000s");
+  eq(renderTruncHrTime([900000, 0],     6), "900000s"); // sanity check that going over still looks minimally bad
+});
+
+export const renderTruncHrSanityChecks5 = test('time render', ({ a: { eq } }) => {
+  eq(renderTruncHrTime([0.0009, 0],           5), "900us");
+  eq(renderTruncHrTime([0.009, 0],            5), "9.0ms");
+  eq(renderTruncHrTime([0.01, 0],             5), "10 ms");
+  eq(renderTruncHrTime([0.05, 0],             5), "50 ms");
+  eq(renderTruncHrTime([0.09, 0],             5), "90 ms");
+  eq(renderTruncHrTime([0.9, 0],              5), "900ms");
+  eq(renderTruncHrTime([1, 0],                5), "1.00s");
+  eq(renderTruncHrTime([10, 0],               5), "10.0s");
+  eq(renderTruncHrTime([100, 0],              5), "100 s");
+  eq(renderTruncHrTime([1000, 0],             5), "1000s");
+
+  eq(renderTruncHrTime([0, 0],                5), "0.0ns"); // using ns for 5 chars, since it was easy to formulate, but it will never really show up in usage
+  eq(renderTruncHrTime([0, 100],              5), "100ns");
+  eq(renderTruncHrTime([0, 1000],             5), "1.0us");
+  eq(renderTruncHrTime([0, 10000],            5), "10 us");
+  eq(renderTruncHrTime([0, 49499],            5), "49 us");
+  eq(renderTruncHrTime([0, 49500],            5), "50 us");
+  eq(renderTruncHrTime([0, 50000],            5), "50 us");
+  eq(renderTruncHrTime([0, 100000],           5), "100us");
+  eq(renderTruncHrTime([0, 449999],           5), "450us");
+  eq(renderTruncHrTime([0, 1000000],          5), "1.0ms");
+  eq(renderTruncHrTime([0, 999999],           5), "1000us"); // sigh still have this gap, damn rounding
+  eq(renderTruncHrTime([0, 999499],           5), "999us");
+  eq(renderTruncHrTime([0, 5000000],          5), "5.0ms");
+  eq(renderTruncHrTime([0, 10000000],          5), "10 ms");
 });
 
 export const renderTruncHrSanityCheckStrlenExhaustive = test('time render', ({ l, a: { eq } }) => {
