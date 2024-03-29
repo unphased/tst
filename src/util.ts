@@ -6,7 +6,7 @@ export const renderHrTimeMs = (hrTimeDelta: [number, number]) => hrTimeMs(hrTime
 // against my better judgement... an impl allowing more precision to be shown by allowing microseconds
 const renderTruncFromMsNuanced = (ms: number, width: number) => {
   if (width < 5) throw new Error("Width must be at least 5 to render fixed width");
-  const digits_place = ms === 0 ? -6 : Math.floor(Math.log10(ms));
+  const digits_place = ms < 1e-6 ? -6 : Math.floor(Math.log10(ms)); // this just clamps to ns zone for absurdly small numbers that may come in
   const positioning = (digits_place + 30) % 3; // modulo 3, so now 0 = ones, 1 = tens, 2 = hundreds
   const suffix_zone = Math.min(3, Math.floor(digits_place / 3) + 2); // div 3, shifted, so 0 = ns, 1 = us, 2 = ms, 3 = s
   const factor = [1e6, 1e3, 1, 1e-3][suffix_zone];

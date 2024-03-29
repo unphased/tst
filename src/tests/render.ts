@@ -211,12 +211,12 @@ export const renderTruncHrSanityCheckStrlenExhaustive = test('time render', ({ l
     }
   }
 
-  // Example Usage
-  for (const num of iterateFloatsInRangeRandomRandom(1e-300, 1e-299)) eq(renderTruncFromMs(num).length, 9);
-  l('a');
-  for (const num of iterateFloatsInRangeRandomRandom(1e-8, 1e-7)) eq(renderTruncFromMs(num).length, 9);
-  l('b');
-  for (const num of iterateFloatsInRangeRandomRandom(0.001, 0.0010001)) eq(renderTruncFromMs(num).length, 9);
+  // sparsely sampling some very small sections of the real number line
+  for (const width of [5, 6, 7, 8, 9]) {
+    for (const num of iterateFloatsInRangeRandomRandom(1e-300, 1e-299)) eq(renderTruncFromMs(num, width).length, width, renderTruncFromMs(num, width));
+    for (const num of iterateFloatsInRangeRandomRandom(1e-8, 1e-7)) eq(renderTruncFromMs(num, width).length, width, renderTruncFromMs(num, width));
+    for (const num of iterateFloatsInRangeRandomRandom(0.001, 0.0010001)) eq(renderTruncFromMs(num, width).length, width, renderTruncFromMs(num, width));
+  }
 
   l('count seen', count);
 });
