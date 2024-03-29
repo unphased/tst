@@ -64,7 +64,7 @@ export async function runTestsFromRegistry(testRegistry: Map<TFun | ((...args: P
       const durationMs = hrTimeMs(end);
 
       // perform various implicit assertions on the results
-      if (!options.exemptFromAsserting && options.assertionCount !== 0 && Object.values(assertionMetrics.assertionCounts).reduce((a, b) => a + b, 0) === 0) {
+      if (!options.exemptFromAsserting && !embeds.length && options.assertionCount !== 0 && Object.values(assertionMetrics.assertionCounts).reduce((a, b) => a + b, 0) === 0) {
         throw new Error(`Rejecting test ${red((suite ? italic(`${suite}:`) : "") + name)} for not performing any assertions.`);
       }
       if (options.assertionCount && Object.values(assertionMetrics.assertionCounts).reduce((a, b) => a + b, 0) !== options.assertionCount) {

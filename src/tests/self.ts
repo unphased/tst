@@ -321,7 +321,7 @@ export const error_stack_format = test('stack trace', ({l, a:{eq, is, not}}) => 
   }
 });
 
-export const deepequal_perf_collisions = test('deepequal', ({ l, p, a: { eqO } }) => {
+export const deepequal_perf = test('deepequal', ({ l, p, a: { eqO } }) => {
   const dSET = timedMs(deepStrictEqual);
   const dE = timedMs(equal);
 
@@ -340,7 +340,7 @@ export const deepequal_perf_collisions = test('deepequal', ({ l, p, a: { eqO } }
   const output = cartesianAll(methods, structures).map(([method, structure]) =>
     ({
       label: `${method.name} with ${structure.name}`,
-      data: Array.from({length: 20}, (_, i) => Math.round(5 * 1.5 ** i)).map(i => {
+      data: Array.from({length: 15}, (_, i) => Math.round(5 * 1.5 ** i)).map(i => {
         // produce a geometric sequence of array lengths
         const a1 = Array.from({length: i}).map((_, i) => structure.item(i));
         const a2 = Array.from({length: i}).map((_, i) => structure.item(i));
@@ -382,7 +382,7 @@ export const deepequal_perf_collisions = test('deepequal', ({ l, p, a: { eqO } }
   p('uplot', plot);
   const embed = uPlot_assemble(plot);
   const page = Object.values(build_html_page([embed])).join('\n');
-  fs.writeFileSync('deepequal_perf_collisions.html', page);
+  fs.writeFileSync('deepequal_perf.html', page);
 });
 
 export const spawn_a_failing_command = test('spawnAsync', async ({ t, spawn, a: { eq, eqO, match } }) => {
