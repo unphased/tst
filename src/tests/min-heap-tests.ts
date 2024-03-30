@@ -1,5 +1,5 @@
 import { test } from "../main.js";
-import { Statistics, hrTimeMs, timed } from "ts-utils";
+import { Statistics, VoidTakingMethodsOf, hrTimeMs, timed } from "ts-utils";
 import { MinHeap } from "../min-heap.js";
 
 export const min_heap = test('minheap', ({ p, l, a: { eq, eqO } }) => {
@@ -151,10 +151,6 @@ export const min_heap_with_greedy_scheduling_usage = test('minheap', ({ l, t, p 
       }], subplots_name);
     return { final_buckets_by_p, jobs, i };
   });
-
-  type VoidTakingMethodsOf<T> = {
-    [P in keyof T]: T[P] extends () => unknown ? P : never;
-  }[keyof T];
 
   const statMethods: VoidTakingMethodsOf<Statistics>[] = ['max', 'variance', 'standardDeviation'];
 

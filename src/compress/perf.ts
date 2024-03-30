@@ -1,6 +1,6 @@
 import * as zlib from 'node:zlib';
 import * as stream from 'node:stream';
-import { cartesianAll, identical, mapObjectProps, memoized, kvString } from 'ts-utils';
+import { cartesianAll, identical, mapObjectProps, memoized, kvString, Statistics, VoidTakingMethodsOf, hrTimeMs } from 'ts-utils';
 import { test } from '../main.js';
 import { stream_from, pump_stream } from './compression.js';
 
@@ -45,56 +45,65 @@ export const compression_megabench = test('streams', async ({ t, p, l, lo, a: {e
       de_stream_maker: zlib.createBrotliDecompress,
       cb: (i,l,cb) => zlib.brotliCompress(i, {params: {[zlib.constants.BROTLI_PARAM_QUALITY]: l}}, cb),
       de_cb: zlib.brotliDecompress
-    }, /* { name: 'deflateRaw',
+    }, { name: 'deflateRaw',
       stream: (l: number) => zlib.createDeflateRaw({level: l}),
       de_stream_maker: zlib.createInflateRaw,
       cb: (i,l,cb) => zlib.deflateRaw(i, {level: l}, cb),
       de_cb: zlib.inflateRaw
-    }, */
+    }
   ];
 
   type Metrics = {
     compMB_s: number;
     decompMB_s: number;
     compRatio: number;
+    startTs: [number, number];
+    endTs: [number, number];
+    i?: number;
   };
 
   const routines = [
     {
       name: 'stream', routine: async (input: Buffer, level: number, methods: AlgoMethod) => {
         const metrics: Partial<Metrics> = {};
-        const start = process.hrtime();
+        const start = metrics.startTs = process.hrtime();
         const compStream = methods.stream(level);
         const decompStream = methods.de_stream_maker();
         const inStream = stream_from(input);
         const size = input.length;
         const compd = await pump_stream(inStream.pipe(compStream));
-        metrics.compMB_s = size / (process.hrtime(start)[0] + process.hrtime(start)[1] / 1e9) / 1024 / 1024;
+        const deltaMs = hrTimeMs(process.hrtime(start));
+        metrics.compMB_s = size / deltaMs / 1024; // 1 byte per ms ~= 1KB/s
         metrics.compRatio = input.length / compd.length; // lengths may not be comparable between buffer and string, but should be fine when test cases here are all ascii
         const compdInStream = stream_from(compd);
         const startDecomp = process.hrtime();
         const decompd = await pump_stream(compdInStream.pipe(decompStream));
-        metrics.decompMB_s = size / (process.hrtime(startDecomp)[0] + process.hrtime(startDecomp)[1] / 1e9) / 1024 / 1024;
+        const deltaDecMs = hrTimeMs(process.hrtime(startDecomp));
+        metrics.decompMB_s = size / deltaDecMs / 1024;
         if (input.toString() !== decompd.toString()) {
           throw new Error('round trip data (stream) did not match input');
         }
+        metrics.endTs = process.hrtime();
         return metrics as Metrics;
       }
     }, {
       name: 'convenience_cb', routine: async (input: Buffer, level: number, methods: AlgoMethod) => {
         const metrics: Partial<Metrics> = {};
-        const start = process.hrtime();
+        const start = metrics.startTs = process.hrtime();
         const size = input.length;
         const round_trip_data = await new Promise((resolve, reject) => {
           methods.cb(input, level, (err, compressed: Buffer) => {
             if (err) reject(err);
-            metrics.compMB_s = size / (process.hrtime(start)[0] + process.hrtime(start)[1] / 1e9) / 1024 / 1024;
+            const deltaMs = hrTimeMs(process.hrtime(start));
+            metrics.compMB_s = size / deltaMs / 1024;
             metrics.compRatio = input.length / compressed.length;
             const startDecomp = process.hrtime();
             methods.de_cb(compressed, (err, decompressed) => {
               if (err) reject(err);
-              metrics.decompMB_s = size / (process.hrtime(startDecomp)[0] + process.hrtime(startDecomp)[1] / 1e9) / 1024 / 1024;
+              const deltaDecMs = hrTimeMs(process.hrtime(startDecomp));
+              metrics.decompMB_s = size / deltaDecMs / 1024;
               resolve(decompressed.toString());
+              eq(input, decompressed);
             });
           });
         });
@@ -102,6 +111,7 @@ export const compression_megabench = test('streams', async ({ t, p, l, lo, a: {e
         if (round_trip_data !== input.toString()) {
           throw new Error('round trip data (cb) did not match input');
         }
+        metrics.endTs = process.hrtime();
         return metrics as Metrics;
       }
     },
@@ -163,15 +173,14 @@ export const compression_megabench = test('streams', async ({ t, p, l, lo, a: {e
     level: number;
   };
 
-  const REPEAT = 5;
-  const HOT_RUNS = 3; // take the hot results to be average of the last 3 runs
+  const REPEAT = 7; // take the hot results to be average of the last N
 
   const structured: { meta: Key, values: Metrics[] }[] = [];
   for (const [data_maker, algo, job, level] of combos) {
     const data = data_maker.produce();
     for (let i = 0; i < data.length; i++) {
       const input = Buffer.from(data[i]);
-      const metrics = await Promise.all(Array(REPEAT).fill(0).map(_ => job.routine(input, level, algo)));
+      const values = await Promise.all(Array(REPEAT).fill(0).map(_ => job.routine(input, level, algo)));
       structured.push({
         meta: {
           dataset: data_maker.name,
@@ -181,21 +190,35 @@ export const compression_megabench = test('streams', async ({ t, p, l, lo, a: {e
           routine: job.name,
           level
         },
-        values: metrics
+        values
       });
     }
   }
   l('s.l', structured.length);
 
+  const statistical_measures: VoidTakingMethodsOf<Statistics>[] = [ 'standardDeviation', 'mean', 'max' ];
   const expanded = structured.flatMap(({
     meta: { dataset, data_size, algo, routine, level },
     values
-  }) => values.flatMap((e, i) => {
+  }) => {
+    const measurements = Object.keys(values[0]).map((k: keyof Metrics) => values.map(e => [k, e[k]] as const));
+    l('measurements', measurements);
+    const meas_stats = measurements.map(e => new Statistics(e.map(ee => ee[1]))).map(e => statistical_measures.map(m => [m, e[m]()] ));
+    l('hms', meas_stats);
+    const x = [
+      mapObjectProps(values[0], (vk,v) => ({
+        ks: { dataset, data_size, algo, routine, level, metric: vk, run: 'cold', metricTimeCategory: !!vk.match(/MB_s$/) },
+        v
+      })),
+    ];
+    l('cold', x);
+    return values.flatMap((e, i) => {
       return mapObjectProps(e, (vk, v) => ({
         ks: { dataset, data_size, algo, routine, level, repeati: i, metric: vk, metricTimeCategory: !!vk.match(/MB_s$/) },
         v
       }));
-    }));
+    })
+  });
   l('expanded.l', expanded.length);
   lo(['expanded', expanded], {maxArrayLength: 5});
   const graphs = cartesianAll(datagens.map(e => e.name), [true, false])
