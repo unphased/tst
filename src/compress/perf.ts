@@ -57,8 +57,8 @@ export const compression_megabench = test('streams', async ({ t, p, l, lo, a: {e
     compMB_s: number;
     decompMB_s: number;
     compRatio: number;
-    startTs: [number, number];
-    endTs: [number, number];
+    startTs: number;
+    endTs: number;
     i?: number;
   };
 
@@ -66,7 +66,8 @@ export const compression_megabench = test('streams', async ({ t, p, l, lo, a: {e
     {
       name: 'stream', routine: async (input: Buffer, level: number, methods: AlgoMethod) => {
         const metrics: Partial<Metrics> = {};
-        const start = metrics.startTs = process.hrtime();
+        const start = process.hrtime();
+        metrics.startTs = hrTimeMs(start);
         const compStream = methods.stream(level);
         const decompStream = methods.de_stream_maker();
         const inStream = stream_from(input);
@@ -83,13 +84,14 @@ export const compression_megabench = test('streams', async ({ t, p, l, lo, a: {e
         if (input.toString() !== decompd.toString()) {
           throw new Error('round trip data (stream) did not match input');
         }
-        metrics.endTs = process.hrtime();
+        metrics.endTs = hrTimeMs(process.hrtime());
         return metrics as Metrics;
       }
     }, {
       name: 'convenience_cb', routine: async (input: Buffer, level: number, methods: AlgoMethod) => {
         const metrics: Partial<Metrics> = {};
-        const start = metrics.startTs = process.hrtime();
+        const start = process.hrtime();
+        metrics.startTs = hrTimeMs(start);
         const size = input.length;
         const round_trip_data = await new Promise((resolve, reject) => {
           methods.cb(input, level, (err, compressed: Buffer) => {
@@ -103,7 +105,7 @@ export const compression_megabench = test('streams', async ({ t, p, l, lo, a: {e
               const deltaDecMs = hrTimeMs(process.hrtime(startDecomp));
               metrics.decompMB_s = size / deltaDecMs / 1024;
               resolve(decompressed.toString());
-              eq(input, decompressed);
+              eq(input.toString(), decompressed.toString());
             });
           });
         });
@@ -111,7 +113,7 @@ export const compression_megabench = test('streams', async ({ t, p, l, lo, a: {e
         if (round_trip_data !== input.toString()) {
           throw new Error('round trip data (cb) did not match input');
         }
-        metrics.endTs = process.hrtime();
+        metrics.endTs = hrTimeMs(process.hrtime());
         return metrics as Metrics;
       }
     },
@@ -173,14 +175,17 @@ export const compression_megabench = test('streams', async ({ t, p, l, lo, a: {e
     level: number;
   };
 
-  const REPEAT = 7; // take the hot results to be average of the last N
+  const REPEAT = 5; // take the hot results to be average of the last N
 
   const structured: { meta: Key, values: Metrics[] }[] = [];
   for (const [data_maker, algo, job, level] of combos) {
     const data = data_maker.produce();
     for (let i = 0; i < data.length; i++) {
       const input = Buffer.from(data[i]);
-      const values = await Promise.all(Array(REPEAT).fill(0).map(_ => job.routine(input, level, algo)));
+      const values: Metrics[] = [];
+      for (const _jobidx of Array(REPEAT).fill(0)) {
+        values.push(await job.routine(input, level, algo));
+      }
       structured.push({
         meta: {
           dataset: data_maker.name,
@@ -201,9 +206,9 @@ export const compression_megabench = test('streams', async ({ t, p, l, lo, a: {e
     meta: { dataset, data_size, algo, routine, level },
     values
   }) => {
-    const measurements = Object.keys(values[0]).map((k: keyof Metrics) => values.map(e => [k, e[k]] as const));
+    const measurements = Object.keys(values[0]).map((k: keyof Metrics) => [k, values.map(e => e[k])] as const);
     l('measurements', measurements);
-    const meas_stats = measurements.map(e => new Statistics(e.map(ee => ee[1]))).map(e => statistical_measures.map(m => [m, e[m]()] ));
+    const meas_stats = measurements.map(([k, ea]) => ({ name: k, stats: new Statistics(ea) })).flatMap(es => statistical_measures.map(m => [`${es.name} ${m} over ${REPEAT} trials`, es.stats[m]()]));
     l('hms', meas_stats);
     const x = [
       mapObjectProps(values[0], (vk,v) => ({
