@@ -2,7 +2,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import { fileURLToPath } from 'url';
-import { HtmlEmbedding, PlotData } from "./index.js";
+import { HtmlEmbedding, uPlotData } from "./index.js";
 import { assertions } from "../assertions.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -14,7 +14,7 @@ function isStringArray(arr: any[]): arr is string[] {
 
 const colors = ["red", "green", "blue", "orange", "purple", "brown", "black", "pink", "gray", "cyan", "magenta"];
 
-const uPlot_preprocess = (plotdata: PlotData[]) => plotdata.map(d => {
+const uPlot_preprocess = (plotdata: uPlotData[]) => plotdata.map(d => {
   assertions.eq(d.y_axes.length, d.data.length - 1, 'y_axes length should be data length - 1');
   assertions.is(d.data.every(row => row.length === d.data[0].length), 'all rows should have same length');
 
@@ -44,7 +44,7 @@ const uPlot_preprocess = (plotdata: PlotData[]) => plotdata.map(d => {
     },
     series: [
       {},
-      ... d.y_axes.map((y_axis: PlotData['y_axes'][0], i: number) => {
+      ... d.y_axes.map((y_axis: uPlotData['y_axes'][0], i: number) => {
         const y = typeof y_axis === 'object' ? y_axis : { label: y_axis };
         return {
           // initial toggled state (optional)
@@ -68,13 +68,6 @@ const uPlot_preprocess = (plotdata: PlotData[]) => plotdata.map(d => {
   const collated = d.data[0].map((_, i) => d.data.map(row => row[i]));
   // transpose
   collated.sort((a, b) => a[0] - b[0]); // sort by first col which is x axis.
-  // (NOT SURE IF NEEDED) perturb any repeating x axis values because uplot is weak and can't handle vertical lines...
-  // collated.forEach((row, i) => {
-  //   if (i > 0 && collated[i-1][0] === row[0]) {
-  //     row[0] = row[0] + 1e-5;
-  //   }
-  // });
-  // untranspose
   const uncollated = d.data.map((_, i) => collated.map(row => row[i]));
   const { targetNavGroupId } = d;
   const y_cNMXS = d.y_axes.filter(y => y instanceof Object && y.clickNavMapXS) as Exclude<typeof d.y_axes[0], string>[];
@@ -88,7 +81,7 @@ const uPlot_preprocess = (plotdata: PlotData[]) => plotdata.map(d => {
 });
 
 // TODO break dep fetching out (define that cache policy... home/dotdir most likely (tmp kinda risky for hopping on a plane)) so we can serve this fully locally
-export const uPlot_assemble = (plots: PlotData[]): HtmlEmbedding => ({
+export const uPlot_assemble = (plots: uPlotData[]): HtmlEmbedding => ({
   css_url: 'https://cdn.jsdelivr.net/npm/uplot@1.6.30/dist/uPlot.min.css',
   js_code: `import uplot from 'https://cdn.jsdelivr.net/npm/uplot@1.6.30/+esm';
 window.data = ${JSON.stringify(uPlot_preprocess(plots))};

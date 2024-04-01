@@ -101,6 +101,11 @@ export type TestResult = {
 } & TestOptions;
 
 export type Embeds = (HtmlEmbedding & { group_id: string })[];
+
+// supplementary data that will be json content saved into brotli compressed files which will be loadable from those
+// html pages.
+export type DataExport = {};
+
 export type CleanupHandlers = {
   failedCleanupHandlers: (() => void | Promise<void>)[];
   alwaysCleanupHandlers: (() => void | Promise<void>)[];

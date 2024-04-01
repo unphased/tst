@@ -3,7 +3,7 @@ import { format, format_opt } from 'ts-utils';
 import { fileURLToPath } from 'url';
 import { assertions } from './assertions.js';
 import { LaunchOptions } from './config/launchOptions.js';
-import { PlotData } from './plotting/index.js';
+import { uPlotData } from './plotting/index.js';
 import { plotters } from "./plotting/plotters_index.js";
 import { SpawnAsyncOpts, SpawnAsyncTestLogTraced, isBypassResourceMetrics, spawnAsync } from './process.js';
 import { CleanupHandlers, Embeds, ResourceMetrics, TestAssertionMetrics, TestLogs, TestMetadata, TestOptions } from "./types.js";
@@ -113,7 +113,7 @@ const asyncSpawnTestTracedMaker = (resourceMetrics: ResourceMetrics, logger: (..
   }) as SpawnAsyncTestLogTraced;
 };
 
-const htmlPlotBuilderEmbedder = (embeds: Embeds) => (plotType: keyof typeof plotters, plots: PlotData[], group_id?: string) => {
+const htmlPlotBuilderEmbedder = (embeds: Embeds) => <T extends keyof typeof plotters>(plotType: T, plots: Parameters<typeof plotters[T]>[0], group_id?: string) => {
   embeds.push({ ...(plotters[plotType](plots)), group_id: group_id ?? '' });
   return plots; // for chainability which can often be handy
 };

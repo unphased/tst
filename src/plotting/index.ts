@@ -19,7 +19,7 @@
 // and from clicking on items within plots is provided, which should provide enough power to go quite far.
 
 // We establish a consistent data format for a given class of data for visualization via multiple different libs
-export type PlotData = {
+export type uPlotData = {
   title: string;
   // by default related ids will be processed across the pages belonging to the same test.
   id?: string;
@@ -44,6 +44,13 @@ export type PlotData = {
   targetNavGroupId?: string;
   data: number[][];
 };
+
+export type PlotFreeformData = {
+  title: string;
+  data: { [key: string]: any }[];
+  // generalized dimensional data for the new hypercube based plot paradigm. There should not be a need for a new system and this should subsume the more rigid builtin uplot approach, so TODO for factoring all that out.
+}
+
 // page assembly takes place in these assemble function return objects. If you just Object.values().join() the object
 // you get a valid full HTML page. if you grab .css and .content you can grab code to inject multiple into one html page.
 
