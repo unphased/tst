@@ -68,6 +68,7 @@ const uPlot_preprocess = (plotdata: uPlotData[]) => plotdata.map(d => {
   const collated = d.data[0].map((_, i) => d.data.map(row => row[i]));
   // transpose
   collated.sort((a, b) => a[0] - b[0]); // sort by first col which is x axis.
+  // untranspose
   const uncollated = d.data.map((_, i) => collated.map(row => row[i]));
   const { targetNavGroupId } = d;
   const y_cNMXS = d.y_axes.filter(y => y instanceof Object && y.clickNavMapXS) as Exclude<typeof d.y_axes[0], string>[];
