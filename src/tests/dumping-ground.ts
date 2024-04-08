@@ -57,7 +57,7 @@ export const process_launch_microbench = test('perf', async ({ l, spawn, a: { eq
     }
   })) / ITER, 'ms per call');
 });
-const fib = (n: number) => n < 2 ? n : fib(n - 1) + fib(n - 2);
+const fib = (n: number): number => n < 2 ? n : fib(n - 1) + fib(n - 2);
 export const assertion_microbench = test('perf', ({ l, t, a: { eq } }) => {
   t('ringBufferLimitAssertionLogs', 20);
   // some testing I was doing to get a baseline of how quickly simple math code runs. Turned into a benchmark for test

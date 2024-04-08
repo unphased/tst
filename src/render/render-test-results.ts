@@ -4,7 +4,7 @@ import * as path from "path";
 import { spawnAsync } from '../process.js';
 import { colors, renderHorizBar } from 'ts-utils/terminal';
 import { groupBy, pp, red, sum, underline } from 'ts-utils';
-import { build_html_page } from "../plotting/index.js";
+import { build_html } from "../plotting/index.js";
 import { ResourceMetrics, TestResult } from "../types.js";
 import { renderPercentage, renderTruncFromMs } from "../util.js";
 import { clearTestResultPages, pushTestResultPage } from "../web-server.js";
@@ -169,7 +169,10 @@ function produceHtmlTestResults(results: TestResult[]) {
     for (const [group, embeds] of Object.entries(groupBy(result.embeds, 'group_id'))) {
       // Each test can produce zero, one or more html pages. the embeds can be established in any order, but group_id is used to group
       // into pages. 
-      pushTestResultPage((result.suite ? result.suite + ':' : '') + result.name + (group ? ': ' + group : ''), Object.values(build_html_page(embeds)).join('\n'));
+      const pages = build_html(embeds);
+      for (const page of pages) {
+        pushTestResultPage((result.suite ? result.suite + ':' : '') + result.name + (group ? ': ' + group : ''), Object.values(page).join('\n'));
+      }
     }
   }
 }

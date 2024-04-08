@@ -54,26 +54,41 @@ export type PlotFreeformData = {
 // page assembly takes place in these assemble function return objects. If you just Object.values().join() the object
 // you get a valid full HTML page. if you grab .css and .content you can grab code to inject multiple into one html page.
 
-export type HtmlEmbedding = {
+type HtmlEmbeddingCssAndJs = {
   css_url: string;
   js_code: string;
 };
+type Html = { html: string };
+export type HtmlEmbedding = HtmlEmbeddingCssAndJs | Html;
+// type guard
+export const isHtmlEmbeddingCssAndJs = (e: HtmlEmbedding): e is HtmlEmbeddingCssAndJs => 'css_url' in e;
 
 const unique = <T>(arr: T[]) => {
   return Array.from(new Set(arr));
 }
 
-export const build_html_page = (embeds: HtmlEmbedding[]) => {
-  return {
-    html_top: `<!DOCTYPE html>
+export const build_html = (embeds: HtmlEmbedding[]) => {
+  const modulars = embeds.filter(isHtmlEmbeddingCssAndJs);
+  const prebuilts = embeds.filter(e => !isHtmlEmbeddingCssAndJs(e)) as Html[];
+  type SegmentedHtmlPageAssembly = { html: string; } | { html_top: string;css: string;js_code: string;html_bottom: string; };
+  const pages: SegmentedHtmlPageAssembly[] = [];
+  if (prebuilts.length > 0) {
+    pages.push(...prebuilts);
+  }
+  
+  if (modulars.length > 0) {
+    pages.push({
+      html_top: `<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <title>Plot</title>`,
-    css: unique(embeds.map(e => e.css_url)).map(css_u => `<link rel="stylesheet" href="${css_u}" />`).join('\n'),
-    js_code: embeds.map(e => `<script type="module">${e.js_code}</script>`).join('\n'),
-    html_bottom: `</head><body></body></html>`,
-  };
+<head>
+<meta charset="utf-8" />
+<title>Plot</title>`,
+      css: unique(modulars.map(e => e.css_url)).map(css_u => `<link rel="stylesheet" href="${css_u}" />`).join('\n'),
+      js_code: modulars.map(e => `<script type="module">${e.js_code}</script>`).join('\n'),
+      html_bottom: `</head><body></body></html>`,
+    });
+  }
+  return pages;
 };
 
-export type HtmlFullPage = ReturnType<typeof build_html_page>;
+export type HtmlFullPage = ReturnType<typeof build_html>;
