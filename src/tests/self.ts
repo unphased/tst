@@ -381,7 +381,7 @@ export const deepequal_perf = test('deepequal', ({ l, p, a: { eqO } }) => {
   }];
   p('uplot', plot);
   const embed = uPlot_assemble(plot);
-  const page = Object.values(build_html([embed])).join('\n');
+  const page = Object.values(build_html([embed])[0]).join('\n');
   fs.writeFileSync('deepequal_perf.html', page);
 });
 
