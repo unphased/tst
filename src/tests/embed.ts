@@ -14,7 +14,7 @@ const htmlParseOptions = {
   htmlEntities: true
 }
 
-export const simple_uplot = test('plotting', ({ l, p, t }) => {
+export const simple_uplot = test('plotting', ({ l, p, t, a: {eq} }) => {
   const plots1 = [
     {
       title: '1st chart',
@@ -39,12 +39,19 @@ export const simple_uplot = test('plotting', ({ l, p, t }) => {
   ];
   p('uplot', plots1, 'testing plotting');
   p('uplot', plots2, 'testing plotting');
-  const html = Object.values(build_html([uPlot_assemble(plots1), uPlot_assemble(plots2)])).join('\n');
+  const page = build_html([uPlot_assemble(plots1), uPlot_assemble(plots2)]);
+  eq(page.length, 1);
+  const html = Object.values(page[0]).join('\n');
   const parser = new XMLParser(htmlParseOptions);
   // validation throws on errors so by validating it we are asserting.
   t('exemptFromAsserting', true);
   // perform full HTML validation
-  l(parser.parse(html, true));
+  try {
+    l(parser.parse(html, true));
+  } catch (e) {
+    l('failed to xml validate page:', html);
+    throw 'bad';
+  }
   writeFileSync('simple_uplot.html', html);
 });
 
