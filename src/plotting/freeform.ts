@@ -9,5 +9,5 @@ export function freeform_assemble(plots: PlotFreeformData[] | PlotFreeformData) 
     return freeform_assemble([plots]);
   }
   const html_template = path.resolve(__dirname, 'freeform_index.html');
-  return html_template.replace('{PlotDataPlaceholder: undefined}', JSON.stringify(plots));
+  return html_template.replace('[plot_placeholder]', JSON.stringify(plots));
 }

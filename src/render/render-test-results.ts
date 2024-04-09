@@ -130,7 +130,8 @@ export const renderResults = (results: TestResult[], TotalExecutionTimeMsReferen
 
   output_receiver(drawBorder(output.join('\n'), `${results.length} tests in ${groupBySuite.size} suites`));
 
-  if (expand === 'both') {
+  const isOnlyConsistingOfNonSuiteTests = groupBySuite.size === 1 && groupBySuite.has('');
+  if (expand === 'both' && !isOnlyConsistingOfNonSuiteTests) {
     output_receiver(''); // for a newline to separate two tables
     renderResults(results, TotalExecutionTimeMsReference, { ...launch_options, expand_test_suites_reporting: false }, true, output_receiver);
   }

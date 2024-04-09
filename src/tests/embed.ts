@@ -1,6 +1,6 @@
 // import { writeFileSync } from "fs";
 import { uPlot_assemble } from "../plotting/uplot.js";
-import { build_html_page } from "../plotting/index.js";
+import { build_html } from "../plotting/index.js";
 import { test } from "../main.js";
 import { XMLParser } from "fast-xml-parser";
 import { writeFileSync } from "fs";
@@ -39,7 +39,7 @@ export const simple_uplot = test('plotting', ({ l, p, t }) => {
   ];
   p('uplot', plots1, 'testing plotting');
   p('uplot', plots2, 'testing plotting');
-  const html = Object.values(build_html_page([uPlot_assemble(plots1), uPlot_assemble(plots2)])).join('\n');
+  const html = Object.values(build_html([uPlot_assemble(plots1), uPlot_assemble(plots2)])).join('\n');
   const parser = new XMLParser(htmlParseOptions);
   // validation throws on errors so by validating it we are asserting.
   t('exemptFromAsserting', true);

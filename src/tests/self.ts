@@ -8,7 +8,7 @@ import { cartesianAll, identical, timedMs } from 'ts-utils';
 import { deepStrictEqual } from 'assert';
 import equal from 'deep-equal';
 import { uPlot_assemble } from '../plotting/uplot.js';
-import { build_html_page } from '../plotting/index.js';
+import { build_html } from '../plotting/index.js';
 const __filename = fileURLToPath(import.meta.url);
 export const __dirname = path.dirname(__filename);
 
@@ -381,7 +381,7 @@ export const deepequal_perf = test('deepequal', ({ l, p, a: { eqO } }) => {
   }];
   p('uplot', plot);
   const embed = uPlot_assemble(plot);
-  const page = Object.values(build_html_page([embed])).join('\n');
+  const page = Object.values(build_html([embed])).join('\n');
   fs.writeFileSync('deepequal_perf.html', page);
 });
 
