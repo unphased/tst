@@ -50,7 +50,7 @@ export const processTestResults = (results: TestResult[], metrics: { [key: strin
       // maintain this when adding new metrics
     }
     // testContext.obj('timing').obj('test_orchestration').obj(testRunDateId, metrics);
-    console.error('test context', 'metrics for processTestResults', metrics);
+    // console.error('test context', 'metrics for processTestResults', metrics);
     writeFileSync(testContextFile, JSON.stringify(testContext));
   } else {
     throw new Error('testRunDateId not found');
