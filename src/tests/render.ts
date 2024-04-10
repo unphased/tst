@@ -1,6 +1,6 @@
 import { lexAnsi } from 'ts-utils/terminal';
 import { test } from '../main.js';
-import { splitString } from "../render/draw-border.js";
+import { splitString } from "../render/border.js";
 import { renderHrTimeMs, renderPercentage, renderTruncFromMs, renderTruncHrTime } from "../util.js";
 
 export const renderPercentageChecks = test('time render', ({ l, a: { eq } }) => {

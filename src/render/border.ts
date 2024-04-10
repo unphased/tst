@@ -1,15 +1,22 @@
 import { lexAnsi, colors } from "ts-utils/terminal";
+import { test } from "../main.js";
+
+export const sanity_check_unicode_string_lengths = test('string length', ({ l, p, t, a: {eq} }) => {
+  const str = "✔✔✔✔✔✔✔✔";
+  eq(str.length, 8);
+});
 
 export const drawBorder = (content: string, heading_summary: string) => {
   const ansi = lexAnsi(content);
   const maxContentWidth = Math.max(...ansi.cleaned.map(line => line.length));
+  console.log('maxContentWidth:', maxContentWidth, 'cleaned_l_ln', ansi.cleaned.map(l => ({ line: l, len: l.length })));
 
   const left_margin = '┃';
   const horiz_padding = ' '; // not border styled
   const right_margin = '┃';
   const horiz_margin_tot = left_margin.length + right_margin.length + 2 * horiz_padding.length;
 
-  let horizLimit = 78; // a sane default
+  let horizLimit = 150;
   if (process.stdin.isTTY && process.stdout.isTTY) {
     // Do a bit of formatting. Mostly to implement wrapping within the border. And handle correct line deletion amount
     // for re-rendering.
@@ -19,6 +26,7 @@ export const drawBorder = (content: string, heading_summary: string) => {
 
   const working_width = Math.min(maxContentWidth, horizLimit);
   const width_tot = working_width + horiz_margin_tot;
+  console.log('working_width:', working_width);
 
   // perform wrapping on raw content, must handle ansi codes as zerolength
   const wrapped_nested = content.split('\n').map((line, i) => ansi.cleaned[i].length > horizLimit ? splitString(line, horizLimit, ansi.idxs[i], ansi.lens[i]) : line); // Array made of both strings (lines, not long enough to wrap) and inner arrays (which are wrapped lines).

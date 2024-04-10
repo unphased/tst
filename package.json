@@ -15,7 +15,8 @@
     "self-test": "npm run bundle && npm run start",
     "watch-simple": "watchexec --exts ts,json -- npm run bundle",
     "watch": "watchexec --exts ts --only-emit-events --emit-events-to=json-stdio | while read line; do echo received: $line; echo \"Skipped $(timeout 1 cat | wc -l) further events\"; npm run bundle; done",
-    "watch-test": "bash -c 'watchexec --exts ts --only-emit-events --emit-events-to=json-stdio | while read line; do echo received: $line; echo \"Skipped $(timeout 1 cat | wc -l) further events\"; npm run build && npm run test $1; done' _"
+    "watch-test": "bash -c 'watchexec --exts ts --only-emit-events --emit-events-to=json-stdio | while read line; do echo received: $line; echo \"Skipped $(timeout 1 cat | wc -l) further events\"; npm run build && npm run test \"$@\"; done' _",
+    "debug-npm-run-arg-bash-passing": "bash -c 'argshow \"$@\"' _"
   },
   "author": "Steven Lu",
   "license": "none (this will be updated, make an issue if you have any queries!)",

@@ -55,3 +55,6 @@ export const simple_uplot = test('plotting', ({ l, p, t, a: {eq} }) => {
   writeFileSync('simple_uplot.html', html);
 });
 
+export const simple_vegalite = test('plotting', ({ l, p, t, a: {eq} }) => {
+  p('vega_example', [{title: 'a', data: []}]);
+});
