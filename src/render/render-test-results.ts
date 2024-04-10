@@ -95,7 +95,7 @@ export const renderResults = (results: TestResult[], TotalExecutionTimeMsReferen
       // has leading space
       const indicators = (ct.f ? `${colors.red} ${fail_char.repeat(ct.f)} ` : '') + (ct.p ? `${colors.green} ${pass_char.repeat(ct.p)} ` : '');
       const duration = sum(res.map(r => r.durationMs));
-      output.push(`${renderHorizBar(duration/maxSuiteDuration)} ${renderTruncFromMs(duration)} ${renderPercentage(cpuUtil(duration, sum(res.map(r => r.cpu.user)), sum(res.map(r => r.cpu.system))).cpu)} ${colors.reverse}${space_prefix_string}${passed_count} ${colors.reset} ${colors.reverse}${indicators}${colors.reset}${test_s_out_of_suite_string}`);
+      output.push(`${renderHorizBar(duration/maxSuiteDuration)} ${renderTruncFromMs(duration, 5)} ${renderPercentage(cpuUtil(duration, sum(res.map(r => r.cpu.user)), sum(res.map(r => r.cpu.system))).cpu)} ${colors.reverse}${space_prefix_string}${passed_count} ${colors.reset} ${colors.reverse}${indicators}${colors.reset}${test_s_out_of_suite_string}`);
     }
     const results_to_show = (suite === '' || expand) ? res_sorted : failed_tests;
     for (const { durationMs, name, async, stack, failure, cpu, finalMemSample, resourceMetrics } of results_to_show) {
@@ -124,7 +124,7 @@ export const renderResults = (results: TestResult[], TotalExecutionTimeMsReferen
 
       const cpuUtilAll = renderPercentage((cpuSys_self + cpuUser_self + cpuSys_spawned + cpuUser_spawned) / durationMs * 1000);
 
-      output.push(`${renderHorizBar(durationMs / maxDuration, 5)} ${renderTruncFromMs(durationMs)} ${spawnCount ? spawnWithRecMeasurement !== spawnCount ? `${spawnCount} (${spawnWithRecMeasurement}): ` : `${spawnCount}: ` : ''}${maxRss.join(',')} ${cpuTimes.join(',')} ${cpuUtilAll} ${colors[failure ? 'red' : 'green'] + colors.reverse + (failure ? ` ${fail_char} FAIL ` : ` ${pass_char} PASS `) + colors.reset} ${async ? underline(name) : name} ${colors.dim + stack + colors.bold_reset}`);
+      output.push(`${renderHorizBar(durationMs / maxDuration, 5)} ${renderTruncFromMs(durationMs, 7)} ${cpuUtilAll} ${colors[failure ? 'red' : 'green'] + colors.reverse + (failure ? ` ${fail_char} FAIL ` : ` ${pass_char} PASS `) + colors.reset} ${async ? underline(name) : name} ${colors.dim + stack + colors.bold_reset} ${spawnCount ? spawnWithRecMeasurement !== spawnCount ? `${spawnCount} (${spawnWithRecMeasurement}): ` : `${spawnCount}: ` : ''}${maxRss.join(',')} ${cpuTimes.join(',')}`);
     }
   }
 
