@@ -97,7 +97,7 @@ export async function runTestsFromRegistry(testRegistry: Map<TFun | ((...args: P
     for (const [testFn, meta] of testRegistry) {
       if (!isAsyncVoidTFun(testFn)) {
         if (!predicate(meta)) {
-          console.error(`Skipping test ${meta.suite ? `${meta.suite}:` : ""}${meta.name} due to filter.`);
+          // console.error(`Skipping test ${meta.suite ? `${meta.suite}:` : ""}${meta.name} due to filter.`);
           continue;
         }
         // again this await is not needed here since we know its a sync test but i decided against having launchTest be
@@ -108,7 +108,7 @@ export async function runTestsFromRegistry(testRegistry: Map<TFun | ((...args: P
     for (const [testFn, meta] of testRegistry) {
       if (isAsyncVoidTFun(testFn)) {
         if (!predicate(meta)) {
-          console.error(`Skipping async test ${meta.suite ? `${meta.suite}:` : ""}${meta.name} due to filter.`);
+          // console.error(`Skipping async test ${meta.suite ? `${meta.suite}:` : ""}${meta.name} due to filter.`);
           continue;
         }
         promList.push(launchTest(testFn, meta.suite, meta.name, meta.filename, meta.stack));
@@ -118,7 +118,7 @@ export async function runTestsFromRegistry(testRegistry: Map<TFun | ((...args: P
     for (const [testFn, meta] of testRegistry) {
       const { name, filename, suite, stack } = meta;
       if (!predicate(meta)) {
-        console.error(`Skipping test ${suite ? `${suite}:` : ""}${name} due to filter.`);
+        // console.error(`Skipping test ${suite ? `${suite}:` : ""}${name} due to filter.`);
         continue;
       }
       resultCollection.push(await launchTest(testFn, suite, name, filename, stack));

@@ -11,7 +11,7 @@ export enum TestLaunchFlags {
   // time progress feedback.
   // These provide a way to override certain config values but only for this run. the config will not be changed.
   ForceDisableLogging = '_test_logging_off',
-  ForceEnableLogging = '_test_logging_on',
+  ForceEnableLogging = '_log',
   AsyncParallelTestLaunch = '_async_parallel',
   ExactTestNameMatching = '_exact_test_names', // default cli to use loose test specifier matching logic.
   ImportJsOnly = '--import-js-only', // for use when launching tests on compilation products so we don't let node choke on importing .d.ts files (... so we dont have to carefully organize those .d.ts files and impact their discovery by other projects)
