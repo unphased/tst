@@ -14,7 +14,7 @@ const htmlParseOptions = {
   htmlEntities: true
 }
 
-export const simple_uplot = test('plotting', ({ l, p, t, a: {eq} }) => {
+export const simple_uplot = test('plotting', ({ l, plot: p, t, a: {eq} }) => {
   const plots1 = [
     {
       title: '1st chart',
@@ -55,6 +55,6 @@ export const simple_uplot = test('plotting', ({ l, p, t, a: {eq} }) => {
   writeFileSync('simple_uplot.html', html);
 });
 
-export const simple_vegalite = test('plotting', ({ l, p, t, a: {eq} }) => {
+export const simple_vegalite = test('plotting', ({ l, plot: p, t, a: {eq} }) => {
   p('vega_example', [{title: 'a', data: []}]);
 });

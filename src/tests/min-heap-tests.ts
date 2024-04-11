@@ -2,7 +2,7 @@ import { test } from "../main.js";
 import { Statistics, VoidTakingMethodsOf, hrTimeMs, timed } from "ts-utils";
 import { MinHeap } from "../min-heap.js";
 
-export const min_heap = test('minheap', ({ p, l, a: { eq, eqO } }) => {
+export const min_heap = test('minheap', ({ plot, l, a: { eq, eqO } }) => {
   type N = { n: number; s?: string; };
   const minHeap = new MinHeap<N>('n');
   minHeap.insert({ n: 12 });
@@ -53,17 +53,17 @@ export const min_heap = test('minheap', ({ p, l, a: { eq, eqO } }) => {
     heap_extract_times.push(hrTimeMs(heap_extract_time));
   }
 
-  const plot = [{
+  const plot_ = [{
     title: 'Sort over heap time',
     y_axes: ['sort_heap_ratio_time', 'sort_time', 'heap_insert_time', 'heap_extract_time'],
     data: [sizes, perf_ratio, sort_times, heap_insert_times, heap_extract_times]
   }];
   l(plot);
-  p('uplot', plot);
+  plot('uplot', plot_);
 });
 // this gives me good confidence in the floor(random()) approach for integer random number generation
 
-export const basic_random_dice_roll = test('math', ({ l, p, a: { gt, lt } }) => {
+export const basic_random_dice_roll = test('math', ({ l, plot: p, a: { gt, lt } }) => {
   const dice = Array.from({ length: 1000000 }, () => Math.floor(Math.random() * 6));
   const title = 'Dice roll 1M render stress test';
   p('uplot', [{
@@ -84,7 +84,7 @@ export const basic_random_dice_roll = test('math', ({ l, p, a: { gt, lt } }) => 
   lt(mean, 2.52);
 });
 
-export const min_heap_with_greedy_scheduling_usage = test('minheap', ({ l, t, p }) => {
+export const min_heap_with_greedy_scheduling_usage = test('minheap', ({ l, t, plot }) => {
   // usage example modeled after my use case. bunch of stuff to distribute into buckets greedily
   // arranged in a way such that jobs do not need to be cloned.
   // All random job order tests come first, then sorting makes it the bad order, then reverse from then on will flip it each time
@@ -138,7 +138,7 @@ export const min_heap_with_greedy_scheduling_usage = test('minheap', ({ l, t, p 
       const b = bucks.map(e => e.n);
       return { stats: new Statistics(b), final_state: b };
     });
-    p('uplot', [{
+    plot('uplot', [{
       title: `bucket distributions for run ${i}`,
       id: 'buckets' + i,
       y_axes: ['starting state', ...procedures.map(p => 'final state ' + p.desc)],
@@ -168,7 +168,7 @@ export const min_heap_with_greedy_scheduling_usage = test('minheap', ({ l, t, p 
   );
 
   const sorted_runs_by_joblen = res.slice().sort((a, b) => a.jobs.length - b.jobs.length);
-  p('uplot', statMethods.map((method, mi) => ({
+  plot('uplot', statMethods.map((method, mi) => ({
     title: `${method} in final bucket sizes, across runs sorted by job count`,
     id: 'srbjc' + mi,
     clickNavMapX: sorted_runs_by_joblen.map((r) => 'buckets' + r.i),
@@ -178,7 +178,7 @@ export const min_heap_with_greedy_scheduling_usage = test('minheap', ({ l, t, p 
   })), 'distribution stats');
 
   const sorted_runs_by_total_work = res.slice().sort((a, b) => a.final_buckets_by_p[4].stats.max() - b.final_buckets_by_p[4].stats.max());
-  p('uplot', statMethods.map((method, mi) => ({
+  plot('uplot', statMethods.map((method, mi) => ({
     title: `${method} in final bucket sizes, across runs sorted by average bucket load`,
     id: 'srbj' + mi,
     clickNavMapX: sorted_runs_by_total_work.map((r) => 'buckets' + r.i),

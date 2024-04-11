@@ -170,7 +170,7 @@ export const testParamMaker = (config: LaunchOptions, logs: TestLogs, assertionM
     // spawnAsync for use by test, allows for simple resource tracking implementation
     spawn: asyncSpawnTestTracedMaker(resourceMetrics, logger),
     // html embed consumer for plots etc. When no disjoint groups are specified they get combined into a single page.
-    p: htmlPlotBuilderEmbedder(embeds),
+    plot: htmlPlotBuilderEmbedder(embeds),
     // the cleanup cb's are defined here. they will only enable and trigger if test fails after
     // calls made here, which is a bit awkward (although is also a feature), this propery would
     // apply as well to setTestOption, however in practice all options related behavior occurs after
@@ -206,6 +206,7 @@ export const testFnRegistry = new Map<TFun | ((...args: Parameters<TFun>) => Pro
 // This currently just gives the containing dir and the file name, which is a good simple holding pattern here.
 // Not sure if we even need anything further refined, because this emits a terminal hyperlink that has the completely
 // full file in a url.
+let incrementingHyperlinkId = 0
 export function parseFileLineColFromStackLineMakeHyperlink(stack_line?: string) {
   // stacks are already being rendered as file urls in ESM. We just need to inject a hostname into it.
   // console.error('pFLCFSLMH', stack_line);
@@ -219,7 +220,7 @@ export function parseFileLineColFromStackLineMakeHyperlink(stack_line?: string) 
   if (!filePath) return 'Failure to resolve location assuming file url from stack!';
   const fileURLWithHostname = 'file://' + os.hostname() + filePath;
   const content = stack_line?.match(/[^/]+\/[^/]+\.[tj]s:\d+:\d+/)?.[0];
-  const final_hyperlink = `\u001b]8;;${fileURLWithHostname}\u001b\\${content}\u001b]8;;\u001b\\`;
+  const final_hyperlink = `\u001b]8;id=${incrementingHyperlinkId++};${fileURLWithHostname}\u001b\\${content}\u001b]8;;\u001b\\`;
   // console.error('final_hyperlink', final_hyperlink, JSON.stringify(final_hyperlink));
   return content ? final_hyperlink : 'Failure to resolve code location content!';
 }

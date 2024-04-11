@@ -269,6 +269,75 @@ export const splitStringHardcoreBoundsCheck = test('splitString', ({ l, a: { eq,
   l('checks performed:', count_checks);
 });
 
+// parse
+const parseAnsiOpenOrClose = (str: string, zero_width_starts: number[], zero_width_lengths: number[]) => {
+  for (const [i, x] of zero_width_starts.map((j, i) => [ i, str.slice(j, j + zero_width_lengths[i]) ] as const)) {
+    // classify as opener or closer escape sequence. Is all 
+  }
+};
+
+const ansi_close_re = /\x1b\[(?:2[2347]|[345]9)m|\x1b\]8;;\u001b\\/;
+export const re_confirmation = test('splitString', ({ a: { is, not } }) => {
+  is(ansi_close_re.test('abc\x1b[39mdef'));
+  is(ansi_close_re.test('abc\x1b[49mdef'));
+  not(ansi_close_re.test('abc\x1b[29mdef'));
+  is(ansi_close_re.test('abc\x1b]8;;\x1b\\def'));
+  not(ansi_close_re.test('abc\x1b]8;;url\x1b\\def'));
+});
+
+const splitStringFancy = (str: string, n: number, zero_width_starts: number[], zero_width_lengths: number[]) => {
+  const result: string[] = [];
+  let j = 0; // j iterates thru the zerowidth items
+  // keeps approach of splitString, entry point includes ansi lexical breakdown of positions of the zerowidth escape seqs.
+  // Here, we perform simple parsing to allow styles to continue by checking if a given escape seq is a closer or not.
+  // If not a closer, it is assumed to be an opener due to assumption that all sequences are used for styling, which is
+  // still the case now (TODO this probably changes at some point?), and at line break will be terminated with hard
+  // \e[m and the stack will be stored. Closers pop the stack without validation so results may be wrong if input does
+  // not use paired style closers
+  const esc_code_stack = [];
+  for (let i = 0; i < str.length;) {
+    let nn = n;
+    for (; zero_width_starts[j] < i + nn; j++) {
+      const k = zero_width_starts[j];
+      const l = zero_width_lengths[j];
+      nn += l;
+      const seq = str.slice(k, k + l);
+      // console.error(`now handling esc seq ${j} at pos ${k} (line starts at ${i}):`, JSON.stringify(seq));
+      if (ansi_close_re.test(seq)) {
+        esc_code_stack.pop();
+      } else {
+        esc_code_stack.push(seq);
+      }
+    }
+    result.push(str.slice(i, i + nn));
+    i += nn;
+  }
+  return result;
+}
+
+export const splitStringFancyBasic = test('splitString', ({ l, a: { eqO } }) => {
+  const str = "1234567890abc";
+  const split = splitStringFancy(str, 5, [], []);
+  l(str,split);
+  eqO(split, ["12345", "67890", "abc"]);
+  const str2 = "foo\x1b[31mbar\x1b[mbaz abc def ghi jkl mno pqr";
+  const ansi2 = lexAnsi(str2);
+  const split2 = splitStringFancy(str2, 8, ansi2.idxs[0], ansi2.lens[0]);
+  l(str2,split2);
+  eqO(split2, ["foo\x1b[31mbar\x1b[mba", "z abc de", "f ghi jk", "l mno pq", "r"]);
+  const str3 = "foobarba\x1b[31mz abc def gh\x1b[mi jkl mno pq\x1b[m\x1b[m\x1b[m\x1b[m\x1b[m\x1b[m\x1b[m\x1b[m\x1b[m\x1b[m\x1b[m\x1b[m\x1b[m\x1b[m\x1b[mr";
+  const ansi3 = lexAnsi(str3);
+  const split3 = splitStringFancy(str3, 5, ansi3.idxs[0], ansi3.lens[0]);
+  l(str3,split3);
+  eqO(split3, ['fooba',
+    'rba\x1B[31mz ',
+    'abc d',
+    'ef gh',
+    '\x1B[mi jkl',
+    ' mno ',
+    'pq\x1B[m\x1B[m\x1B[m\x1B[m\x1B[m\x1B[m\x1B[m\x1B[m\x1B[m\x1B[m\x1B[m\x1B[m\x1B[m\x1B[m\x1B[mr']);
+});
+
 export const confirmAnsiLexingOnHyperlinks = test('ansi lexing', ({ l, a: { eq, eqO } }) => {
   const href = 'https://example.com';
   const content = 'foo'

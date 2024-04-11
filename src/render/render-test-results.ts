@@ -10,6 +10,7 @@ import { renderPercentage, renderTruncFromMs } from "../util.js";
 import { clearTestResultPages, pushTestResultPage } from "../web-server.js";
 import { drawBorder } from "./border.js";
 import { LaunchOptions } from "../config/launchOptions.js";
+import { Simplify } from "type-fest";
 
 // const results: TestResult[] = [];
 
@@ -45,7 +46,7 @@ const cpuUtil = (durationMs: number, userUs: number, systemUs: number) => {
 }
 
 type MakeRequired<T, K extends keyof T> = T extends unknown ? Omit<T, K> & Required<Pick<T, K>> : never;
-type ResourceMetricsWithResources = MakeRequired<ResourceMetrics[0], 'resources'>[];
+type ResourceMetricsWithResources = Simplify<MakeRequired<ResourceMetrics[0], 'resources'>>[];
 
 export const renderResults = (results: TestResult[], TotalExecutionTimeMsReference: number, launch_options: LaunchOptions, only_print_table = false, output_receiver = console.log) => {
   const expand = launch_options.expand_test_suites_reporting;

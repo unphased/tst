@@ -1,7 +1,7 @@
 import { lexAnsi, colors } from "ts-utils/terminal";
 import { test } from "../main.js";
 
-export const sanity_check_unicode_string_lengths = test('string length', ({ l, p, t, a: {eq} }) => {
+export const sanity_check_unicode_string_lengths = test('string length', ({ l, plot: p, t, a: {eq} }) => {
   const str = "✔✔✔✔✔✔✔✔";
   eq(str.length, 8);
 });
@@ -55,7 +55,7 @@ export const drawBorder = (content: string, heading_summary: string) => {
 
 export function splitString(str: string, n: number, zero_width_starts: number[], zero_width_lengths: number[]) {
   const result: string[] = [];
-  let j = 0 // iterates zw items
+  let j = 0 // j iterates thru the zerowidth items
   for (let i = 0; i < str.length;) {
     let nn = n;
     for (; zero_width_starts[j] < i + nn; j++) {

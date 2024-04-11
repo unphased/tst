@@ -321,7 +321,7 @@ export const error_stack_format = test('stack trace', ({l, a:{eq, is, not}}) => 
   }
 });
 
-export const deepequal_perf = test('deepequal', ({ l, p, a: { eqO } }) => {
+export const deepequal_perf = test('deepequal', ({ l, plot: p, a: { eqO } }) => {
   const dSET = timedMs(deepStrictEqual);
   const dE = timedMs(equal);
 

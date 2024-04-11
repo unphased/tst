@@ -6,7 +6,7 @@ import { stream_from, pump_stream } from './compression.js';
 
 // so as part of getting compression megabench to work i had to troubleshoot the stream assembly and figured might as
 // well make a test for it
-export const streams_weird = test('streams', async ({ t, p, l, a: {eqO, eq}}) => {
+export const streams_weird = test('streams', async ({ t, plot: p, l, a: {eqO, eq}}) => {
   const compStream = zlib.createGzip({level: 9});
   const decompStream = zlib.createGunzip();
   const input = Buffer.from('abc');
@@ -18,7 +18,7 @@ export const streams_weird = test('streams', async ({ t, p, l, a: {eqO, eq}}) =>
   eqO(decompd, input); // buffers are not a base type and cannot be compared with eq.
 });
 
-export const compression_megabench = test('streams', async ({ t, p, l, lo, a: {eqO, eq, is}}) => {
+export const compression_megabench = test('streams', async ({ t, plot: p, l, lo, a: {eqO, eq, is}}) => {
   // Started out mainly wanting to compare the handy compress functions node gives against full blown making our own streams and
   // piping. Then realized I can make this a lot more elegantly automated for comparisons so it grew into a benchmark
   // of every conceivable thing.
@@ -261,7 +261,7 @@ export const compression_megabench = test('streams', async ({ t, p, l, lo, a: {e
 });
 
 // just a simple check of compression ratio perf
-export const brotli_compression_efficiency = test('brotli compression', async ({ t, p, l, a: {eq}}) => {
+export const brotli_compression_efficiency = test('brotli compression', async ({ t, plot: p, l, a: {eq}}) => {
   t('exemptFromAsserting', true);
   { // so i want to add one more dimension to this to compare the other compressions and shove them in the same graphs. It's definitely straightforward.
     const ratios: number[] = [];
