@@ -2,6 +2,7 @@ import { lexAnsi } from 'ts-utils/terminal';
 import { test } from '../main.js';
 import { splitString } from "../render/border.js";
 import { renderHrTimeMs, renderPercentage, renderTruncFromMs, renderTruncHrTime } from "../util.js";
+import { ansi_close_re, splitStringFancy } from '../render/border.js';
 
 export const renderPercentageChecks = test('time render', ({ l, a: { eq } }) => {
   eq(renderPercentage(0, l), "0.000%");
@@ -269,14 +270,6 @@ export const splitStringHardcoreBoundsCheck = test('splitString', ({ l, a: { eq,
   l('checks performed:', count_checks);
 });
 
-// parse
-const parseAnsiOpenOrClose = (str: string, zero_width_starts: number[], zero_width_lengths: number[]) => {
-  for (const [i, x] of zero_width_starts.map((j, i) => [ i, str.slice(j, j + zero_width_lengths[i]) ] as const)) {
-    // classify as opener or closer escape sequence. Is all 
-  }
-};
-
-const ansi_close_re = /\x1b\[(?:2[2347]|[345]9)m|\x1b\]8;;\u001b\\/;
 export const re_confirmation = test('splitString', ({ a: { is, not } }) => {
   is(ansi_close_re.test('abc\x1b[39mdef'));
   is(ansi_close_re.test('abc\x1b[49mdef'));
@@ -284,37 +277,6 @@ export const re_confirmation = test('splitString', ({ a: { is, not } }) => {
   is(ansi_close_re.test('abc\x1b]8;;\x1b\\def'));
   not(ansi_close_re.test('abc\x1b]8;;url\x1b\\def'));
 });
-
-const splitStringFancy = (str: string, n: number, zero_width_starts: number[], zero_width_lengths: number[]) => {
-  const result: string[] = [];
-  let j = 0; // j iterates thru the zerowidth items
-  // keeps approach of splitString, entry point includes ansi lexical breakdown of positions of the zerowidth escape seqs.
-  // Here, we perform simple parsing to allow styles to continue by checking if a given escape seq is a closer or not.
-  // If not a closer, it is assumed to be an opener due to assumption that all sequences are used for styling, which is
-  // still the case now (TODO this probably changes at some point?), and at line break will be terminated with hard
-  // \e[m and the stack will be stored. Closers pop the stack without validation, and results will be wrong if input does
-  // not use paired style closers.
-  const esc_code_stack = [];
-  for (let i = 0; i < str.length;) {
-    let nn = n;
-    const stack = esc_code_stack.join('');
-    for (; zero_width_starts[j] < i + nn; j++) {
-      const k = zero_width_starts[j];
-      const l = zero_width_lengths[j];
-      nn += l;
-      const seq = str.slice(k, k + l);
-      // console.error(`now handling esc seq ${j} at pos ${k} (line starts at ${i}):`, JSON.stringify(seq));
-      if (ansi_close_re.test(seq)) {
-        esc_code_stack.pop();
-      } else {
-        esc_code_stack.push(seq);
-      }
-    }
-    result.push(stack + str.slice(i, i + nn) + (esc_code_stack.length ? '\x1b[m' : ''));
-    i += nn;
-  }
-  return result;
-}
 
 export const splitStringFancyBasic = test('splitString', ({ l, a: { eqO } }) => {
   const str = "1234567890abc";
@@ -352,3 +314,4 @@ export const confirmAnsiLexingOnHyperlinks = test('ansi lexing', ({ l, a: { eq, 
   eq(ansi.lens[0][1], 7, 'length of hyperlink content ending section')
   l(ansi);
 });
+
