@@ -28,7 +28,7 @@ export const drawBorder = (content: string, heading_summary: string) => {
   const width_tot = working_width + horiz_margin_tot;
 
   // perform wrapping on raw content, must handle ansi codes as zerolength
-  const wrapped_nested = content.split('\n').map((line, i) => ansi.cleaned[i].length > horizLimit ? splitString(line, horizLimit, ansi.idxs[i], ansi.lens[i]) : line); // Array made of both strings (lines, not long enough to wrap) and inner arrays (which are wrapped lines).
+  const wrapped_nested = content.split('\n').map((line, i) => ansi.cleaned[i].length > horizLimit ? splitStringFancy(line, horizLimit, ansi.idxs[i], ansi.lens[i]) : line); // Array made of both strings (lines, not long enough to wrap) and inner arrays (which are wrapped lines).
 
   // the last entry in each wrapped line is the only one out of those that needs to be padded with spaces to the right.
   // build lengths in same shape first

@@ -105,8 +105,8 @@ export const LaunchTests = async (rootPath?: string, launchOpts?: LaunchOptions)
   let metricsEasyRead = '';
 
   let testCount: number = 0;
-  const default_launch_opts: LaunchOptions = {echo_test_logging: false, expand_test_suites_reporting: 'both' }
-  const launch_opts = { ...default_launch_opts, ...launchOpts }
+  const default_launch_opts: LaunchOptions = {echo_test_logging: false, expand_test_suites_reporting: true };
+  const launch_opts = { ...default_launch_opts, ...launchOpts };
   if (topt(tf.ForceEnableLogging)) { launch_opts.echo_test_logging = true; }
   if (topt(tf.ForceDisableLogging)) { console.assert(!topt(tf.ForceEnableLogging)); launch_opts.echo_test_logging = false; }
 
