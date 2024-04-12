@@ -114,12 +114,12 @@ export const assertions = {
   gt: (a: number, b: number) => {
     if (a <= b) throw new Error(red(bold(italic('gt')) + ' expected ') + pp2(a) + red(' to be greater than ') + pp2(b) + red('.'));
   },
-  eqO: <T>(a: T, b: T) => {
+  eqO: <T>(a: T, b: T, ...message: any[]) => {
     // unfortunately due to the expense of generating the message, I cannot just outsource it to deepStrictEqual's throw.
     try {
       deepStrictEqual(a, b);
     } catch (e) {
-      throw new Error(red(bold(italic('eqO')) + ' expected ') + pp2(a) + red(' to equal ') + pp2(b) + red('.') + ' Delta: ' + diffOfStrings(format(a), format(b)).toString());
+      throw new Error(red(bold(italic('eqO')) + ' expected ') + pp2(a) + red(' to equal ') + pp2(b) + red('. ') + format(...message) + '\nDelta: ' + diffOfStrings(format(a), format(b)).toString());
     }
   },
   neO: (a: any, b: any) => {

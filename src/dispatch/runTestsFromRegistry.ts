@@ -22,7 +22,7 @@ export async function runTestsFromRegistry(testRegistry: Map<TFun | ((...args: P
     testFn: TFun | ((...args: Parameters<TFun>) => Promise<void>),
     suite: string | undefined,
     name: string,
-    file: string,
+    filename: string,
     stack: string
   ): Promise<TestResult> {
     const asyn = isAsyncVoidTFun(testFn);
@@ -74,7 +74,7 @@ export async function runTestsFromRegistry(testRegistry: Map<TFun | ((...args: P
       const should_have_failed = options.fails ? new Error(`Expected test to fail ${options.fails === true ? '' : `with an ${renderErrorSpec(options.fails)} Error `}due to specification of "fails" test option.`) : false;
       if (should_have_failed) { console.error(testFailureHeader, should_have_failed); }
       for (const handler of handlers.alwaysCleanupHandlers) await handler(); 
-      return { ...options, durationMs, name, async: asyn, file, stack, suite, logs, assertionMetrics, resourceMetrics, cpu, finalMemSample, embeds, failure: should_have_failed };
+      return { ...options, durationMs, name, async: asyn, filename, stack, suite, logs, assertionMetrics, resourceMetrics, cpu, finalMemSample, embeds, failure: should_have_failed };
     } catch (e) {
       const end = process.hrtime(start);
       const cpu = process.cpuUsage(startCpuUsage);
@@ -85,7 +85,7 @@ export async function runTestsFromRegistry(testRegistry: Map<TFun | ((...args: P
       !options.fails && console.error(testFailureHeader, err);
       for (const handler of handlers.failedCleanupHandlers) await handler();
       for (const handler of handlers.alwaysCleanupHandlers) await handler();
-      return { ...options, durationMs, name, async: asyn, file, stack, suite, logs, assertionMetrics, resourceMetrics, cpu, finalMemSample, embeds, failure: options.fails ? compatibleFailure(options.fails, err) : err };
+      return { ...options, durationMs, name, async: asyn, filename, stack, suite, logs, assertionMetrics, resourceMetrics, cpu, finalMemSample, embeds, failure: options.fails ? compatibleFailure(options.fails, err) : err };
     }
   }
 

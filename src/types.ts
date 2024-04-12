@@ -27,8 +27,8 @@ export type TestOptions = {
     // to store everything? Seems like a sane default. When i have a use case hitting limits, i can decide then if i want
     // to implement with streams (probably yes just for the cool factor). But I already know that ring buffer as an
     // option will be great for many of my test approaches.
-    /* NOT IMPL YET */ ringBufferLimitLogs?: number;
-  exemptFromAsserting?: boolean; // do not treat as failure if no assertions are made in the test.
+  disableRingBuffer?: true;
+  exemptFromAsserting?: true; // do not treat as failure if no assertions are made in the test.
   fails?: ErrorSpec; // invert the result. This is used to test intentionally failing (e.g. validating test machinery).
   assertionCount?: number; // expected number of assertion calls including final failed ones. Will be implicitly checked as a final assertion.
     /* NOT IMPL YET */ maxRSS?: number; // max resident set size in bytes. If test execution exceeds this threshold, test will fail.
@@ -82,23 +82,19 @@ export type ResourceMetrics = {
 
 export type TestResult = {
   durationMs: number;
-  name: string;
   async: boolean;
-  file: string;
   logs: TestLogs;
   assertionMetrics: TestAssertionMetrics;
   cpu: {
     user: number; // i think tehse are in microsecs
     system: number;
   };
-  stack?: string;
-  suite?: string;
   failure?: false | Error;
   finalMemSample?: number; // rss from node is in bytes
   resourceMetrics: ResourceMetrics;
   embeds: Embeds;
   automated?: string;
-} & TestOptions;
+} & TestMetadata;
 
 export type Embeds = (HtmlEmbedding & { group_id: string })[];
 
