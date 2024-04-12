@@ -38,12 +38,12 @@ const augmentedAssertions = (assertionMetrics: TestAssertionMetrics, options: Te
     const logging_code_block = (args_: any[]) => {
       if (!amln)
         amln = assertionMetrics.logs[name] = {
-          buffer: [],
+          buffer: Array(options.ringBufferLimitAssertionLogs),
+          ringBufferOffset: options.ringBufferLimitAssertionLogs ? 0 : undefined,
           // compressed_stream: zlib.createBrotliCompress({params: {[zlib.constants.BROTLI_PARAM_QUALITY]: 3}})
         };
-      // things have changed here. now buffer is no longer being used unless ring buffer mode is active.
-      if (options.ringBufferLimitAssertionLogs !== undefined && (amln.ringBufferOffset === undefined || amln.buffer.length !== options.ringBufferLimitAssertionLogs)) {
-        console.error('ring buffer limit changed to', options.ringBufferLimitAssertionLogs, 'from', amln.buffer.length)
+      if (options.ringBufferLimitAssertionLogs && (amln.ringBufferOffset === undefined || amln.buffer.length !== options.ringBufferLimitAssertionLogs)) {
+        console.error('ring buffer size changing to', options.ringBufferLimitAssertionLogs, 'from', amln.buffer.length)
         // Here is latch condition to convert to ring buffer (TODO make it correct for the updating ring buffer size case...)
         if (options.ringBufferLimitAssertionLogs < amln.buffer.length) { // shorten to target ringbuf size
           amln.buffer = amln.buffer.slice(-options.ringBufferLimitAssertionLogs);

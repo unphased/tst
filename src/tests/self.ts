@@ -99,6 +99,7 @@ export const test_name_collision = test('same test name', ({ l, t }) => {
 });
 
 export const test_failure_assertion_log_correctness = test('test fails', ({ t, l, a: { eq, eqO }, m }) => {
+  t('ringBufferLimitAssertionLogs', 0);
   const eqBuf = (mm: ReturnType<typeof m>) => mm.assertionMetrics.logs.eq?.buffer.map(e => JSON.parse(e));
   eq(2, 2);
   const m1 = m();
