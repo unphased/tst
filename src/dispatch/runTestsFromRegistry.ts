@@ -28,7 +28,10 @@ export async function runTestsFromRegistry(testRegistry: Map<TFun | ((...args: P
     const asyn = isAsyncVoidTFun(testFn);
     const startCpuUsage = process.cpuUsage();
     const logs: TestLogs = [];
-    const options: TestOptions = {};
+    const options: TestOptions = {
+      // here the default testoptions are being set
+      ringBufferLimitAssertionLogs: 20
+    };
     const assertionMetrics: TestAssertionMetrics = {
       logs: {},
       assertionCounts: {},
