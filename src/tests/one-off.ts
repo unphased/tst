@@ -48,7 +48,7 @@ export const deepequal_perf = test('deepequal', ({ l, plot, a: { eqO } }) => {
   }));
   l('relative', relative);
 
-  const plot = [{
+  const p = [{
     title: 'runtimes (ms)',
     y_axes: output.map(o => o.label),
     data: [
@@ -63,8 +63,8 @@ export const deepequal_perf = test('deepequal', ({ l, plot, a: { eqO } }) => {
       ...relative.map(r => r.reldata)
     ]
   }];
-  plot('uplot', plot);
-  const embed = uPlot_assemble(plot);
+  plot('uplot', p);
+  const embed = uPlot_assemble(p);
   const page = Object.values(build_html([embed])[0]).join('\n');
   fs.writeFileSync('deepequal_perf.html', page);
 });
