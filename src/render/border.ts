@@ -1,10 +1,4 @@
 import { lexAnsi, colors } from "ts-utils/terminal";
-import { test } from "../main.js";
-
-export const sanity_check_unicode_string_lengths = test('string length', ({ l, plot: p, t, a: {eq} }) => {
-  const str = "✔✔✔✔✔✔✔✔";
-  eq(str.length, 8);
-});
 
 export const drawBorder = (content: string, heading_summary: string) => {
   const ansi = lexAnsi(content);
@@ -21,6 +15,7 @@ export const drawBorder = (content: string, heading_summary: string) => {
     // Do a bit of formatting. Mostly to implement wrapping within the border. And handle correct line deletion amount
     // for re-rendering.
     const horizontal = process.stdout?.columns;
+    // console.error('Cols and rows', process.stdout.columns, process.stdout.rows);
     horizLimit = horizontal - horiz_margin_tot; // for border
   }
 

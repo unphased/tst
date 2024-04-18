@@ -301,4 +301,8 @@ export const regex_alternation_with_capture_grp = test('regex', ({ l, a: {eq} })
   eq(re.exec('file://abc/def/ghi:123 blah')[1], undefined);
   eq(re.exec('(abc/def/ghi:123) blah').index, 0);
 });
+export const sanity_check_unicode_string_lengths = test('string length', ({ l, plot: p, t, a: { eq } }) => {
+  const str = "✔✔✔✔✔✔✔✔";
+  eq(str.length, 8);
+});
 
