@@ -98,8 +98,8 @@ const isProgramLaunchContext = () => {
  *** Realistically, sticking to hub/spoke model when going over the network between machines is the only reasonable
  *** approach. Consider that the combined output would be a larger payload. compression may make an impact but it's just a questionable approach.
 */
-export const LaunchTests = async (rootPath?: string, launchOpts?: LaunchOptions) => {
-  const testSpecification = parseTestLaunchingArgs(process.argv.slice(2), rootPath);
+export const LaunchTests = async (rootPath?: string, launchOpts?: LaunchOptions, args?: string[]) => {
+  const testSpecification = parseTestLaunchingArgs(args ?? process.argv.slice(2), rootPath);
   console.error("test launch spec (files, predicate):", testSpecification.files, testSpecification.testPredicate.toString());
   let metricsForEcho: { [k: string]: any } = {};
   let metricsEasyRead = '';
