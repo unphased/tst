@@ -89,4 +89,6 @@ window.data = ${JSON.stringify(uPlot_preprocess(plots))};
 ${plots.flatMap((p, i) => !isStringArray(p.y_axes) ? p.y_axes.map((y, j) => y.legendFn ? `data[${i}].opts.series[${j+1}].value = ${y.legendFn.toString()};` : '') : undefined).filter(e => e).join('\n')}
 ${fs.readFileSync(path.resolve(__dirname, 'payload', 'uplot_handle.js'), 'utf8')}`
 });
+
+console.error('DELETEME WITHOUT RESERVATION debug from tst... __dirname in uplot.ts is:', __dirname);
 // The above is a huge mess but will not fail unless a closure captures variables.

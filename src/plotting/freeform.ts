@@ -12,7 +12,10 @@ export function freeform_assemble(plots: PlotFreeformData[] | PlotFreeformData) 
     return freeform_assemble([plots]);
   }
   const html_template = fs.readFileSync(path.join(__dirname, 'payload', 'freeform_index.html'), 'utf8');
-  const code = fs.readFileSync(path.join(__dirname, '..', '..', 'build', 'plotting', 'static', 'vega-lite.js'), 'utf8');
+  const code = fs.readFileSync(path.join(__dirname, '..', '..', 'dist', 'vega-lite-bundle.js'), 'utf8');
+  // using esbuild-bundled codebase for vega lite so that all the vega lite code I have is built to be self contained
+  // in one file and I assemble it here. The only import that will remain unbundled in that will be vega-lite itself,
+  // which is what we cull in the next line.
   const code_inner = code
     .replace(/^import.*$/gm, '')
     .replace(/^\/\/# sourceMappingURL.*$/m, '');
