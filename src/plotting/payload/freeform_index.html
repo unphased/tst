@@ -6,7 +6,7 @@
     <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
     <script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>
     <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
-    <script type="module">
+    <script>
     const plot_placeholder = { title: "sample", data: [
       {"a": "A", "b": 28}, {"a": "B", "b": 55}, {"a": "C", "b": 43},
       {"a": "D", "b": 91}, {"a": "E", "b": 81}, {"a": "F", "b": 53},
@@ -14,26 +14,6 @@
     ]};
     const plots = [plot_placeholder];
 
-    plots.forEach((pl, i) => {
-      const el = document.createElement('div');
-      const id = 'plot' + i;
-      el.setAttribute('id', id);
-      document.body.appendChild(el);
-
-      const spec = {
-        "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-        "description": pl.title,
-        "data": {
-          "values": pl.data
-        },
-        "mark": "bar",
-        "encoding": {
-          "x": {"field": "a", "type": "nominal"},
-          "y": {"field": "b", "type": "quantitative"}
-        }
-      };
-      vegaEmbed('#' + id, spec);
-    });
     </script>
   </head>
   <body></body>
