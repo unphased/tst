@@ -9,7 +9,7 @@ export default {
     }],
     "@babel/preset-typescript"
   ],
-  "ignore": [ "src/**/payload" ],
+  "ignore": [ "src/**/payload", "src/**/static" ],
   // "highlightCode": true,
   "sourceMaps": "inline",
   // "plugins": [
