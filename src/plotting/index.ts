@@ -45,12 +45,6 @@ export type uPlotData = {
   data: number[][];
 };
 
-export type PlotFreeformData = {
-  title: string;
-  data: { [key: string]: any }[];
-  // generalized dimensional data for the new hypercube based plot paradigm. There should not be a need for a new system and this should subsume the more rigid builtin uplot approach, so TODO for factoring all that out.
-}
-
 // page assembly takes place in these assemble function return objects. If you just Object.values().join() the object
 // you get a valid full HTML page. if you grab .css and .content you can grab code to inject multiple into one html page.
 

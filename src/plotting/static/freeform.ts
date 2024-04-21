@@ -1,6 +1,7 @@
 import embed from 'vega-embed';
+import { type PlotFreeformData } from '../shared.js';
 
-(window.plots as ).forEach((pl, i) => {
+(window.plots as PlotFreeformData[]).forEach((pl, i) => {
   const el = document.createElement('div');
   const id = 'plot' + i;
   el.setAttribute('id', id);
@@ -17,8 +18,8 @@ import embed from 'vega-embed';
       "x": {"field": "a", "type": "nominal"},
       "y": {"field": "b", "type": "quantitative"}
     }
-  };
-  embed('#' + id, spec);
+  } as const;
+  embed('#' + id, spec).then(ret => { console.log("embed ret", ret) }).catch(e => { throw e; });
 });
 
 // import {Config, TopLevelSpec, compile} from 'vega-lite';
