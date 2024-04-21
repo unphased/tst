@@ -12,5 +12,9 @@ export function freeform_assemble(plots: PlotFreeformData[] | PlotFreeformData) 
     return freeform_assemble([plots]);
   }
   const html_template = fs.readFileSync(path.join(__dirname, 'payload', 'freeform_index.html'), 'utf8');
-  return html_template.replace('[plot_placeholder]', JSON.stringify(plots));
+  const code = fs.readFileSync(path.join(__dirname, '..', '..', 'build', 'plotting', 'static', 'vega-lite.js'), 'utf8');
+  const code_inner = code.replace(/^import.*$/gm, '');
+  const ret = html_template.replace('[plot_placeholder]', JSON.stringify(plots)).replace('code placeholder', code_inner);
+  console.error('freeform.ts debug:', ret);
+  return ret;
 }
