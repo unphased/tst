@@ -19,6 +19,6 @@ export function freeform_assemble(plots: PlotFreeformData[] | PlotFreeformData) 
   const ret = html_template
     .replace('[plot_placeholder]', JSON.stringify(plots))
     .replace('code placeholder', code_inner);
-  console.error('freeform.ts debug:', ret);
+  // console.error('freeform.ts debug:', ret);
   return ret;
 }
