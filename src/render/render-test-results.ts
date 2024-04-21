@@ -173,7 +173,14 @@ function produceHtmlTestResults(results: TestResult[]) {
       // into pages. 
       const pages = build_html(embeds);
       for (const page of pages) {
-        pushTestResultPage((result.suite ? result.suite + ':' : '') + result.name + (group ? ': ' + group : ''), Object.values(page).join('\n'));
+        // TODO probably going to be fleshing out more code for integrating into these. But for now, will just do this in a dirty quick way.
+        const script_to_inject_nav_if_applicable = `if (/^http:\\/\\/localhost/.test(location.href)) {
+const el = document.createElement('div');
+el.innerHTML = '<a href="..">Back</a>';
+document.body.appendChild(el);
+}`;
+        const pg = Object.values(page).join('\n').replace('</body>', `</body><script>${script_to_inject_nav_if_applicable}</script>`);
+        pushTestResultPage((result.suite ? result.suite + ':' : '') + result.name + (group ? ': ' + group : ''), pg);
       }
     }
   }
