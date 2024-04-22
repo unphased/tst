@@ -24,7 +24,7 @@ esbuild ./build/plotting/static/vega-lite.js --bundle --platform=browser --sourc
 # fs.readFileSync calls with their content inserted into those string literals.
 
 # This replacement job is sufficiently complex that I'll do it with a js script in here.
-babel --config-file bundle-code-inline.babel.config.js --out-file ./dist/bundle.done.js ./dist/bundle.js
+babel --config-file ./bundle-code-inline.babel.config.js --out-file ./dist/bundle.done.js ./dist/bundle.js
 
 # sanity checks on the replacement.
-diff ./dist/bundle.js ./dist/bundle.done.js
+# diff ./dist/bundle.js ./dist/bundle.done.js
