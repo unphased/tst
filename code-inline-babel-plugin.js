@@ -1,6 +1,4 @@
 import * as types from '@babel/types';
-import traverse from '@babel/traverse';
-console.warn('traverse', traverse);
 
 export default function(_babel) {
   const t = types;
