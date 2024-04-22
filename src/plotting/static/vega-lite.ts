@@ -1,18 +1,18 @@
 import vegaEmbed from 'vega-embed';
 import { type PlotFreeformData } from '../shared.js';
 
-(window.plots as PlotFreeformData[]).forEach((pl, i) => {
+let i = 0;
+const genPlot = (data: any[], title: string) => {
   const el = document.createElement('div');
-  const id = 'plot' + i;
+  const id = 'plot' + i++;
   el.setAttribute('id', id);
   document.body.appendChild(el);
-  console.log("appended", el);
 
   const spec = {
     "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-    "description": pl.title,
+    "description": title,
     "data": {
-      "values": pl.data
+      "values": data
     },
     "mark": "bar",
     "encoding": {
@@ -21,4 +21,10 @@ import { type PlotFreeformData } from '../shared.js';
     }
   } as const;
   vegaEmbed('#' + id, spec).then(ret => { console.log("embed ret", ret) }).catch(e => { throw e; });
+}
+
+(window.plots as PlotFreeformData[]).forEach((pl) => {
+  console.log("plot", pl);
+  const {title, data} = pl;
+  genPlot(data, title)
 });
