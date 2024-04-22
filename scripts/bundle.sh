@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+set -xe
 
 # TODO It looks like a sane way to go about this might be to write this in typescript eventually. Esbuild has a JS
 # api, etc.
@@ -10,21 +10,26 @@ set -e
 
 npm run build
 
-# Generate main bundle. src/index.ts is the framework entry point.
-esbuild ./build/index.js --bundle --platform=node --sourcemap --format=esm --outfile=./dist/bundle.js --external:express --external:deep-equal
+# metaprogramming needs to be done for the plotting client software to neatly assemble them as self-contained artifacts. 
+# 1. The vega-lite frontend plotting bundle is built out of plotting/static
+# 2. build/ is replicated into build2/ to prepare. A special babel pass is performed here in the plotting subdirectory
+#    to transform readFileSync calls into direct string literals with those source files' content.
+# 3. The main bundle is built with esbuild off of build2/ (needs 1 and 2 above)
 
 # Generate the vega-lite flexible plotter codebase into a bundle.
 esbuild ./build/plotting/static/vega-lite.js --bundle --platform=browser --sourcemap --outfile=./dist/vega-lite-bundle.js --format=esm "--external:./node_modules/*"
 
-# Surgery must be performed on main bundle to close the loop for plot html artifacts when leveraged out of the release
-# software bundle. In all plot types, the html embedding loads some handler code to bring life to the plot data injected
-# earlier into the html artifact. When this code is run out of source, the source will specify the correct relative
-# paths to fetch these script payloads for insertion into the html artifacts. When bundling they will land on the wrong
-# spot and we do surgery here to close this gap. It's mild metaprogramming, as we will be replacing string interpolation
-# fs.readFileSync calls with their content inserted into those string literals.
+# Copy entire build/ dir into build2/
+cp -r build/ build2
+# clear out the plotting dir because somehow babel doesn't do work if targets are there
+rm -rf build2/plotting
 
-# This replacement job is sufficiently complex that I'll do it with a js script in here.
-babel --config-file ./bundle-code-inline.babel.config.js --out-file ./dist/bundle.done.js ./dist/bundle.js
+# Surgery for metaprogramming via babel targeting code that needs this transformation performed (src/plotting/).
+# Not too important to be precise in targeting them.
+babel src/plotting/ --config-file ./bundle-code-inline.babel.config.js --out-dir ./build2/plotting --extensions ".ts"
 
-# sanity checks on the replacement.
-# diff ./dist/bundle.js ./dist/bundle.done.js
+# We can run a recursive diff between build/ and build2/ to see the inlining
+
+# Generate main bundle. src/index.ts is the framework entry point.
+esbuild ./build2/index.js --bundle --platform=node --sourcemap --format=esm --outfile=./dist/bundle.js --external:express --external:deep-equal
+

@@ -11,7 +11,7 @@ export default {
   ],
   "ignore": [ "src/**/payload", "src/**/static" ],
   // "highlightCode": true,
-  // "sourceMaps": "inline",
+  "sourceMaps": "inline",
   "plugins": [
     "./code-inline-babel-plugin.js"
   ]
