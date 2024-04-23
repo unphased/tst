@@ -14,7 +14,7 @@ const htmlParseOptions = {
   htmlEntities: true
 }
 
-export const simple_uplot = test('plotting', ({ l, plot: p, t, a: {eq} }) => {
+export const simple_uplot = test('plotting', ({ l, plot, t, a: {eq} }) => {
   const plots1 = [
     {
       title: '1st chart',
@@ -37,8 +37,8 @@ export const simple_uplot = test('plotting', ({ l, plot: p, t, a: {eq} }) => {
       data: [[1, 2], [1, 2]]
     }
   ];
-  p('uplot', plots1, 'testing plotting');
-  p('uplot', plots2, 'testing plotting');
+  plot('uplot', plots1, 'testing plotting');
+  plot('uplot', plots2, 'testing plotting');
   const page = build_html([uPlot_assemble(plots1), uPlot_assemble(plots2)]);
   eq(page.length, 1);
   const html = Object.values(page[0]).join('\n');

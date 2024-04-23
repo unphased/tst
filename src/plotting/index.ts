@@ -52,10 +52,10 @@ type HtmlEmbeddingCssAndJs = {
   css_url: string;
   js_code: string;
 };
-type Html = { html: string };
+export type Html = { html: string };
 export type HtmlEmbedding = HtmlEmbeddingCssAndJs | Html;
 // type guard
-export const isHtmlEmbeddingCssAndJs = (e: HtmlEmbedding): e is HtmlEmbeddingCssAndJs => 'css_url' in e;
+export const isHtmlEmbeddingCssAndJs = (e: HtmlEmbedding): e is HtmlEmbeddingCssAndJs => 'css_url' in e && 'js_code' in e;
 
 const unique = <T>(arr: T[]) => {
   return Array.from(new Set(arr));
@@ -63,7 +63,8 @@ const unique = <T>(arr: T[]) => {
 
 export const build_html = (embeds: HtmlEmbedding[]) => {
   const modulars = embeds.filter(isHtmlEmbeddingCssAndJs);
-  const prebuilts = embeds.filter(e => !isHtmlEmbeddingCssAndJs(e)) as Html[];
+  const prebuilts = embeds.filter(e => !isHtmlEmbeddingCssAndJs(e));
+  console.error('build_html lens', modulars.length, prebuilts.length);
   type SegmentedHtmlPageAssembly = { html: string; } | { html_top: string;css: string;js_code: string;html_bottom: string; };
   const pages: SegmentedHtmlPageAssembly[] = [];
   if (prebuilts.length > 0) {
@@ -82,6 +83,7 @@ export const build_html = (embeds: HtmlEmbedding[]) => {
       html_bottom: `</head><body></body></html>`,
     });
   }
+  console.warn('pages', pages);
   return pages;
 };
 

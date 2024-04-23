@@ -14,6 +14,9 @@ export const stopServer = () => {
 
 const testResultPages: Map<string, string> = new Map();
 export const pushTestResultPage = (name: string, content: string) => {
+  if (testResultPages.has(name)) {
+    throw new Error(`Page with name ${name} already exists. Throwing in an abundance of caution as this is never an intended scenario.`);
+  }
   testResultPages.set(name, content);
 };
 export const clearTestResultPages = () => {

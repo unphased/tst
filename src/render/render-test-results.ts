@@ -42,7 +42,7 @@ export const renderResults = (results: TestResult[], TotalExecutionTimeMsReferen
       throw new Error(`(Likely a test execution related import sequencing problem) ${red("Missing name")} from this test: ${pp(result)}`);
     }
     const suite = result.suite || '';
-    const existing = groupBySuite.get(suite) || groupBySuite.set(suite, []).get(suite) as TestResult[];
+    const existing = groupBySuite.get(suite) || groupBySuite.set(suite, []).get(suite);
     existing.push(result);
   }
   let first_failed_test: TestResult | undefined;
@@ -151,10 +151,12 @@ export const renderResults = (results: TestResult[], TotalExecutionTimeMsReferen
 
 function produceHtmlTestResults(results: TestResult[]) {
   clearTestResultPages();
+  console.error('result.embeds', results.map(r => r.embeds));
   for (const result of results) {
     for (const [group, embeds] of Object.entries(groupBy(result.embeds, 'group_id'))) {
       // Each test can produce zero, one or more html pages. the embeds can be established in any order, but group_id is used to group
       // into pages. 
+      console.error('group', group);
       const pages = build_html(embeds);
       for (const page of pages) {
         // TODO probably going to be fleshing out more code for integrating into these. But for now, will just do this in a dirty quick way.

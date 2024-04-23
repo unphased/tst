@@ -126,5 +126,6 @@ dist
 
 # actual own stuff
 
-build/
+build/*
+build2/*
 test-context.json
