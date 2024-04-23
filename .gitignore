@@ -129,3 +129,4 @@ dist
 build/*
 build2/*
 test-context.json
+cache/*

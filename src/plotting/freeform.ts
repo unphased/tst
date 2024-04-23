@@ -12,26 +12,11 @@ export function freeform_assemble(plots: PlotFreeformData[] | PlotFreeformData) 
   if (!Array.isArray(plots)) {
     return freeform_assemble([plots]);
   }
-  const html_template = fs.readFileSync(path.join(__dirname, 'payload', 'freeform_index.html'), 'utf8');
-  const code_ = `
-/* browser import */ import * as vega from "https://esm.sh/vega@5";
-/* browser import */ import * as vega_lite from "https://esm.sh/vega-lite@5";
-/* browser import */ import vegaEmbed from "https://esm.sh/vega-embed@6";
+  const code = `
+import * as vega from "https://esm.sh/vega@5";
+import * as vega_lite from "https://esm.sh/vega-lite@5";
+import vegaEmbed from "https://esm.sh/vega-embed@6";
 window.plots = ${JSON.stringify(plots)};
 ${fs.readFileSync(path.join(__dirname, '..', '..', 'dist', 'vega-lite-bundle.js'), 'utf8').replace(/^import.*$/gm, '').replace(/^\/\/# sourceMappingURL.*$/m, '')}`;
-  return { js_code: code_ };
-
-  const code = fs.readFileSync(path.join(__dirname, '..', '..', 'dist', 'vega-lite-bundle.js'), 'utf8');
-  // using esbuild-bundled codebase for vega lite so that all the vega lite code I have is built to be self contained
-  // in one file and I assemble it here. The only import that will remain unbundled in that will be vega-lite itself,
-  // which is what we cull in the next line.
-  const code_inner = code
-    .replace(/^import.*$/gm, '')
-    .replace(/^\/\/# sourceMappingURL.*$/m, '');
-  const ret = html_template
-    .replace('[plot_placeholder]', JSON.stringify(plots))
-    .replace('code placeholder', code_inner);
-  // console.error('freeform.ts debug:', ret);
-  return { html: ret };
-
+  return { js_code: code };
 }

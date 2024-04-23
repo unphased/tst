@@ -1,17 +1,19 @@
 import vegaEmbed from 'vega-embed';
 
 import { type PlotFreeformData } from '../shared.js';
+import { Hypercube } from './hypercube.js';
 
 let i = 0;
 const genPlot = (data: any[], title: string) => {
   const el = document.createElement('div');
+  while (document.getElementById('plot' + i)) { i++; }
   const id = 'plot' + i++;
   el.setAttribute('id', id);
   document.body.appendChild(el);
 
   const spec = {
     "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-    "description": title,
+    "title": title,
     "data": {
       "values": data
     },
@@ -25,7 +27,8 @@ const genPlot = (data: any[], title: string) => {
 }
 
 (window.plots as PlotFreeformData[]).forEach((pl) => {
-  console.log("plot", pl);
+  console.log("data", pl);
+  const cube = Hypercube(pl.data);
   const {title, data} = pl;
   genPlot(data, title)
 });
