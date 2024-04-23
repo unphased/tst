@@ -14,9 +14,9 @@ export function freeform_assemble(plots: PlotFreeformData[] | PlotFreeformData) 
   }
   const html_template = fs.readFileSync(path.join(__dirname, 'payload', 'freeform_index.html'), 'utf8');
   const code_ = `
-/* browser import */ import * as vega from "https://cdn.jsdelivr.net/npm/vega@5";
-/* browser import */ import * as vega_lite from "https://cdn.jsdelivr.net/npm/vega-lite@5";
-/* browser import */ import * as vegaEmbed from "https://cdn.jsdelivr.net/npm/vega-embed@6";
+/* browser import */ import * as vega from "https://esm.sh/vega@5";
+/* browser import */ import * as vega_lite from "https://esm.sh/vega-lite@5";
+/* browser import */ import vegaEmbed from "https://esm.sh/vega-embed@6";
 window.plots = ${JSON.stringify(plots)};
 ${fs.readFileSync(path.join(__dirname, '..', '..', 'dist', 'vega-lite-bundle.js'), 'utf8').replace(/^import.*$/gm, '').replace(/^\/\/# sourceMappingURL.*$/m, '')}`;
   return { js_code: code_ };
