@@ -5,7 +5,7 @@ import { assertions } from './assertions.js';
 import { LaunchOptions } from './config/launchOptions.js';
 import { plotters } from "./plotting/plotters_index.js";
 import { SpawnAsyncOpts, SpawnAsyncTestLogTraced, isBypassResourceMetrics, spawnAsync } from './process.js';
-import { CleanupHandlers, Embeds, ResourceMetrics, TestAssertionMetrics, TestLogs, TestMetadata, TestOptions } from "./types.js";
+import { CleanupHandlers, Embeds, OverloadParams, ResourceMetrics, TestAssertionMetrics, TestLogs, TestMetadata, TestOptions } from "./types.js";
 
 import * as os from 'node:os';
 import * as stream from 'node:stream';
@@ -113,14 +113,17 @@ const asyncSpawnTestTracedMaker = (resourceMetrics: ResourceMetrics, logger: (..
   }) as SpawnAsyncTestLogTraced;
 };
 
-const htmlPlotBuilderEmbedder = (embeds: Embeds) => <T extends keyof typeof plotters>(plotType: T, plots: Parameters<typeof plotters[T]>[0], group_id?: string) => {
-  let embed_or_page = plotters[plotType](plots as any);
-  if (typeof embed_or_page === 'string') {
-    embed_or_page = { html: embed_or_page };
-  }
-  embeds.push({ ...embed_or_page, group_id: group_id ?? ''});
-  return plots; // for chainability which can often be handy
-};
+const htmlPlotBuilderEmbedder = (embeds: Embeds) => {
+  const counterWrapper = { counter: 0 };
+  return <T extends keyof typeof plotters>(plotType: T, plots: OverloadParams<typeof plotters[T]>[0], group_id?: string) => {
+    let embed_or_page = plotters[plotType](plots as any);
+    if (typeof embed_or_page === 'string') {
+      embed_or_page = { html: embed_or_page };
+    }
+    embeds.push({ ...embed_or_page, group_id: group_id ?? counterWrapper.counter++});
+    return plots; // for chainability which can often be handy
+  };
+}
 
 // produces interface with which to define a test accessed through param of test function
 export const testParamMaker = (config: LaunchOptions, logs: TestLogs, assertionMetrics: TestAssertionMetrics, options: TestOptions, resourceMetrics: ResourceMetrics, embeds: Embeds, cleanupHandlers: CleanupHandlers) => {

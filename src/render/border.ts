@@ -1,6 +1,6 @@
 import { lexAnsi, colors } from "ts-utils/terminal";
 
-export const drawBorder = (content: string, heading_summary: string) => {
+export const renderBorder = (content: string, heading_summary: string) => {
   const ansi = lexAnsi(content);
   const maxContentWidth = Math.max(...ansi.cleaned.map(line => line.length));
   // console.log('maxContentWidth:', maxContentWidth, 'cleaned_l_ln', ansi.cleaned.map(l => ({ line: l, len: l.length })));

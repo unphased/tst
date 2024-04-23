@@ -15,6 +15,26 @@ import { AssertionName } from "./assertions.js";
 import { Simplify } from "type-fest";
 import * as stream from "node:stream";
 
+export type OverloadParams<T> = T extends {
+  (...args: infer A);
+  (...args: infer B);
+  (...args: infer C);
+  (...args: infer D);
+  (...args: infer E);
+} ? A | B | C | D | E : T extends {
+  (...args: infer A);
+  (...args: infer B);
+  (...args: infer C);
+  (...args: infer D);
+} ? A | B | C | D : T extends {
+  (...args: infer A);
+  (...args: infer B);
+  (...args: infer C);
+} ? A | B | C : T extends {
+  (...args: infer A);
+  (...args: infer B);
+} ? A | B : never;
+
 export type ErrorSpec = true | RegExp | string | (string | RegExp)[];
 
 export type TestOptions = {

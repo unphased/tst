@@ -18,7 +18,7 @@ export const streams_weird = test('streams', async ({ t, plot: p, l, a: {eqO, eq
   eqO(decompd, input); // buffers are not a base type and cannot be compared with eq.
 });
 
-export const compression_megabench = test('streams', async ({ t, plot: p, l, lo, a: {eqO, eq, is}}) => {
+export const compression_megabench = test('streams', async ({ t, plot, l, lo, a: {eqO, eq, is}}) => {
   // Started out mainly wanting to compare the handy compress functions node gives against full blown making our own streams and
   // piping. Then realized I can make this a lot more elegantly automated for comparisons so it grew into a benchmark
   // of every conceivable thing.
@@ -201,6 +201,8 @@ export const compression_megabench = test('streams', async ({ t, plot: p, l, lo,
   }
   l('s.l', structured.length);
 
+  plot('vega_example', {title: 'compression bench', data: structured});
+
   const statistical_measures: VoidTakingMethodsOf<Statistics>[] = [ 'standardDeviation', 'mean', 'max' ];
   const expanded = structured.flatMap(({
     meta: { dataset, data_size, algo, routine, level },
@@ -253,7 +255,7 @@ export const compression_megabench = test('streams', async ({ t, plot: p, l, lo,
   lo(['g1', graphs_1], {maxArrayLength: 3});
   l('g1.l', graphs_1.length);
 
-  p('uplot', graphs_1.map(g => ({
+  plot('uplot', graphs_1.map(g => ({
     title: g.desc,
     y_axes: g.series.map(s => s.seriesName),
     data: [ g.series[0].x, ...g.series.map(s => s.y)]

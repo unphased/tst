@@ -8,7 +8,7 @@ import { build_html } from "../plotting/index.js";
 import { ResourceMetrics, TestResult } from "../types.js";
 import { renderPercentage, renderTruncFromMs } from "../util.js";
 import { clearTestResultPages, pushTestResultPage } from "../web-server.js";
-import { drawBorder } from "./border.js";
+import { renderBorder } from "./border.js";
 import { LaunchOptions } from "../config/launchOptions.js";
 import { Simplify } from "type-fest";
 
@@ -129,7 +129,7 @@ export const renderResults = (results: TestResult[], TotalExecutionTimeMsReferen
     }
   }
 
-  output_receiver(drawBorder(output.join('\n'), `${results.length} tests in ${groupBySuite.size} suites`));
+  output_receiver(renderBorder(output.join('\n'), `${results.length} tests in ${groupBySuite.size} suites`));
 
   const isOnlyConsistingOfNonSuiteTests = groupBySuite.size === 1 && groupBySuite.has('');
   if (expand === 'both' && !isOnlyConsistingOfNonSuiteTests) {
