@@ -1,14 +1,26 @@
 interface HypercubeData {
-  categories: string[];
   data: { [key: string]: any }[];
 }
 
 export const Hypercube = (data: HypercubeData) => {
-  const { categories, data: rawData } = data;
+  const { data: rawData } = data;
+
+  // Determine the field names
+  const fieldNames = Object.keys(rawData[0]);
+
+  // Heuristically determine categorical fields
+  const categories = fieldNames.filter((field) => {
+    const uniqueValues = new Set(rawData.map((item) => item[field]));
+    const uniqueValueCount = uniqueValues.size;
+    const totalValueCount = rawData.length;
+    const categoricalThreshold = 0.1; // Adjust this threshold as needed
+
+    return uniqueValueCount / totalValueCount < categoricalThreshold;
+  });
 
   // Determine numeric fields
-  const numericFields = Object.keys(rawData[0]).filter(
-    (key) => !categories.includes(key) && typeof rawData[0][key] === 'number'
+  const numericFields = fieldNames.filter(
+    (field) => !categories.includes(field) && typeof rawData[0][field] === 'number'
   );
 
   // Create an object to store the unique values for each categorical field
