@@ -72,7 +72,7 @@ export const splitStringFancy = (str: string, n: number, zero_width_starts: numb
   // still the case now (TODO this probably changes at some point?), and at line break will be terminated with hard
   // \e[m and the stack will be stored. Closers pop the stack without validation, and results will be wrong if input does
   // not use paired style closers.
-  const esc_code_stack = [];
+  const esc_code_stack: string[] = [];
   for (let i = 0; i < str.length;) {
     let nn = n;
     const stack = esc_code_stack.join('');

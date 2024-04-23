@@ -20,22 +20,6 @@ export const recordResults = (results: TestResult[]) => {
   }
 };
 
-// export const clearResults = () => {
-//   results.length = 0;
-//   clearTestResultPages();
-// }
-
-// export const getResults = () => results;
-
-// - simpler interface, just give multiline str
-// - works out wrapped line indentation ahead of time, it helps readability
-// - works out ansi escape code styling continuation in wrapped lines
-function fancySplitString(str: string, horizLimit: number) {
-  // note, assumes robust splitString functionality as guaranteed by stringent unit testing above. There will be a
-  // significant amount of styling and extra characters inserted based on wrap width.
-  
-}
-
 const cpuUtil = (durationMs: number, userUs: number, systemUs: number) => {
   const totalUs = userUs + systemUs;
   const totalMs = totalUs / 1000;
