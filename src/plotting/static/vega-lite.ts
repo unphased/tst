@@ -29,6 +29,7 @@ const genPlot = (data: any[], title: string) => {
 (window.plots as PlotFreeformData[]).forEach((pl) => {
   console.log("data", pl);
   const cube = Hypercube(pl.data);
+  console.log("cube", cube);
   const {title, data} = pl;
   genPlot(data, title)
 });
