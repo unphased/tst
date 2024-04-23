@@ -13,6 +13,14 @@ export function freeform_assemble(plots: PlotFreeformData[] | PlotFreeformData) 
     return freeform_assemble([plots]);
   }
   const html_template = fs.readFileSync(path.join(__dirname, 'payload', 'freeform_index.html'), 'utf8');
+  const code_ = `
+/* browser import */ import * as vega from "https://cdn.jsdelivr.net/npm/vega@5";
+/* browser import */ import * as vega_lite from "https://cdn.jsdelivr.net/npm/vega-lite@5";
+/* browser import */ import * as vegaEmbed from "https://cdn.jsdelivr.net/npm/vega-embed@6";
+window.plots = ${JSON.stringify(plots)};
+${fs.readFileSync(path.join(__dirname, '..', '..', 'dist', 'vega-lite-bundle.js'), 'utf8').replace(/^import.*$/gm, '').replace(/^\/\/# sourceMappingURL.*$/m, '')}`;
+  return { js_code: code_ };
+
   const code = fs.readFileSync(path.join(__dirname, '..', '..', 'dist', 'vega-lite-bundle.js'), 'utf8');
   // using esbuild-bundled codebase for vega lite so that all the vega lite code I have is built to be self contained
   // in one file and I assemble it here. The only import that will remain unbundled in that will be vega-lite itself,
@@ -25,4 +33,5 @@ export function freeform_assemble(plots: PlotFreeformData[] | PlotFreeformData) 
     .replace('code placeholder', code_inner);
   // console.error('freeform.ts debug:', ret);
   return { html: ret };
+
 }

@@ -1,5 +1,5 @@
-// window.data has been seeded above with a json literal: a list of plots to make.
-// Also, legendFn has also been surgically injected into window.data.
+// data has been seeded above with a json literal: a list of plots to make.
+// Also, legendFn has also been surgically injected into it.
 
 // set up the uPlot hooks so we can obtain mouse x and s coords, and implement the click event handler.
 

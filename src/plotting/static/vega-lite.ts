@@ -1,4 +1,5 @@
 import vegaEmbed from 'vega-embed';
+
 import { type PlotFreeformData } from '../shared.js';
 
 let i = 0;

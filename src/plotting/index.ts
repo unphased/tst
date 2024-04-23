@@ -49,13 +49,13 @@ export type uPlotData = {
 // you get a valid full HTML page. if you grab .css and .content you can grab code to inject multiple into one html page.
 
 type HtmlEmbeddingCssAndJs = {
-  css_url: string;
+  css_url?: string;
   js_code: string;
 };
-export type Html = { html: string };
+type Html = { html: string };
 export type HtmlEmbedding = HtmlEmbeddingCssAndJs | Html;
 // type guard
-export const isHtmlEmbeddingCssAndJs = (e: HtmlEmbedding): e is HtmlEmbeddingCssAndJs => 'css_url' in e && 'js_code' in e;
+export const isHtmlEmbeddingCssAndJs = (e: HtmlEmbedding): e is HtmlEmbeddingCssAndJs => 'js_code' in e;
 
 const unique = <T>(arr: T[]) => {
   return Array.from(new Set(arr));
@@ -63,7 +63,7 @@ const unique = <T>(arr: T[]) => {
 
 export const build_html = (embeds: HtmlEmbedding[]) => {
   const modulars = embeds.filter(isHtmlEmbeddingCssAndJs);
-  const prebuilts = embeds.filter(e => !isHtmlEmbeddingCssAndJs(e));
+  const prebuilts = embeds.filter(e => !isHtmlEmbeddingCssAndJs(e)) as Html[];
   console.error('build_html lens', modulars.length, prebuilts.length);
   type SegmentedHtmlPageAssembly = { html: string; } | { html_top: string;css: string;js_code: string;html_bottom: string; };
   const pages: SegmentedHtmlPageAssembly[] = [];
