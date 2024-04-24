@@ -16,7 +16,9 @@ export function freeform_assemble(plots: PlotFreeformData[] | PlotFreeformData) 
 import * as vega from "https://esm.sh/vega@5";
 import * as vega_lite from "https://esm.sh/vega-lite@5";
 import vegaEmbed from "https://esm.sh/vega-embed@6";
-window.plots = ${JSON.stringify(plots)};`
+window.plots = ${JSON.stringify(plots)};
+window.plots.forEach((e, i) => e.debug ? console.log('debug', i, e) : null);
+`
     + fs.readFileSync(path.join(__dirname, '..', '..', 'dist', 'vega-lite-bundle.js'), 'utf8').replace(/^import.*$/gm, '').replace(/^\/\/# sourceMappingURL.*$/m, '');
 
   return { js_code: code };
