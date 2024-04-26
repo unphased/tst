@@ -201,11 +201,15 @@ export const compression_megabench = test('streams', async ({ t, plot, l, lo, a:
   }
   l('s.l', structured.length);
 
-  const denorm_metrics = (sample_metric_list: { [key: string]: number }[], index_name: string): {[key: string]: number} => {
-    // turn [{a: 1, b: 2}, {a: 3, b: 4}] into [{<index_name>: 0, a: 1, b: 2}, {<index_name>: 1, a: 3, b: 4}].
-    return sample_metric_list.map((e, i) => ({...e, [index_name]: i})).reduce((a, b) => ({...a, ...b}), {});
+  const denorm_metrics = (sample_metric_list: { [key: string]: number }[], index_name: string, shared: {[key: string]: any}): {[key: string]: number}[] => {
+    // turn [{a: 1, b: 2}, {a: 3, b: 4}], index_name, {x: foo, y: bar} into [{index_name: 0, a: 1, b: 2, x: foo, y: bar}, {index_name: 1, a: 3, b: 4, x: foo, y: bar}].
+    return sample_metric_list.map((e, i) => ({...e, [index_name]: i, ...shared}));
   }
-  plot('vega_example', {title: 'compression bench', debug: structured, data: structured.map(s => ({...s.meta, ...denorm_metrics(s.values, 'sample_idx')}))});
+  plot('vega_example', {
+    title: 'compression bench',
+    debug: structured,
+    data: structured.map(s => ([...denorm_metrics(s.values, 'sample_idx', s.meta)]))
+  });
 
   const statistical_measures: VoidTakingMethodsOf<Statistics>[] = [ 'standardDeviation', 'mean', 'max' ];
   const expanded = structured.flatMap(({
