@@ -72,7 +72,7 @@ export function startServer(port = 4000) {
   });
 
   expressServer = app.listen(port, () => {
-    console.error(`Server listening at http://${child_process.exec(hostname -I)}:${port}`);
+    console.error(`Server listening at http://${child_process.execSync('ifconfig -l | xargs -n1 ipconfig getifaddr').stdout}:${port}`);
   }).on('error', (err: any) => {
     if (err.code === 'EADDRINUSE') {
       console.error(`Port ${port} is in use, trying with port ${port + 1}`);
