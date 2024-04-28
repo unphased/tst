@@ -1,4 +1,5 @@
 import * as http from 'http';
+import * as fs from 'fs';
 import express from 'express';
 
 // test results will be transformed from the standard test output format (which is a json structure and will in future
@@ -49,6 +50,14 @@ export function startServer(port = 4000) {
         </body>
       </html>
     `);
+  });
+
+  // cache of resources to serve locally. Need to periodically sync this from real cdn.
+  fs.readdirSync('cache')
+  app.get('/local/:item', (req, res) => {
+    const item = req.params.item;
+    if (fs.)
+    res.send(content)
   });
   app.get('/:page', (req, res) => {
     const page = req.params.page;
