@@ -1,5 +1,6 @@
 import * as http from 'http';
 import * as fs from 'fs';
+import * as child_process from 'child_process';
 import express from 'express';
 
 // test results will be transformed from the standard test output format (which is a json structure and will in future
@@ -53,12 +54,13 @@ export function startServer(port = 4000) {
   });
 
   // cache of resources to serve locally. Need to periodically sync this from real cdn.
-  fs.readdirSync('cache')
-  app.get('/local/:item', (req, res) => {
-    const item = req.params.item;
-    if (fs.)
-    res.send(content)
-  });
+  // fs.readdirSync('cache')
+  // app.get('/local/:item', (req, res) => {
+  //   const item = req.params.item;
+  //   if (fs.)
+  //   res.send(content)
+  // });
+
   app.get('/:page', (req, res) => {
     const page = req.params.page;
     const content = testResultPages.get(page);
@@ -70,7 +72,7 @@ export function startServer(port = 4000) {
   });
 
   expressServer = app.listen(port, () => {
-    console.error(`Server listening at http://localhost:${port}`);
+    console.error(`Server listening at http://${child_process.exec(hostname -I)}:${port}`);
   }).on('error', (err: any) => {
     if (err.code === 'EADDRINUSE') {
       console.error(`Port ${port} is in use, trying with port ${port + 1}`);
