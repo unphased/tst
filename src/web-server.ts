@@ -28,25 +28,30 @@ export const clearTestResultPages = () => {
 import * as os from 'os';
 import * as dns from 'dns';
 
-function getLocalLANIPAddress(): Promise<string | null>{
-  return new Promise((resolve, reject) => {
-    const hostname = os.hostname();
-    dns.lookup(hostname, { family: 4, all: true }, (err, addresses) => {
-      if (err) {
-        reject(err);
-        return;
-      }
+function getLocalLANIPAddress() {
+  const interfaces = os.networkInterfaces();
+  const interfaceNames = Object.keys(interfaces);
 
-      console.error('addresses', addresses);
-      const lanAddress = addresses.find(addr => !addr.internal);
-      if (lanAddress) {
-        resolve(lanAddress.address);
-      } else {
-        resolve(null);
+  for (const interfaceName of interfaceNames) {
+    const iface = interfaces[interfaceName];
+
+    for (const alias of iface) {
+      if (
+        alias.family === 'IPv4' &&
+        !alias.internal &&
+        alias.address !== '127.0.0.1' &&
+        alias.address !== '127.0.1.1'
+      ) {
+        return alias.address;
       }
-    });
-  });
+    }
+  }
+
+  return null;
 }
+
+const localLANIP = getLocalLANIPAddress();
+console.log('Local LAN IP address:', localLANIP);
 
 export function startServer(port = 4000) {
   // Set up Express
@@ -94,13 +99,13 @@ export function startServer(port = 4000) {
     }
   });
 
-  expressServer = app.listen(port, () => {
+  expressServer = app.listen(port, /* () => {
     getLocalLANIPAddress().then(ip => {
       console.error(`Server listening at http://${ip}:${port}`);
     }, (reason: any) => {
       throw reason;
     });
-  }).on('error', (err: any) => {
+  } */).on('error', (err: any) => {
     if (err.code === 'EADDRINUSE') {
       console.error(`Port ${port} is in use, trying with port ${port + 1}`);
       startServer(port + 1);
