@@ -27,21 +27,37 @@ export const clearTestResultPages = () => {
 
 import * as os from 'os';
 import * as dns from 'dns';
+import { execSync } from 'child_process';
+
+function getDefaultInterface() {
+  let defaultInterface = '';
+
+  try {
+    if (os.platform() === 'darwin') {
+      // macOS
+      defaultInterface = execSync('route -n get default | grep interface | awk \'{print $2}\'', {
+        encoding: 'utf8',
+      }).trim();
+    } else if (os.platform() === 'linux') {
+      // Linux
+      defaultInterface = execSync("ip route | awk '/default/ {print $5}'", { encoding: 'utf8' }).trim();
+    }
+  } catch (error) {
+    console.error('Error retrieving default interface:', error);
+  }
+
+  return defaultInterface;
+}
 
 function getLocalLANIPAddress() {
+  const defaultInterface = getDefaultInterface();
   const interfaces = os.networkInterfaces();
-  const interfaceNames = Object.keys(interfaces);
 
-  for (const interfaceName of interfaceNames) {
-    const iface = interfaces[interfaceName];
+  if (defaultInterface && interfaces[defaultInterface]) {
+    const iface = interfaces[defaultInterface];
 
     for (const alias of iface) {
-      if (
-        alias.family === 'IPv4' &&
-        !alias.internal &&
-        alias.address !== '127.0.0.1' &&
-        alias.address !== '127.0.1.1'
-      ) {
+      if (alias.family === 'IPv4' && !alias.internal) {
         return alias.address;
       }
     }
@@ -99,13 +115,13 @@ export function startServer(port = 4000) {
     }
   });
 
-  expressServer = app.listen(port, /* () => {
-    getLocalLANIPAddress().then(ip => {
-      console.error(`Server listening at http://${ip}:${port}`);
-    }, (reason: any) => {
-      throw reason;
-    });
-  } */).on('error', (err: any) => {
+  expressServer = app.listen(port, () => {
+    // getLocalLANIPAddress().then(ip => {
+      console.error(`Server listening at http://${getLocalLANIPAddress()}:${port}`);
+    // }, (reason: any) => {
+      // throw reason;
+    // });
+  }).on('error', (err: any) => {
     if (err.code === 'EADDRINUSE') {
       console.error(`Port ${port} is in use, trying with port ${port + 1}`);
       startServer(port + 1);
