@@ -25,6 +25,36 @@ export const clearTestResultPages = () => {
   testResultPages.clear();
 };
 
+import * as os from 'os';
+import * as dns from 'dns';
+
+function getLocalLANIPAddress() {
+  return new Promise((resolve, reject) => {
+    const hostname = os.hostname();
+    dns.lookup(hostname, { family: 4, all: true }, (err, addresses) => {
+      if (err) {
+        reject(err);
+        return;
+      }
+
+      const lanAddress = addresses.find(addr => !addr.internal);
+      if (lanAddress) {
+        resolve(lanAddress.address);
+      } else {
+        resolve(null);
+      }
+    });
+  });
+}
+
+getLocalLANIPAddress()
+  .then(localLANIP => {
+    console.log('Local LAN IP address:', localLANIP);
+  })
+  .catch(error => {
+    console.error('Error:', error);
+  });
+
 export function startServer(port = 4000) {
   // Set up Express
   const app = express();
@@ -72,7 +102,7 @@ export function startServer(port = 4000) {
   });
 
   expressServer = app.listen(port, () => {
-    console.error(`Server listening at http://${child_process.execSync('ifconfig -l | xargs -n1 ipconfig getifaddr').stdout}:${port}`);
+    console.error(`Server listening at http://${getLocalIPAddress()}:${port}`);
   }).on('error', (err: any) => {
     if (err.code === 'EADDRINUSE') {
       console.error(`Port ${port} is in use, trying with port ${port + 1}`);
