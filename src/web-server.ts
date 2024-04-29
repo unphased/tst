@@ -37,6 +37,7 @@ function getLocalLANIPAddress(): Promise<string | null>{
         return;
       }
 
+      console.error('addresses', addresses);
       const lanAddress = addresses.find(addr => !addr.internal);
       if (lanAddress) {
         resolve(lanAddress.address);
