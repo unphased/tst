@@ -1,6 +1,4 @@
 import * as http from 'http';
-import * as fs from 'fs';
-import * as child_process from 'child_process';
 import express from 'express';
 
 // test results will be transformed from the standard test output format (which is a json structure and will in future
@@ -26,7 +24,6 @@ export const clearTestResultPages = () => {
 };
 
 import * as os from 'os';
-import * as dns from 'dns';
 import { execSync } from 'child_process';
 
 function getDefaultInterface() {
