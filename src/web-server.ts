@@ -37,7 +37,19 @@ function getDefaultInterface() {
       }).trim();
     } else if (os.platform() === 'linux') {
       // Linux
-      defaultInterface = execSync("ip route | awk '/default/ {print $5}'", { encoding: 'utf8' }).trim();
+      const routeOutput = execSync('ip route', { encoding: 'utf8' });
+      const routes = routeOutput.split('\n');
+
+      let lowestMetric = Infinity;
+      for (const route of routes) {
+        if (route.includes('default')) {
+          const metric = parseInt(route.split('metric ')[1].trim(), 10);
+          if (metric < lowestMetric) {
+            lowestMetric = metric;
+            defaultInterface = route.split(' ')[4];
+          }
+        }
+      }
     }
   } catch (error) {
     console.error('Error retrieving default interface:', error);
