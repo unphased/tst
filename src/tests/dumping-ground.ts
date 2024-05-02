@@ -7,6 +7,10 @@ import { stdoutColorizer } from '../process.js';
 import { findContiguousSubsequenceSlidingWindow } from '../assertions.js';
 import { Chainable } from '../util.js';
 
+import * as fs from 'fs';
+import * as os from 'os';
+import { enumerateFiles } from '../dispatch/runner.js';
+
 // note carefully this specific code cannot be factored to a different file, it changea its semantics.
 const isProgramLaunchContext = () => {
   // this cjs launch detection impl will need to change if we change compilation to target modules
@@ -306,3 +310,10 @@ export const sanity_check_unicode_string_lengths = test('string length', ({ l, p
   eq(str.length, 8);
 });
 
+export const enumerateFilesTest = test('files', async ({l, a: {eq, sameSet}}) => {
+  const utilpath = os.homedir() + '/util';
+  const files = await enumerateFiles(utilpath);
+  const files2 = fs.readdirSync('.', { recursive: true, encoding: 'utf8' });
+  l('files length', files.length);
+  sameSet(files, files2);
+});

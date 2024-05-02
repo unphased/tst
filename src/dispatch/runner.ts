@@ -19,6 +19,18 @@ import { startServer } from '../web-server.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+export async function enumerateFiles(dir: string, filter = (_path) => true) {
+  const entries = await fs.promises.readdir(dir, { withFileTypes: true });
+  const files = entries
+    .filter(entry => entry.isFile() && filter(entry))
+    .map(entry => path.join(dir, entry.name));
+  const subDirs = entries.filter(entry => entry.isDirectory() && filter(entry));
+  for (const subDir of subDirs) {
+    files.push(...await enumerateFiles(path.join(dir, subDir.name), filter));
+  }
+  return files;
+}
+
 export const discoverTests = async (targetDir: string, js_files_only: boolean, specifiedTestFiles: ReturnType<typeof parseTestLaunchingArgs>['files']) => {
   const startf = process.hrtime();
   const files = fs.readdirSync(targetDir, { recursive: true, encoding: 'utf8' })

@@ -91,6 +91,12 @@ function includes(a: any, spec: any) {
   }
 }
 
+// TODO make a variant of this that treats the keys of a map or object as the set to compare
+// type Container<T> = T[] | Set<T> | Map<any, T>;
+function sameSet<T>(a: T[], b: T[]) {
+  return a.length === b.length && a.every(e => b.includes(e));
+}
+
 // TODO Explore some assertions to use to assert the amount of times some code got triggered?
 // export const Nce = (n: number, cb: () => void) => { }
 // export const once = (cb: () => void) => { Nce(1, cb); }
@@ -101,6 +107,7 @@ export const assertions = {
   eq: <T>(a: T, b: T, ...message: any[]) => {
     if (a !== b) throw new Error(red(bold(italic('eq')) + ' expected ') + pp2(a) + red(' to equal ') + pp2(b) + '. ' + format(...message));
   },
+  sameSet,
   // eq with epsilon
   eqE: (a: number, b: number, epsilon: number) => {
     if (Math.abs(a - b) > epsilon) throw new Error(red(bold(italic('eqE')) + ' expected ') + pp2(a) + red(' to equal ') + pp2(b) + red(' within ') + pp2(epsilon) + red('.'));
