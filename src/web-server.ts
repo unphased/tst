@@ -75,9 +75,6 @@ function getLocalLANIPAddress() {
   return null;
 }
 
-const localLANIP = getLocalLANIPAddress();
-console.log('Local LAN IP address:', localLANIP);
-
 export function startServer(port = 4000) {
   // Set up Express
   const app = express();

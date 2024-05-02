@@ -90,5 +90,4 @@ ${plots.flatMap((p, i) => !isStringArray(p.y_axes) ? p.y_axes.map((y, j) => y.le
 ${fs.readFileSync(path.resolve(__dirname, 'payload', 'uplot_handle.js'), 'utf8')}`
 });
 
-console.error('DELETEME WITHOUT RESERVATION debug from tst... __dirname in uplot.ts is:', __dirname);
 // The above is a huge mess but will not fail unless a closure captures variables.
