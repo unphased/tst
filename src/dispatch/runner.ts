@@ -19,14 +19,17 @@ import { startServer } from '../web-server.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-export async function enumerateFiles(dir: string, filter = (_path) => true) {
+export async function enumerateFiles(dir: string, filter = (_path) => true, options: { include_dirs: boolean } = { include_dirs: false }) {
   const entries = await fs.promises.readdir(dir, { withFileTypes: true });
   const files = entries
     .filter(entry => entry.isFile() && filter(entry))
     .map(entry => path.join(dir, entry.name));
   const subDirs = entries.filter(entry => entry.isDirectory() && filter(entry));
+  if (options.include_dirs) {
+    files.push(...subDirs.map(d => path.join(dir, d.name)))
+  }
   for (const subDir of subDirs) {
-    files.push(...await enumerateFiles(path.join(dir, subDir.name), filter));
+    files.push(...await enumerateFiles(path.join(dir, subDir.name), filter, options));
   }
   return files;
 }

@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import { colors } from 'ts-utils/terminal';
-import { bold, format, pp2, italic, red } from 'ts-utils';
+import { bold, format, pp2, italic, red, underline } from 'ts-utils';
 import { deepStrictEqual, notDeepStrictEqual } from 'assert';
 
 export const diffOfStrings = (a: string, b: string) => {
@@ -91,10 +91,34 @@ function includes(a: any, spec: any) {
   }
 }
 
+const setDiff = <T>(a: T[], b: T[]) => {
+  const as = new Set(a);
+  const bs = new Set(b);
+  const b_not_has_from_a = new Set([...as].filter(x => !bs.has(x)));
+  const a_not_has_from_b = new Set([...bs].filter(x => !as.has(x)));
+  let str = '';
+  if (b_not_has_from_a.size > 0) {
+    str += ` In the first set, but not in the second: ${pp2([...b_not_has_from_a])}`;
+  }
+  if (a_not_has_from_b.size > 0) {
+    str += ` In the second set, but not in the first: ${pp2([...a_not_has_from_b])}`;
+  }
+  return str;
+};
+
 // TODO make a variant of this that treats the keys of a map or object as the set to compare
 // type Container<T> = T[] | Set<T> | Map<any, T>;
 function sameSet<T>(a: T[], b: T[]) {
-  return a.length === b.length && a.every(e => b.includes(e));
+  if (a.length !== b.length) throw new Error(red(bold(italic('sameSet')) + ' expected ') + pp2(a) + red(' to equal ') + pp2(b) + red(` as sets but they have different lengths (${italic(a.length.toString())} != ${italic(b.length.toString())}).`) + ` Difference:${setDiff(a, b)}`);
+
+  let failedToFind: T | undefined;
+  if (!a.every(e => {
+    const ret = b.includes(e);
+    if (!ret) {
+      failedToFind = e;
+    }
+    return ret;
+  })) throw new Error(red(bold(italic('sameSet')) + ' expected ') + pp2(a) + red(' to equal ') + pp2(b) + red(' as sets: ') + pp2(failedToFind) + ' was not found in the latter.');
 }
 
 // TODO Explore some assertions to use to assert the amount of times some code got triggered?

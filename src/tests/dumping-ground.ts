@@ -311,9 +311,16 @@ export const sanity_check_unicode_string_lengths = test('string length', ({ l, p
 });
 
 export const enumerateFilesTest = test('files', async ({l, a: {eq, sameSet}}) => {
-  const utilpath = os.homedir() + '/util';
-  const files = await enumerateFiles(utilpath);
-  const files2 = fs.readdirSync('.', { recursive: true, encoding: 'utf8' });
+  const target = os.homedir() + '/util/chatgpt_automation';
+  const files = await enumerateFiles(target, () => true, { include_dirs: true });
+  const files2 = fs.readdirSync(target, { recursive: true, encoding: 'utf8' }).map(e => target + '/' + e);
   l('files length', files.length);
+  l('files2 length', files2.length);
+
+  for (const file of files2) {
+    if (files.indexOf(file) === -1) {
+      l('missing from first set:', file);
+    }
+  }
   sameSet(files, files2);
 });
