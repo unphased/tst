@@ -19,25 +19,47 @@ import { startServer } from '../web-server.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-export async function enumerateFiles(dir: string, filter = (_path) => true, options: { include_dirs: boolean } = { include_dirs: false }) {
-  const entries = await fs.promises.readdir(dir, { withFileTypes: true });
-  const files = entries
-    .filter(entry => entry.isFile() && filter(entry))
-    .map(entry => path.join(dir, entry.name));
-  const subDirs = entries.filter(entry => entry.isDirectory() && filter(entry));
+type EnumerateFilesOptions = {
+  include_dirs?: true;
+  follow_symlinks?: true;
+}
+
+// error type guard
+function isErrnoException(error: unknown): error is NodeJS.ErrnoException {
+  return error instanceof Error && 'code' in error && typeof error.code === 'string';
+}
+
+export async function enumerateFiles(location: string, filter = (_path) => true, options: EnumerateFilesOptions = {}) {
+  let entries: fs.Dirent[] | undefined;
+  try {
+    entries = await fs.promises.readdir(location, { withFileTypes: true });
+  } catch (e) {
+    if (isErrnoException(e) && e.code === 'ENOTDIR') {
+      return [location];
+    } else {
+      console.error('enumerateFiles: error reading directory:', location);
+      throw e;
+    }
+  }
+  const output = entries
+    .filter(entry => entry.isFile() && (options.follow_symlinks ? true : !entry.isSymbolicLink()) && filter(entry))
+    .map(entry => path.join(location, entry.name));
+  const subDirs = entries.filter(entry => entry.isDirectory() && (options.follow_symlinks ? true : !entry.isSymbolicLink()) && filter(entry));
   if (options.include_dirs) {
-    files.push(...subDirs.map(d => path.join(dir, d.name)))
+    output.push(...subDirs.map(d => path.join(location, d.name)))
   }
   for (const subDir of subDirs) {
-    files.push(...await enumerateFiles(path.join(dir, subDir.name), filter, options));
+    output.push(...await enumerateFiles(path.join(location, subDir.name), filter, options));
   }
-  return files;
+  return output;
 }
 
 export const discoverTests = async (targetDir: string, js_files_only: boolean, specifiedTestFiles: ReturnType<typeof parseTestLaunchingArgs>['files']) => {
   const startf = process.hrtime();
-  const files = fs.readdirSync(targetDir, { recursive: true, encoding: 'utf8' })
-    .filter(f => path.resolve(targetDir, f) !== __filename); // filter out self, importing that will break us
+  console.error('############ pwd, targetDir:', process.cwd(), targetDir);
+  const files = (await enumerateFiles(targetDir))
+  // const files = fs.readdirSync(targetDir, { recursive: true, encoding: 'utf8' })
+    .filter(f => path.resolve(f) !== __filename); // filter out self, importing that will break us
   const fileDiscoveryDuration = hrTimeMs(process.hrtime(startf));
   const start = process.hrtime();
   const js_ts_re = js_files_only ? /\.js$/ : /\.[jt]s$/;
@@ -58,7 +80,7 @@ export const discoverTests = async (targetDir: string, js_files_only: boolean, s
   console.error(`discoverTests: ${files_filtered.length} files to import: ${files_filtered.join(', ')}`);
 
   const fileFilteringDuration = hrTimeMs(process.hrtime(start));
-  const { registry, stats } = await trigger_dynamic_imports(targetDir, files_filtered);
+  const { registry, stats } = await trigger_dynamic_imports(files_filtered);
 
   return { registry, fileFilteringDuration, fileDiscoveryDuration, ...stats };
 }
@@ -93,9 +115,9 @@ const runParallelTests = async (registry: Awaited<ReturnType<typeof trigger_dyna
   return { structuredResults, parallelExecutionDuration: hrTimeMs(process.hrtime(start)) };
 };
 
-const runTestsDirectly = async (targetDir: string, testSpecification: ReturnType<typeof parseTestLaunchingArgs>, launch_opts?: LaunchOptions) => {
+const runTestsDirectly = async (testSpecification: ReturnType<typeof parseTestLaunchingArgs>, launch_opts?: LaunchOptions) => {
   // 'core' of discoverTests
-  const { registry, stats } = await trigger_dynamic_imports(targetDir, testSpecification.files);
+  const { registry, stats } = await trigger_dynamic_imports(testSpecification.files);
   const start = process.hrtime();
   const testResults = await runTestsFromRegistry(registry, launch_opts, testSpecification.testPredicate, topt(tf.AsyncParallelTestLaunch));
   return { testResults, testExecutionDuration: process.hrtime(start), ...stats };
@@ -182,7 +204,7 @@ export const LaunchTests = async (rootPath?: string, launchOpts?: LaunchOptions,
     // - launch tests via direct test spec protocol (in practice for now, at first, this is identical to above easy
     // test spec protocol, but in future when that gets fleshed out to be easier it will diverge)
     // - simple collation takes place to send to stdout.
-    const { testResults, ...metrics } = await runTestsDirectly(fileSearchDir, testSpecification, launch_opts);
+    const { testResults, ...metrics } = await runTestsDirectly(testSpecification, launch_opts);
     metricsForEcho = metrics;
     testCount = testResults.length;
     const dispatchResult: TestDispatchResult = { testResults, ...metrics };

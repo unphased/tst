@@ -8,7 +8,7 @@ import { testFnRegistry, TFun } from '../main.js';
 // the global test function registries are needed for the import process below to implicitly register the tests as the
 // test function gets called. To reduce state management headaches, the hop over global vars is constrained to this
 // one, and subsequent test handling will be done functionally
-export async function trigger_dynamic_imports(containingDir: string, files_filtered: string[])
+export async function trigger_dynamic_imports(files_filtered: string[])
 {
   const stats: { [k: string]: number } = {
     files: 0,
@@ -19,10 +19,10 @@ export async function trigger_dynamic_imports(containingDir: string, files_filte
   const start = process.hrtime();
   console.error('trigger_dynamic_import files_filtered', files_filtered, 'pwd', process.cwd());
   await Promise.all(files_filtered.map(file => {
-    const pth = path.resolve(containingDir, file);
+    const pth = path.resolve(file);
     // console.error('importing', pth);
     return import(pth).then(exports => {
-      // console.error("imported", exports, 'from', containingDir, file);
+      // console.error("imported", exports, 'from', file);
       stats.files += 1;
       for (const [name, fn] of Object.entries(exports as { [key: string]: any; })) {
         stats.all_exported_items_count += 1;

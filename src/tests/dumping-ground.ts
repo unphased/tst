@@ -9,6 +9,7 @@ import { Chainable } from '../util.js';
 
 import * as fs from 'fs';
 import * as os from 'os';
+import * as path from 'path';
 import { enumerateFiles } from '../dispatch/runner.js';
 
 // note carefully this specific code cannot be factored to a different file, it changea its semantics.
@@ -323,4 +324,28 @@ export const enumerateFilesTest = test('files', async ({l, a: {eq, sameSet}}) =>
     }
   }
   sameSet(files, files2);
+});
+
+export const enumerateFilesRel = test('files', async ({l, a: {eq, sameSet}}) => {
+  const targets = [ 'build', '././build', './build/config/..'  ];
+  for (const targ of targets) {
+    const target = path.join(...targ.split('/'));
+    const files = await enumerateFiles(target, () => true, { include_dirs: true });
+    // NOTE HERE THAT enumerateFiles includes given dir relative to cwd, while readdirsync does not!
+    const files2 = fs.readdirSync(target, { recursive: true, encoding: 'utf8' }).map(e => target + '/' + e);
+    l('files length', files.length);
+    l('files2 length', files2.length);
+
+    for (const file of files2) {
+      if (files.indexOf(file) === -1) {
+        l('missing from first set:', file);
+      }
+    }
+    sameSet(files, files2);
+  }
+});
+
+export const enumerateFilesWithAFile = test('files', async ({l, a: {eqO}}) => {
+  const file = '/etc/hosts';
+  eqO(await enumerateFiles(file), [file]);
 });

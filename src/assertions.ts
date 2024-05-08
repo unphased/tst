@@ -150,7 +150,7 @@ export const assertions = {
     try {
       deepStrictEqual(a, b);
     } catch (e) {
-      throw new Error(red(bold(italic('eqO')) + ' expected ') + pp2(a) + red(' to equal ') + pp2(b) + red('. ') + format(...message) + '\nDelta: ' + diffOfStrings(format(a), format(b)).toString());
+      throw new Error(red(bold(italic('eqO')) + ' expected ') + pp2(a) + red(' to (deep) equal ') + pp2(b) + red('. ') + format(...message) + '\nDelta: ' + diffOfStrings(format(a), format(b)).toString());
     }
   },
   neO: (a: any, b: any) => {
