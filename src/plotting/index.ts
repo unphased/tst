@@ -64,7 +64,7 @@ const unique = <T>(arr: T[]) => {
 export const build_html = (embeds: HtmlEmbedding[]) => {
   const modulars = embeds.filter(isHtmlEmbeddingCssAndJs);
   const prebuilts = embeds.filter(e => !isHtmlEmbeddingCssAndJs(e)) as Html[];
-  console.error('build_html lens', modulars.length, prebuilts.length);
+  // console.error('build_html lens', modulars.length, prebuilts.length);
   type SegmentedHtmlPageAssembly = { html: string; } | { html_top: string;css: string;js_code: string;html_bottom: string; };
   const pages: SegmentedHtmlPageAssembly[] = [];
   if (prebuilts.length > 0) {
@@ -83,7 +83,7 @@ export const build_html = (embeds: HtmlEmbedding[]) => {
       html_bottom: `</head><body></body></html>`,
     });
   }
-  console.warn('pages', pages);
+  // console.warn('pages', pages);
   return pages;
 };
 

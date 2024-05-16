@@ -155,7 +155,7 @@ function produceHtmlTestResults(results: TestResult[]) {
     for (const [group, embeds] of Object.entries(groupBy(result.embeds, 'group_id'))) {
       // Each test can produce zero, one or more html pages. the embeds can be established in any order, but group_id is used to group
       // into pages. 
-      console.error('group', group);
+      // console.error('group', group);
       const pages = build_html(embeds);
       for (const page of pages) {
         // TODO probably going to be fleshing out more code for integrating into these. But for now, will just do this in a dirty quick way.
