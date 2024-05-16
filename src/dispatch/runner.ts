@@ -57,7 +57,9 @@ export async function enumerateFiles(location: string, filter = (_path) => true,
 export const discoverTests = async (targetDir: string, js_files_only: boolean, specifiedTestFiles: ReturnType<typeof parseTestLaunchingArgs>['files']) => {
   const startf = process.hrtime();
   console.error('############ pwd, targetDir:', process.cwd(), targetDir);
-  const files = (await enumerateFiles(targetDir))
+  const relTargetDir = targetDir.replace(process.cwd(), '.');
+
+  const files = (await enumerateFiles(relTargetDir))
   // const files = fs.readdirSync(targetDir, { recursive: true, encoding: 'utf8' })
     .filter(f => path.resolve(f) !== __filename); // filter out self, importing that will break us
   const fileDiscoveryDuration = hrTimeMs(process.hrtime(startf));
