@@ -14,7 +14,7 @@ export const simpleFileExists = test('test', ({ l, a: { eq } }) => {
   eq(false, fs.existsSync(path.resolve(projDir, 'some-file.fail')));
 });
 
-// useful helper for performing inception
+// useful helper for performing inception. Returns either the build/ or the actual src/ dir if running direct off source.
 const getBuildProjDir = () => {
   let projDir = path.resolve(__dirname, '..');
   let x = '';
