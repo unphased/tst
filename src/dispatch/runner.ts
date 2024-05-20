@@ -117,9 +117,9 @@ const runParallelTests = async (registry: Awaited<ReturnType<typeof trigger_dyna
   return { structuredResults, parallelExecutionDuration: hrTimeMs(process.hrtime(start)) };
 };
 
-const runTestsDirectly = async (testSpecification: ReturnType<typeof parseTestLaunchingArgs>, launch_opts?: LaunchOptions) => {
+const runTestsDirectly = async (searchDir: string, testSpecification: ReturnType<typeof parseTestLaunchingArgs>, launch_opts?: LaunchOptions) => {
   // 'core' of discoverTests
-  const { registry, stats } = await trigger_dynamic_imports(testSpecification.files);
+  const { registry, stats } = await trigger_dynamic_imports(testSpecification.files.map(e => path.resolve(searchDir, e)));
   const start = process.hrtime();
   const testResults = await runTestsFromRegistry(registry, launch_opts, testSpecification.testPredicate, topt(tf.AsyncParallelTestLaunch));
   return { testResults, testExecutionDuration: process.hrtime(start), ...stats };
@@ -155,9 +155,9 @@ export const LaunchTests = async (rootPath?: string, launchOpts?: LaunchOptions,
   // on library, and will not be running from a bundle, so I assume also that __dirname is (tst)/src/build/dispatch. Hence
   // .. added to go to build.
   if (fileSearchDir) {
-    console.error('discoverTests: enumerating JavaScript/TypeScript code under the fileSearchDir', fileSearchDir);
+    console.error('LaunchTests: enumerating JavaScript/TypeScript code under the fileSearchDir', fileSearchDir);
   } else {
-    throw new Error(`discoverTests: no fileSearchDir specified`);
+    throw new Error(`LaunchTests: no fileSearchDir specified`);
   }
 
   if (topt(tf.Parallel) && !topt(tf.Automated)) {
@@ -206,7 +206,8 @@ export const LaunchTests = async (rootPath?: string, launchOpts?: LaunchOptions,
     // - launch tests via direct test spec protocol (in practice for now, at first, this is identical to above easy
     // test spec protocol, but in future when that gets fleshed out to be easier it will diverge)
     // - simple collation takes place to send to stdout.
-    const { testResults, ...metrics } = await runTestsDirectly(testSpecification, launch_opts);
+    // console.error('running tests directly', testSpecification.files);
+    const { testResults, ...metrics } = await runTestsDirectly(fileSearchDir, testSpecification, launch_opts);
     metricsForEcho = metrics;
     testCount = testResults.length;
     const dispatchResult: TestDispatchResult = { testResults, ...metrics };

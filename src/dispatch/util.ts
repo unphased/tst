@@ -90,7 +90,7 @@ export const parseTestLaunchingArgs = (args?: string[], rootPath?: string) => {
       const nameString = `${test.suite ? test.suite + ':' : ''}${test.name}`;
       const ret = nameString === name;
       // if (!ret) {
-      //   l(`debug eTNM: test name ${nameString} did not match ${name}`);
+      //   console.error(`debug eTNM: test name ${nameString} did not match ${name}`);
       // }
       return ret;
     };
