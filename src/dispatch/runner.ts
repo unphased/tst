@@ -56,7 +56,7 @@ export async function enumerateFiles(location: string, filter = (_path) => true,
 
 export const discoverTests = async (targetDir: string, js_files_only: boolean, specifiedTestFiles: ReturnType<typeof parseTestLaunchingArgs>['files']) => {
   const startf = process.hrtime();
-  console.error('############ pwd, targetDir:', process.cwd(), targetDir);
+  console.error('#### discoverTests ######## pwd, targetDir, sTF:', process.cwd(), targetDir, specifiedTestFiles);
   const relTargetDir = targetDir.replace(process.cwd(), '.');
 
   const files = (await enumerateFiles(relTargetDir))
@@ -72,10 +72,11 @@ export const discoverTests = async (targetDir: string, js_files_only: boolean, s
     // 1. importing code under instrument/payload (not ever meant to be tested or run here) will break likely due to
     //    browser deps but also pollute global state
     // 2. workers should never be directly imported
-    .filter(f => specifiedTestFiles.length === 0 || specifiedTestFiles.includes(f)); // apply specified file import filter
+    .filter(f => specifiedTestFiles.length === 0 || specifiedTestFiles.includes(f.split('/').slice(1).join('/'))); // apply specified file import filter
 
   if (!files_filtered.length) {
     console.error('Please confirm... Prior to filtering, the file list was:', files);
+    console.error('sTF:', specifiedTestFiles, 'cwd', process.cwd());
     throw new Error('Zero files remain after filtering');
   }
 

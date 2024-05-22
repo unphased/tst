@@ -89,12 +89,12 @@ export const parseTestLaunchingArgs = (args?: string[], rootPath?: string) => {
     const exactTestNameMatch = (test: TestMetadata, name: string) => {
       const nameString = `${test.suite ? test.suite + ':' : ''}${test.name}`;
       const ret = nameString === name;
-      // if (!ret) {
-      //   console.error(`debug eTNM: test name ${nameString} did not match ${name}`);
-      // }
+      if (!ret) {
+        console.error(`debug eTNM: test name ${nameString} did not match ${name}`);
+      }
       return ret;
     };
-    console.error('Exact test name matching is being performed' + (hasColonBeenSpecified ? ' due to presence of colon in specifier' : ''));
+    console.error('Exact test name matching is being performed on', args, (hasColonBeenSpecified ? 'due to presence of colon in specifier' : ''));
     return { files, testPredicate: (test: TestMetadata) => args.slice(idxSeparator + 1).some(a => exactTestNameMatch(test, a)) };
   } else { // default, a loose user friendly cli for test name matching.
     console.error('Loose test name matching is being performed')
