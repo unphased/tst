@@ -326,7 +326,7 @@ export const spawn_a_failing_command = test('spawnAsync', async ({ t, spawn, a: 
 export const spawn_must_show_full_error_on_failure = test('spawnAsync', async ({ l, spawn, a: { eq, eqO, match } }) => {
   const projDir = getBuildProjDir();
   l('projDir:', projDir);
-  const ret = await spawn('node', ['--enable-source-maps', path.join(projDir, 'dispatch', 'runner.js'), TestLaunchFlags.ExactTestNameMatching, TestLaunchFlags.ForceEnableLogging, 'build/tests/self.js', TestLaunchSeparator, 'spawnAsync:spawn_a_failing_command'], {
+  const ret = await spawn('node', ['--enable-source-maps', path.join(projDir, 'dispatch', 'runner.js'), TestLaunchFlags.ExactTestNameMatching, TestLaunchFlags.ForceEnableLogging, 'tests/self.js', TestLaunchSeparator, 'spawnAsync:spawn_a_failing_command'], {
     bufferStdout: true, showStdoutWhenBuffering: true
   });
   // confirm i can see the content emitted from the command
