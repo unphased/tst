@@ -130,3 +130,7 @@ build/*
 build2/*
 test-context.json
 cache/*
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
