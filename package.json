@@ -14,7 +14,6 @@
     "self-test": "npm run bundle && node --enable-source-maps ./build/dispatch/run_and_serve.js",
     "watch-simple": "watchexec --exts ts,json -- npm run bundle",
     "watch": "watchexec --exts ts --only-emit-events --emit-events-to=json-stdio | while read line; do echo received: $line; echo \"Skipped $(timeout 1 cat | wc -l) further events\"; npm run bundle; done",
-    "watch-test": "bash -c 'watchexec --exts ts --only-emit-events --emit-events-to=json-stdio | while read line; do echo received: $line; echo \"Skipped $(timeout 1 cat | wc -l) further events\"; npm run build && npm run test \"$@\"; done' _",
     "watch-start": "watchexec -w src -e ts,json,js -r --stop-signal=INT -- npm run self-test",
     "debug-npm-run-arg-bash-passing": "bash -c 'argshow \"$@\"' _"
   },
