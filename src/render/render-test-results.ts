@@ -222,6 +222,14 @@ export const cleanup_old_results = async (dir: string) => {
   // - checking mtime of test-results run dir suffices here but won't in the general case, beware
   // - recursion by find must be stopped so as not to fail due to attempting to traverse just-deleted dirs
   // - this is a hack to bring multiple dir removals under one process call
-  fs.existsSync(dir) && await spawnAsync('find', [dir, '-maxdepth', '1', '-type', 'd', '-mtime', `+${keep_results_for_days}`, '-exec', 'echo', 'deleting old test results dir {}', ';', '-exec', 'rm', '-rf', '{}', ';'], console.error);
+  const findArgs = [dir,
+    '-maxdepth', '1', // only nuke at test dispatch granularity
+    '-mindepth', '1', // so we dont delete the current run dir
+    '-type', 'd',
+    '-mtime', `+${keep_results_for_days}`,
+    '-exec', 'echo', 'deleting old test results dir {}', ';',
+    '-exec', 'rm', '-rf', '{}', ';'
+  ];
+  fs.existsSync(dir) && await spawnAsync('find', findArgs, console.error);
 }
 
