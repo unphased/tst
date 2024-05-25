@@ -78,7 +78,7 @@ export const build_html = (embeds: HtmlEmbedding[]) => {
 <head>
 <meta charset="utf-8" />
 <title>Plot</title>`,
-      css: unique(modulars.map(e => e.css_url)).map(css_u => `<link rel="stylesheet" href="${css_u}" />`).join('\n'),
+      css: unique(modulars.map(e => e.css_url)).map(css_u => css_u ? `<link rel="stylesheet" href="${css_u}" />` : '').join('\n'),
       js_code: modulars.map(e => `<script type="module">${e.js_code}</script>`).join('\n'),
       html_bottom: `</head><body></body></html>`,
     });

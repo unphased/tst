@@ -17,12 +17,12 @@ test('should fail if there are any console errors', async ({ page }) => {
   });
 
   // Navigate to the page you want to test
-  await page.goto('http://localhost:4000'); // Replace with your URL
+  await page.goto('http://localhost:4000/vega_lite:most_basic_plot_vega'); // Replace with your URL
 
   // Perform any actions you want to test
   // e.g., await page.click('button#submit');
 
   // Optional: Add an assertion to ensure the page has loaded correctly
-  await expect(page).toHaveTitle(/TST Results/);
+  await expect(page).toHaveTitle('Plot');
 });
 
