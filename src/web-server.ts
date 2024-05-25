@@ -86,7 +86,7 @@ export function startServer(port = 4000) {
     res.send(`
       <html>
         <head>
-          <title>Test Results</title>
+          <title>TST Results</title>
           <style>
             a { text-decoration: none; }
             a:hover { background-color: #e0e0e0; }

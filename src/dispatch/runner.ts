@@ -13,6 +13,7 @@ import { runTestsFromRegistry } from './runTestsFromRegistry.js';
 import { trigger_dynamic_imports } from './trigger_dynamic_imports.js';
 import { parseTestLaunchingArgs, tf, topt } from './util.js';
 import { startServer } from '../web-server.js';
+import { spawnAsync } from '../process.js';
 
 // import { ResourceMonitoringWorkerLaunch } from './resource-monitoring.js';
 
@@ -216,7 +217,9 @@ export const LaunchTests = async (rootPath?: string, launchOpts?: LaunchOptions,
   }
   console.error(`Test launch complete, ${testCount} tests, metrics:`, util.inspect(metricsForEcho, { colors: true, depth: 8 }), `\n${metricsEasyRead}`);
   if (launch_opts.web_server) {
-    startServer();
+    startServer(); // given loose stance on process control, the listening would cause event loop not to exit to keep this app running.
+    // also test it by launching playwright tests
+    await spawnAsync('npx', ['playwright', 'test']); // making this await would also gate app clean shutdown to completion of these tests
   }
 };
 
