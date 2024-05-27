@@ -13,6 +13,8 @@ test('should fail if there are any console errors', async ({ page }) => {
     if (message.type() === 'error') {
       console.error(`Console error: ${message.text()}`);
       throw new Error(`Console error detected: ${message.text()}`);
+    } else {
+      console.log(`Console.${message.type()}: ${message.text()}`);
     }
   });
 
