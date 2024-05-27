@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import util from 'util';
 
 test('title', async ({ page }) => {
   await page.goto('http://localhost:4000/');
@@ -9,12 +10,12 @@ test('title', async ({ page }) => {
 
 test('should fail if there are any console errors', async ({ page }) => {
   // Listen to console events and fail the test on any error
-  page.on('console', (message) => {
+  page.on('console', async (message) => {
     if (message.type() === 'error') {
       console.error(`Console error: ${message.text()}`);
-      throw new Error(`Console error detected: ${message.text()}`);
+      throw new Error(`Console errors are forbidden: ${message.text()}`);
     } else {
-      console.log(`Console.${message.type()}: ${message.text()}`);
+      console.log(util.inspect(await Promise.all(message.args().map(arg => arg.jsonValue())), { depth: null }));
     }
   });
 

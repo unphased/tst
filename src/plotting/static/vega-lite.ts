@@ -23,7 +23,7 @@ const genPlot = (data: any[], title: string) => {
       "y": {"field": "b", "type": "quantitative"}
     }
   } as const;
-  vegaEmbed('#' + id, spec).then(ret => { console.log("embed ret", ret) }).catch(e => { throw e; });
+  vegaEmbed('#' + id, spec);
 }
 
 (window.plots as PlotFreeformData[]).forEach((pl) => {
