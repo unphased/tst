@@ -349,3 +349,7 @@ export const enumerateFilesWithAFile = test('files', async ({l, a: {eqO}}) => {
   const file = '/etc/hosts';
   eqO(await enumerateFiles(file), [file]);
 });
+
+export const confirmNode22EmitsRedStdErr = test('node', async ({l, a: {eqO}}) => {
+  // hmm i have to run this in a pty though. use tmux i guess
+});
