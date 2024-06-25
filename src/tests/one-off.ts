@@ -6,7 +6,6 @@ import equal from 'deep-equal';
 import { uPlot_assemble } from '../plotting/uplot.js';
 import { build_html } from '../plotting/index.js';
 
-
 export const deepequal_perf = test('deepequal', ({ l, plot, a: { eqO } }) => {
   const dSET = timedMs(deepStrictEqual);
   const dE = timedMs(equal);

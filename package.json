@@ -42,7 +42,8 @@
     "tsx": "^4.7.1",
     "typescript": "^5.3.3",
     "vega-embed": "^6.25.0",
-    "vega-lite": "^5.18.0"
+    "vega-lite": "^5.18.0",
+    "ts-utils": "file:../ts-utils"
   },
   "dependencies": {
     "deep-equal": "^2.2.3",
