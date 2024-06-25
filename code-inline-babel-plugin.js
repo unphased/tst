@@ -38,7 +38,7 @@ export default function(_babel) {
           const targetFile = '/' + path.join(...assembledPath);
           const contents = fs.readFileSync(targetFile, 'utf8');
           const newStrLit = t.stringLiteral(contents);
-          console.warn('We\'ll be replacing this code', '\x1b[34m' + pth.toString() + '\x1b[39m', 'with contents of', targetFile, 'which has', contents.length, 'chars');
+          console.warn(`We'll be replacing this code`, '\x1b[34m' + pth.toString() + '\x1b[39m', 'with contents of', targetFile, 'which has', contents.length, `chars in the file ${filename}`);
           pth.replaceWith(newStrLit);
         }
       },
