@@ -68,7 +68,7 @@ export const discoverTests = async (targetDir: string, js_files_only: boolean, s
   const js_ts_re = js_files_only ? /\.js$/ : /\.[jt]s$/;
   const files_filtered = files
     .filter(f => f.match(js_ts_re)) // importing non js/ts files will fail -- i got some config json and log files under build
-    .filter(f => !f.match(/\/payload\/|\/static\/|^workers\//))
+    .filter(f => !f.match(/\/payload\/|\/static\/|\/workers\//))
     // gluing multiple filters into one regex:
     // 1. importing code under instrument/payload (not ever meant to be tested or run here) will break likely due to
     //    browser deps but also pollute global state
