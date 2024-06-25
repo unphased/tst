@@ -261,45 +261,6 @@ export const basic = test('contiguous subsequence', ({l, a: { is, eq }}) => {
   });
 });
 
-export const bootstrap_array_experiment2_test = test('object chaining', ({ l, a: { eqO } }) => {
-  // confirm we can directly use the helpers to flexibly populate complex structures to a suitable degree of precision
-  type Type2 = {
-    a?: {
-      aa?: number;
-      b: {
-        c: number;
-      }[];
-    }[];
-  };
-
-  type Type3 = {
-    z?: {
-      y: number[];
-    };
-    x?: {
-      w: Type2;
-    };
-  };
-
-  const z = new Chainable<Type3>({});
-
-  // z.obj('x').obj('w').arr('a', { b: [], aa: 1 })[0].b.push({ c: 1 });
-  // const x = z.obj('x').obj('w').arr('a', { b: [], aa: 1 }).sub(0).arr('b', { c: 1 });
-  const x = z.obj('x').obj('w').arr('a', { b: [], aa: 1 }).sub(0).arr('b', { c: 1 });
-  l('z', z);
-  eqO(z.getRaw(), {
-    x: {
-      w: {
-        a: [{ b: [{ c: 1 }], aa: 1 }]
-      }
-    }
-  });
-
-  const y = new Chainable({ a: [] });
-  y.arr('a', 1, { z: 'z' }, 3).sub(1).obj('bb b b b b b', { c: 1 });
-  l('y', y);
-});
-
 export const regex_alternation_with_capture_grp = test('regex', ({ l, a: {eq} }) => {
   const re = /(\(.*\))|file:\/\/.*:\d+/;
   eq(re.exec('file://abc/def/ghi:123')[1], undefined);

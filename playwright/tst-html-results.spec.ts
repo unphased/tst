@@ -8,7 +8,7 @@ test('title', async ({ page }) => {
   await expect(page).toHaveTitle(/TST Results/);
 });
 
-test('should fail if there are any console errors', async ({ page }) => {
+test('no console errors', async ({ page }) => {
   // Listen to console events and fail the test on any error
   page.on('console', async (message) => {
     if (message.type() === 'error') {

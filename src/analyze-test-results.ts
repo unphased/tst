@@ -1,7 +1,7 @@
 import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { getTestReportingPath } from './render/render-test-results.js';
 import { TestLaunchMetrics, TestResult } from './types.js';
-import { Chainable } from './util.js';
+import { Chainable } from 'ts-utils';
 
 type TestContextStructure = {
   timing: {
