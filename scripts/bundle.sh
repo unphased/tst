@@ -24,9 +24,11 @@ cp -r build/ build2
 # clear out the plotting dir because somehow babel doesn't do work if targets are there
 rm -rf build2/plotting
 
-# Surgery for metaprogramming via babel targeting code that needs this transformation performed (src/plotting/).
-# Not too important to be precise in targeting them.
-babel src/plotting/ --config-file ./bundle-code-inline.babel.config.js --out-dir ./build2/plotting --extensions ".ts"
+# Standard babel transform without code inlining
+babel src/plotting/ --config-file ./babel.config.js --out-dir ./build2/plotting --extensions ".ts"
+
+# Warning: Removing code inlining may cause runtime errors and bundling issues
+echo "Warning: Code inlining has been removed. Ensure all required files are present at runtime."
 
 # We can run a recursive diff between build/ and build2/ to see the inlining
 
