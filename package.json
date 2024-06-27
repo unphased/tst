@@ -13,8 +13,7 @@
     "debug": "node --inspect-brk --enable-source-maps ./build/dispatch/runner.js",
     "self-test": "npm run bundle && node --enable-source-maps ./build/dispatch/run_and_serve.js",
     "watch-simple": "watchexec --exts ts,json -- npm run bundle",
-    "watch": "watchexec --exts ts --only-emit-events --emit-events-to=json-stdio | while read line; do echo received: $line; echo \"Skipped $(timeout 1 cat | wc -l) further events\"; npm run bundle; done",
-    "watch-start": "watchexec -e ts,json,js -r --stop-signal=INT -- npm run self-test",
+    "watch": "watchexec -e ts,json,js -r --stop-signal=INT -- npm run self-test",
     "debug-npm-run-arg-bash-passing": "bash -c 'argshow \"$@\"' _",
     "_wtf_test": "watchexec -e ts,json,js -- bash -c 'echo foo'"
   },
