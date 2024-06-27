@@ -1,5 +1,5 @@
 import { dirname } from 'path';
-import { format, format_opt } from 'ts-utils';
+import { format, format_opt } from 'ts-utils/node/format';
 import { fileURLToPath } from 'url';
 import { assertions } from './assertions.js';
 import { LaunchOptions } from './config/launchOptions.js';

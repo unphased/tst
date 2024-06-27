@@ -3,7 +3,8 @@ import * as fsp from "fs/promises";
 import * as path from "path";
 import { spawnAsync } from '../process.js';
 import { colors, renderHorizBar } from 'ts-utils/terminal';
-import { groupBy, pp, red, sum, underline } from 'ts-utils';
+import { groupBy, red, sum, underline } from 'ts-utils';
+import { pp } from 'ts-utils/node/format'
 import { build_html } from "../plotting/index.js";
 import { ResourceMetrics, TestResult } from "../types.js";
 import { renderPercentage, renderTruncFromMs } from "../util.js";

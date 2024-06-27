@@ -1,5 +1,6 @@
 import * as os from 'os';
-import { format, hrTimeMs, weightedAverageFromBackByLUT } from "ts-utils";
+import { hrTimeMs, weightedAverageFromBackByLUT } from "ts-utils";
+import { format } from 'ts-utils/node/format';
 import { loadTestContext } from '../analyze-test-results.js';
 import { TFun } from '../main.js';
 import { MinHeap } from '../min-heap.js';

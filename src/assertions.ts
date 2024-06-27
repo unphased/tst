@@ -3,7 +3,8 @@ import * as fs from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import { colors } from 'ts-utils/terminal';
-import { bold, format, pp2, italic, red, underline } from 'ts-utils';
+import { bold, italic, red } from 'ts-utils';
+import { format, pp2 } from 'ts-utils/node/format'
 import { deepStrictEqual, notDeepStrictEqual } from 'assert';
 
 export const diffOfStrings = (a: string, b: string) => {
