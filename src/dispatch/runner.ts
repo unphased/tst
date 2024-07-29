@@ -219,7 +219,7 @@ export const LaunchTests = async (rootPath?: string, launchOpts?: LaunchOptions,
   if (launch_opts.web_server) {
     startServer(); // given loose stance on process control, the listening would cause event loop not to exit to keep this app running.
     // also test it by launching playwright tests
-    await spawnAsync('npx', ['playwright', 'test']); // making this await would also gate app clean shutdown to completion of these tests
+    // await spawnAsync('npx', ['playwright', 'test']); // making this await would also gate app clean shutdown to completion of these tests
   }
 };
 

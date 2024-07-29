@@ -311,6 +311,35 @@ export const enumerateFilesWithAFile = test('files', async ({l, a: {eqO}}) => {
   eqO(await enumerateFiles(file), [file]);
 });
 
+// silly js promises test
+export const nodePromisesChainedThens = test('promises', async ({l, a: {eq}}) => {
+  const prom = new Promise((res) => {
+    setTimeout(() => { res('foo'); }, 100);
+  }).then(res => {
+    console.assert(res === 'foo', `not res === 'foo'`);
+    throw 'haha';
+    return 'bar';
+  }).catch((e) => {
+    console.error('Error!', e);
+    return 'errored';
+  }).then(res => {
+    console.assert(res === 'bar', `res to be bar, was "${res}"`);
+    return 'baz';
+  });
+
+  const val = await prom;
+  eq(val, 'baz');
+
+  const sleep = (ms: number) => new Promise(res => setTimeout(res, ms));
+
+  eq('foo 100', await new Promise((res) => {
+    setTimeout(() => { res('foo'); }, 100);
+  }).then(async (res) => {
+    await sleep(100);
+    return res + ' 100';
+  }));
+});
+
 // export const confirmNode22EmitsRedStdErr = test('node', async ({l, a: {eqO}}) => {
 //   // hmm i have to run this in a pty though. use tmux i guess
 // });
