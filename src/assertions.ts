@@ -140,11 +140,11 @@ export const assertions = {
   ne: <T>(a: T, b: T) => {
     if (a === b) throw new Error(red(bold(italic('ne')) + ' expected ') + pp2(a) + red(' to not equal ') + pp2(b) + red('.'));
   },
-  lt: (a: number, b: number) => {
-    if (a >= b) throw new Error(red(bold(italic('lt')) + ' expected ') + pp2(a) + red(' to be less than ') + pp2(b) + red('.'));
+  lt: (a: number, b: number, ...message: any[]) => {
+    if (a >= b) throw new Error(red(bold(italic('lt')) + ' expected ') + pp2(a) + red(' to be less than ') + pp2(b) + red('.') + message.length ? format(...message) : '');
   },
-  gt: (a: number, b: number) => {
-    if (a <= b) throw new Error(red(bold(italic('gt')) + ' expected ') + pp2(a) + red(' to be greater than ') + pp2(b) + red('.'));
+  gt: (a: number, b: number, ...message: any[]) => {
+    if (a <= b) throw new Error(red(bold(italic('gt')) + ' expected ') + pp2(a) + red(' to be greater than ') + pp2(b) + red('.') + message.length ? format(...message) : '');
   },
   eqO: <T>(a: T, b: T, ...message: any[]) => {
     // unfortunately due to the expense of generating the message, I cannot just outsource it to deepStrictEqual's throw.
