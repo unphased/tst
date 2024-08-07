@@ -116,8 +116,8 @@ const asyncSpawnTestTracedMaker = (resourceMetrics: ResourceMetrics, logger: (..
 const htmlPlotBuilderEmbedder = (embeds: Embeds) => {
   const counterWrapper = { counter: 0 };
   return <T extends keyof typeof plotters>(plotType: T, plots: OverloadParams<typeof plotters[T]>[0], group_id?: string) => {
-    let embed_or_page = plotters[plotType](plots);
-    embeds.push({ ...embed_or_page, group_id: group_id ?? (counterWrapper.counter++ || '')});
+    const embed_or_page = plotters[plotType](plots as any) // TODO unravel this any. fun puzzle.
+    embeds.push({ ...embed_or_page, group_id: group_id ?? ((counterWrapper.counter++).toString() || '')});
     return plots; // for chainability which can often be handy
   };
 }
