@@ -84,7 +84,7 @@ const pruneTestContext = (tc: TestContextStructure) => {
     }
     shapeIndex++;
   }
-  console.error('test context', 'shape', shape);
-  console.error('test context', 'pruned (should basically be a count of test results for each date entry we pruned)', logging_pruned_entries);
+  // console.error('test context', 'shape', shape);
+  // console.error('test context', 'pruned (should basically be a count of test results for each date entry we pruned)', logging_pruned_entries);
 };
 
