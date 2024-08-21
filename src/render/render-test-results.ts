@@ -210,17 +210,17 @@ export const getTestReportingPath = () => current_test_reporting_session_path?.s
 export let current_test_reporting_session_path: string[] | undefined;
 export async function establishTestResultsDir(skip_cleanup = false) {
   const date = new Date().toISOString().replace(/:/g, '_');
-  const p = ['test-results', date];
-  fs.mkdirSync(path.resolve('test-results'), { recursive: true });
+  const p = ['tst-results', date];
+  fs.mkdirSync(path.resolve('tst-results'), { recursive: true });
   current_test_reporting_session_path = p;
   if (!skip_cleanup) {
-    await cleanup_old_results(path.resolve('test-results'));
+    await cleanup_old_results(path.resolve('tst-results'));
   }
 }
 
 const keep_results_for_days = 3;
 export const cleanup_old_results = async (dir: string) => {
-  // - checking mtime of test-results run dir suffices here but won't in the general case, beware
+  // - checking mtime of tst-results run dir suffices here but won't in the general case, beware
   // - recursion by find must be stopped so as not to fail due to attempting to traverse just-deleted dirs
   // - this is a hack to bring multiple dir removals under one process call
   const findArgs = [dir,

@@ -1,1 +1,0 @@
-/Users/slu/util/aider/CONVENTIONS.md
