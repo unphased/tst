@@ -43,7 +43,7 @@ export const renderTruncFromMs = (ms: number, width = 9) => {
 // tabularized constant width time string output providing readability between 0 and 1000000s!
 export const renderTruncHrTime = (hrTimeDelta: [number, number], width = 9) => renderTruncFromMs(hrTimeMs(hrTimeDelta), width);
 
-export function renderPercentage(num: number, l?: (...args: any[], index?: number) => void) {
+export function renderPercentage(num: number, l?: (...args: any[]) => void) {
   if (num === 0) return "0.000%";
   // if (num >= 0.99995) return "100.0%";
   const perc = num * 100;
