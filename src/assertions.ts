@@ -126,10 +126,9 @@ function sameSet<T>(a: T[], b: T[]) {
 // export const Nce = (n: number, cb: () => void) => { }
 // export const once = (cb: () => void) => { Nce(1, cb); }
 
-/**
- * Collection of assertion methods for test validation
- */
-export interface Assertions {
+export const assertions = {
+  // TODO switch the protocol here to throw special errors that wrap a hrtime as well so that the timing for failed
+  // tests won't include the time taken to generate these errors (some of which do spawns etc).
   /**
    * Strict equality assertion (===)
    * @param a Actual value
@@ -137,14 +136,16 @@ export interface Assertions {
    * @param message Optional error message parts
    * @throws When values are not strictly equal
    */
-  eq<T>(a: T, b: T, ...message: any[]): void; 
+  eq: <T>(a: T, b: T, ...message: any[]) => {
+    if (a !== b) throw new Error(red(bold(italic('eq')) + ' expected ') + pp2(a) + red(' to equal ') + pp2(b) + '. ' + format(...message));
+  },
   /**
    * Assert two arrays contain the same values (order doesn't matter)
    * @param a First array
    * @param b Second array
    * @throws When arrays have different elements
    */
-  sameSet: typeof sameSet;
+  sameSet,
   
   /**
    * Numeric equality with epsilon tolerance
@@ -153,7 +154,7 @@ export interface Assertions {
    * @param epsilon Allowed difference
    * @throws When numbers differ beyond epsilon
    */
-  eqE(a: number, b: number, epsilon: number): void;
+  eqE: (a: number, b: number, epsilon: number) => {
     if (Math.abs(a - b) > epsilon) throw new Error(red(bold(italic('eqE')) + ' expected ') + pp2(a) + red(' to equal ') + pp2(b) + red(' within ') + pp2(epsilon) + red('.'));
   },
   ne: <T>(a: T, b: T) => {
@@ -211,7 +212,7 @@ export interface Assertions {
    * @throws When function does not throw
    * @example a.throws(() => { throw new Error() })
    */
-  throws(fn: () => void): void;
+  throws: (fn: () => void) => {
     try {
       fn();
     } catch (e) {
@@ -240,10 +241,5 @@ export interface Assertions {
   }
 };
 
-export const assertions: Assertions = {
-  eq: <T>(a: T, b: T, ...message: any[]) => {
-    if (a !== b) throw new Error(red(bold(italic('eq')) + ' expected ') + pp2(a) + red(' to equal ') + pp2(b) + '. ' + format(...message));
-  },
-  
-export type AssertionName = keyof Assertions;
+export type AssertionName = keyof typeof assertions;
 
