@@ -137,9 +137,7 @@ export interface Assertions {
    * @param message Optional error message parts
    * @throws When values are not strictly equal
    */
-  eq<T>(a: T, b: T, ...message: any[]): void;
-    if (a !== b) throw new Error(red(bold(italic('eq')) + ' expected ') + pp2(a) + red(' to equal ') + pp2(b) + '. ' + format(...message));
-  },
+  eq<T>(a: T, b: T, ...message: any[]): void; 
   /**
    * Assert two arrays contain the same values (order doesn't matter)
    * @param a First array
@@ -243,9 +241,9 @@ export interface Assertions {
 };
 
 export const assertions: Assertions = {
-  // TODO switch the protocol here to throw special errors that wrap a hrtime as well so that the timing for failed
-  // tests won't include the time taken to generate these errors (some of which do spawns etc).
-  // Implementation methods here...
+  eq: <T>(a: T, b: T, ...message: any[]) => {
+    if (a !== b) throw new Error(red(bold(italic('eq')) + ' expected ') + pp2(a) + red(' to equal ') + pp2(b) + '. ' + format(...message));
+  },
   
 export type AssertionName = keyof Assertions;
 
