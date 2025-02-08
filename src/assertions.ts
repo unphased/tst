@@ -126,9 +126,10 @@ function sameSet<T>(a: T[], b: T[]) {
 // export const Nce = (n: number, cb: () => void) => { }
 // export const once = (cb: () => void) => { Nce(1, cb); }
 
-export const assertions = {
-  // TODO switch the protocol here to throw special errors that wrap a hrtime as well so that the timing for failed
-  // tests won't include the time taken to generate these errors (some of which do spawns etc).
+/**
+ * Collection of assertion methods for test validation
+ */
+export interface Assertions {
   /**
    * Strict equality assertion (===)
    * @param a Actual value
@@ -136,7 +137,7 @@ export const assertions = {
    * @param message Optional error message parts
    * @throws When values are not strictly equal
    */
-  eq: <T>(a: T, b: T, ...message: any[]) => {
+  eq<T>(a: T, b: T, ...message: any[]): void;
     if (a !== b) throw new Error(red(bold(italic('eq')) + ' expected ') + pp2(a) + red(' to equal ') + pp2(b) + '. ' + format(...message));
   },
   /**
@@ -145,7 +146,7 @@ export const assertions = {
    * @param b Second array
    * @throws When arrays have different elements
    */
-  sameSet,
+  sameSet: typeof sameSet;
   
   /**
    * Numeric equality with epsilon tolerance
@@ -154,7 +155,7 @@ export const assertions = {
    * @param epsilon Allowed difference
    * @throws When numbers differ beyond epsilon
    */
-  eqE: (a: number, b: number, epsilon: number) => {
+  eqE(a: number, b: number, epsilon: number): void;
     if (Math.abs(a - b) > epsilon) throw new Error(red(bold(italic('eqE')) + ' expected ') + pp2(a) + red(' to equal ') + pp2(b) + red(' within ') + pp2(epsilon) + red('.'));
   },
   ne: <T>(a: T, b: T) => {
@@ -212,7 +213,7 @@ export const assertions = {
    * @throws When function does not throw
    * @example a.throws(() => { throw new Error() })
    */
-  throws: (fn: () => void) => {
+  throws(fn: () => void): void;
     try {
       fn();
     } catch (e) {
@@ -241,5 +242,10 @@ export const assertions = {
   }
 };
 
-export type AssertionName = keyof typeof assertions;
+export const assertions: Assertions = {
+  // TODO switch the protocol here to throw special errors that wrap a hrtime as well so that the timing for failed
+  // tests won't include the time taken to generate these errors (some of which do spawns etc).
+  // Implementation methods here...
+  
+export type AssertionName = keyof Assertions;
 
