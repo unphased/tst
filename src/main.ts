@@ -156,29 +156,48 @@ export const testParamMaker = (config: LaunchOptions, logs: TestLogs, assertionM
   }
 
   return {
-    // the logger you must use from a test
+    /**
+     * Main logger - logs to test output with timestamp. Auto-inserts spaces between arguments and newline at end.
+     * @example l('Starting process', process.pid)
+     */
     l: logger,
+    /**
+     * Low-level logger - same as `l` but accepts formatting options
+     * @param opts Formatting options (see ts-utils/format)
+     */
     lo: logger_with_opts,
-    // Test option setter. Is the name too terse? We'll find out later.
-    // This design makes it possible to colocate test specific configuration to the test itself, which should aid readability
+    /**
+     * Test option setter - configure test parameters like timeouts, buffers, etc.
+     * @example t('ringBufferLimitAssertionLogs', 1000) // Keep last 1k assertion logs
+     */
     t: setTestOption,
-    // assertions accessed through here
+    /**
+     * Assertions collection - contains all assertion methods (eq, lt, includes, etc.)
+     * @example a.eq(1+1, 2), a.lt(performance.now(), 1000)
+     */
     a: augmentedAssertions(assertionMetrics, options),
-    // obtains metrics and logs from the currently executing test in a read only way, so you can make assertions on the
-    // assertions or logging your test already did, which may be helpful for black box testing among other things.
+    /**
+     * Metrics snapshot - get current test metrics/logs for making meta-assertions
+     * @returns Frozen copy of current test state
+     */
     m: metricsCopyMaker(assertionMetrics, logs),
-    // spawnAsync for use by test, allows for simple resource tracking implementation
+    /**
+     * Process spawner - launches subprocesses with resource tracking
+     * @returns Promise with process results + resource usage
+     */
     spawn: asyncSpawnTestTracedMaker(resourceMetrics, logger),
-    // html embed consumer for plots etc. When no disjoint groups are specified they get combined into a single page.
+    /**
+     * Plot builder - creates visual embeddings for HTML reports
+     * @param plotType Type of plot from plotters registry
+     * @param data Data to visualize
+     * @param group_id Optional group ID for organizing multiple plots
+     */
     plot: htmlPlotBuilderEmbedder(embeds),
-    // the cleanup cb's are defined here. they will only enable and trigger if test fails after
-    // calls made here, which is a bit awkward (although is also a feature), this propery would
-    // apply as well to setTestOption, however in practice all options related behavior occurs after
-    // the test completes, so the only time this comes into play is here... TODO consider if we need
-    // to move this out from a testparam into a separate third arg for the test definition. One
-    // concept though would be to have helpful informative output if we detect a too-late cleanup
-    // installation.
-    failure_cleanup: (fn: () => void) => { // on fail cleanup handler
+    /**
+     * Failure cleanup registry - add cleanup handlers that only run if test fails
+     * @param fn Cleanup function to register
+     */
+    failure_cleanup: (fn: () => void) => { 
       cleanupHandlers.failedCleanupHandlers.push(fn);
     },
     // cleanup fn, something that will run at end of test as long as test execution reaches this point. So the
