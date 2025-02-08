@@ -122,38 +122,117 @@ function sameSet<T>(a: T[], b: T[]) {
   })) throw new Error(red(bold(italic('sameSet')) + ' expected ') + pp2(a) + red(' to equal ') + pp2(b) + red(' as sets: ') + pp2(failedToFind) + ' was not found in the latter.');
 }
 
+/**
+ * An interface for assertion functions. Sorta needed for friendly usage
+ */
+export interface Assertions {
+  /**
+   * Strict equality assertion (===).
+   * @param a Actual value.
+   * @param b Expected value.
+   * @param message Optional error message parts.
+   * @throws When values are not strictly equal.
+   */
+  eq<T>(a: T, b: T, ...message: any[]): void;
+
+  /**
+   * Assert that two arrays contain the same elements (order does not matter).
+   * @param a First array.
+   * @param b Second array.
+   * @throws When arrays differ.
+   */
+  sameSet<T>(a: T[], b: T[]): void;
+
+  /**
+   * Numeric equality with epsilon tolerance.
+   * @param a Actual number.
+   * @param b Expected number.
+   * @param epsilon Allowed difference.
+   * @throws When numbers differ by more than epsilon.
+   */
+  eqE(a: number, b: number, epsilon: number): void;
+
+  /**
+   * Not equal assertion.
+   * @param a First value.
+   * @param b Second value.
+   * @throws When the two values are equal.
+   */
+  ne<T>(a: T, b: T): void;
+
+  /**
+   * Assert that the first number is less than the second.
+   */
+  lt(a: number, b: number, ...message: any[]): void;
+
+  /**
+   * Assert that the first number is greater than the second.
+   */
+  gt(a: number, b: number, ...message: any[]): void;
+
+  /**
+   * Deep equality assertion.
+   */
+  eqO<T>(a: T, b: T, ...message: any[]): void;
+
+  /**
+   * Deep non-equality assertion.
+   */
+  neO(a: any, b: any): void;
+
+  /**
+   * Assert that an array or string includes a value (or that a regex matches a string).
+   */
+  includes(a: any, spec: any): void;
+
+  /**
+   * Assert that an object includes the given subset.
+   */
+  includesO(a: any, spec: any): void;
+
+  /**
+   * Assert that a string or Buffer matches a regular expression.
+   */
+  match(v: string | Buffer, spec: RegExp): void;
+
+  /**
+   * Assert that a value is truthy.
+   */
+  is(v: any, ...message: any[]): void;
+
+  /**
+   * Assert that a value is falsy.
+   */
+  not(v: any, ...message: any[]): void;
+
+  /**
+   * Assert that an array contains a contiguous subsequence.
+   */
+  subseq<T>(a: T[], spec: T[]): void;
+
+  /**
+   * Assert that a synchronous function throws an error.
+   */
+  throws(fn: () => void): void;
+
+  /**
+   * Assert that an async function throws an error.
+   */
+  throwsA(fn: () => Promise<void>, expected_message?: string | string[]): Promise<void>;
+}
+
 // TODO Explore some assertions to use to assert the amount of times some code got triggered?
 // export const Nce = (n: number, cb: () => void) => { }
 // export const once = (cb: () => void) => { Nce(1, cb); }
 
-export const assertions = {
+export const assertions: Assertions = {
   // TODO switch the protocol here to throw special errors that wrap a hrtime as well so that the timing for failed
   // tests won't include the time taken to generate these errors (some of which do spawns etc).
-  /**
-   * Strict equality assertion (===)
-   * @param a Actual value
-   * @param b Expected value
-   * @param message Optional error message parts
-   * @throws When values are not strictly equal
-   */
   eq: <T>(a: T, b: T, ...message: any[]) => {
     if (a !== b) throw new Error(red(bold(italic('eq')) + ' expected ') + pp2(a) + red(' to equal ') + pp2(b) + '. ' + format(...message));
   },
-  /**
-   * Assert two arrays contain the same values (order doesn't matter)
-   * @param a First array
-   * @param b Second array
-   * @throws When arrays have different elements
-   */
   sameSet,
   
-  /**
-   * Numeric equality with epsilon tolerance
-   * @param a Actual number
-   * @param b Expected number 
-   * @param epsilon Allowed difference
-   * @throws When numbers differ beyond epsilon
-   */
   eqE: (a: number, b: number, epsilon: number) => {
     if (Math.abs(a - b) > epsilon) throw new Error(red(bold(italic('eqE')) + ' expected ') + pp2(a) + red(' to equal ') + pp2(b) + red(' within ') + pp2(epsilon) + red('.'));
   },
@@ -206,12 +285,6 @@ export const assertions = {
       throw new Error(red(bold(italic('subseq')) + " expected ") + pp2(a) + red(" to include ") + pp2(spec) + red(" as a contiguous subsequence."));
     }
   },
-  /**
-   * Assert synchronous function throws an error
-   * @param fn Function to execute
-   * @throws When function does not throw
-   * @example a.throws(() => { throw new Error() })
-   */
   throws: (fn: () => void) => {
     try {
       fn();
