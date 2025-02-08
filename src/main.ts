@@ -30,7 +30,7 @@ export const isAsyncFunction = (fn: any): fn is (...args: any[]) => Promise<any>
 };
 
 // wrap assertion logic with call counting and logging
-const augmentedAssertions = (assertionMetrics: TestAssertionMetrics, options: TestOptions) => {
+const augmentedAssertions = (assertionMetrics: TestAssertionMetrics, options: TestOptions): typeof assertions => {
   const ret = {} as typeof assertions; // returning same shape as our collection of assertions.
   for (const [name, fn] of Object.entries(assertions) as [keyof typeof assertions, any][]) {
     const asyn = isAsyncFunction(fn);
@@ -173,7 +173,7 @@ export const testParamMaker = (config: LaunchOptions, logs: TestLogs, assertionM
     t: setTestOption,
     /**
      * Assertions collection - contains all assertion methods (eq, lt, includes, etc.)
-     * @type {import('./types.js').AssertionName}
+     * @type {typeof assertions}
      * @example a.eq(1+1, 2), a.lt(performance.now(), 1000)
      */
     a: augmentedAssertions(assertionMetrics, options),
