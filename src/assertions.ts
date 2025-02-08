@@ -129,11 +129,31 @@ function sameSet<T>(a: T[], b: T[]) {
 export const assertions = {
   // TODO switch the protocol here to throw special errors that wrap a hrtime as well so that the timing for failed
   // tests won't include the time taken to generate these errors (some of which do spawns etc).
+  /**
+   * Strict equality assertion (===)
+   * @param a Actual value
+   * @param b Expected value
+   * @param message Optional error message parts
+   * @throws When values are not strictly equal
+   */
   eq: <T>(a: T, b: T, ...message: any[]) => {
     if (a !== b) throw new Error(red(bold(italic('eq')) + ' expected ') + pp2(a) + red(' to equal ') + pp2(b) + '. ' + format(...message));
   },
+  /**
+   * Assert two arrays contain the same values (order doesn't matter)
+   * @param a First array
+   * @param b Second array
+   * @throws When arrays have different elements
+   */
   sameSet,
-  // eq with epsilon
+  
+  /**
+   * Numeric equality with epsilon tolerance
+   * @param a Actual number
+   * @param b Expected number 
+   * @param epsilon Allowed difference
+   * @throws When numbers differ beyond epsilon
+   */
   eqE: (a: number, b: number, epsilon: number) => {
     if (Math.abs(a - b) > epsilon) throw new Error(red(bold(italic('eqE')) + ' expected ') + pp2(a) + red(' to equal ') + pp2(b) + red(' within ') + pp2(epsilon) + red('.'));
   },
@@ -161,6 +181,12 @@ export const assertions = {
       throw new Error(red(bold(italic('neO')) + ' expected ') + pp2(a) + red(' to not equal ') + pp2(b) + red('.'));
     }
   },
+  /**
+   * Assert value exists in array or string
+   * @param a Array/string to check
+   * @param spec Value to find or RegExp for strings
+   * @throws When value not found
+   */
   includes,
   includesO: (a: any, spec: any) => {
     const v = isSubsetObject(spec, a);
@@ -180,6 +206,12 @@ export const assertions = {
       throw new Error(red(bold(italic('subseq')) + " expected ") + pp2(a) + red(" to include ") + pp2(spec) + red(" as a contiguous subsequence."));
     }
   },
+  /**
+   * Assert synchronous function throws an error
+   * @param fn Function to execute
+   * @throws When function does not throw
+   * @example a.throws(() => { throw new Error() })
+   */
   throws: (fn: () => void) => {
     try {
       fn();

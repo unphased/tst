@@ -173,6 +173,7 @@ export const testParamMaker = (config: LaunchOptions, logs: TestLogs, assertionM
     t: setTestOption,
     /**
      * Assertions collection - contains all assertion methods (eq, lt, includes, etc.)
+     * @type {import('./types.js').AssertionName}
      * @example a.eq(1+1, 2), a.lt(performance.now(), 1000)
      */
     a: augmentedAssertions(assertionMetrics, options),
