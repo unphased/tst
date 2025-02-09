@@ -148,7 +148,7 @@ export const spawnAsync = ((command: string, args: string[], logger_?: typeof co
     spawnOptions.stdio = ['ignore', 'ignore', 'pipe'];
   }
 
-  // use brew to get /usr/bin/time as gtime on macos.
+  // use brew to get /usr/bin/time as gtime on macos. The brew package name is gnu-time!
   return new Promise((resolve, reject) => {
     let realSpawnCmd = process.platform === 'darwin' ? 'gtime' : 'time';
     let realSpawnArgs: string[] = [];

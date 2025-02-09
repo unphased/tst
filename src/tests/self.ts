@@ -289,7 +289,7 @@ export const error_stack_format = test('stack trace', ({l, a:{eq, is, not}}) => 
   const examples_of_stack_frames = [...stack_here, ...stack_from_outer, ...explicit_examples];
 
   const re = [
-    /at\s+(?:[\w<>.]+\s+)?\((?:file:\/\/)?(.*)\)/,
+    /at\s+(?:async\s+)?(?:[\w<>.]+\s+)?\((?:file:\/\/)?(.*)\)/,
     /at\s+file:\/\/(.*)$/,
     /at\s+([-\w/.]+:\d+:\d+)$/,
   ];
